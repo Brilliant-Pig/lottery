@@ -43,11 +43,20 @@ const routes = [
         }
     },
     {
-        path: '/result-main',
-        name: 'result-main',
-        component: () => import('../pages/result-main.vue'),
+        path: '/result-cus',
+        name: 'result-cus',
+        component: () => import('../pages/result-cus.vue'),
         meta: {
-            title: '抽奖结果展示',
+            title: '参与人抽奖结果展示',
+            freeAuth: true
+        }
+    },
+    {
+        path: '/result-man',
+        name: 'result-man',
+        component: () => import('../pages/result-man.vue'),
+        meta: {
+            title: '组织人抽奖结果展示',
             freeAuth: true
         }
     }
