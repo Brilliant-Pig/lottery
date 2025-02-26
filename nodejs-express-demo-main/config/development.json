@@ -1,0 +1,16 @@
+{
+    "serverConfig": {
+        "host": "0.0.0.0",
+        "port": 33001,
+        "baseUrl": "/api"
+    },
+    "dbConfig": {
+        "provider": "sqlite",
+        "filename": "db-sqlite.db",
+        "host": "x.x.x.x",
+        "port": 3306,
+        "username": "username",
+        "password": "password",
+        "schema": ""
+    }
+}

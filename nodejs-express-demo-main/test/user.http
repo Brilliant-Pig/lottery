@@ -1,0 +1,14 @@
+### 获取用户列表
+GET http://127.0.0.1:33001/api/user/getUserList
+Content-Type: application/json
+
+
+
+### 获取用户详细信息
+GET http://127.0.0.1:33001/api/user/getUserInfo
+    ?userId=2
+
+
+### 获取用户信息，通过名字获取学号
+GET http://127.0.0.1:33001/api/user/getUserIdByName
+    ?userName=张三
