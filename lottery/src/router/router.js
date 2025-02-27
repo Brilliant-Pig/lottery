@@ -3,58 +3,62 @@ import { createRouter, createWebHistory } from 'vue-router';
 const routes = [
     {
         path: '/',
-        name: '',
-        redirect: '/demo'
+        name: 'App',
+        component: () => import('../App.vue'),
+        meta: {
+            title: '默认页面',
+            freeAuth: true
+        }
     },
     {
-        path: '/login-main',
-        name: 'login-main',
-        component: () => import('../pages/login-main.vue'),
+        path: '/LoginMain',
+        name: 'LoginMain',
+        component: () => import('../pages/LoginMain.vue'),
         meta: {
             title: '登录页面',
             freeAuth: true
         }
     },
     {
-        path: '/lottery-main',
-        name: 'lottery-main',
-        component: () => import('../pages/lottery-main.vue'),
+        path: '/LotteryMain',
+        name: 'LotteryMain',
+        component: () => import('../pages/LotteryMain.vue'),
         meta: {
             title: '抽奖首页',
             freeAuth: true
         }
     },
     {
-        path: '/customers-main',
-        name: 'customers-main',
-        component: () => import('../pages/customers-main.vue'),
+        path: '/CustomersMain',
+        name: 'CustomersMain',
+        component: () => import('../pages/CustomersMain.vue'),
         meta: {
             title: '参与抽奖页面',
             freeAuth: true
         }
     },
     {
-        path: '/managers-main',
-        name: 'managers-main',
-        component: () => import('../pages/managers-main.vue'),
+        path: '/ManagersMain',
+        name: 'ManagersMain',
+        component: () => import('../pages/ManagersMain.vue'),
         meta: {
             title: '管理人页面',
             freeAuth: true
         }
     },
     {
-        path: '/result-cus',
-        name: 'result-cus',
-        component: () => import('../pages/result-cus.vue'),
+        path: '/ResultCus',
+        name: 'ResultCus',
+        component: () => import('../pages/ResultCus.vue'),
         meta: {
             title: '参与人抽奖结果展示',
             freeAuth: true
         }
     },
     {
-        path: '/result-man',
-        name: 'result-man',
-        component: () => import('../pages/result-man.vue'),
+        path: '/ResultMan',
+        name: 'ResultMan',
+        component: () => import('../pages/ResultMan.vue'),
         meta: {
             title: '组织人抽奖结果展示',
             freeAuth: true
