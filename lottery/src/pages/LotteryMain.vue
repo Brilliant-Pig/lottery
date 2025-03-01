@@ -6,6 +6,13 @@
 
 <script>
 export default {
+    name: 'LotteryMain',
+    components: {
+    },
+    setup() {
+        return {
+        }
+    }
 
 }
 </script>
