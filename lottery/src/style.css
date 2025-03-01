@@ -58,12 +58,21 @@ button:focus-visible {
   padding: 2em;
 }
 
-#app {
+/* #app {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0vw;
   text-align: center;
+}  以上是app这个id的原本CSS设置*/
+
+#app {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
+/* 为了让app撑满全屏以使得嵌套在里面的子页面能利用全屏空间而做的修改 */
 
 @media (prefers-color-scheme: light) {
   :root {
