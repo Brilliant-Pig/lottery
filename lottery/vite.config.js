@@ -5,8 +5,6 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 // vite.config.ts
 import autoImportPlugin from '@opentiny/unplugin-tiny-vue'
-import { TinyVueResolver } from '@opentiny/unplugin-tiny-vue'
-
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -17,22 +15,12 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
     Components({
-      resolvers: [ElementPlusResolver(), TinyVueResolver],
+      resolvers: [ElementPlusResolver()],
     }),
   ],
   define: {
-    'process.env': { ...process.env }
+    'process.env': process.env 
   },
-  configureWebpack: {
-    plugins: [
-      Components({
-        resolvers: [TinyVueResolver]
-      }),
-      AutoImport({
-        resolvers: [TinyVueResolver]
-      })
-    ]
-  }
 })
 
 

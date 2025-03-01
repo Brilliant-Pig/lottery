@@ -24,10 +24,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  height: 100vh; /* 关键：强制body高度占满视口 */
 }
 
 h1 {
@@ -66,12 +65,10 @@ button:focus-visible {
 }  以上是app这个id的原本CSS设置*/
 
 #app {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
+    height: 100vh;
+    display: flex; /* 启用弹性布局 */
+    flex-direction: column; /* 纵向排列 */
+  }
 /* 为了让app撑满全屏以使得嵌套在里面的子页面能利用全屏空间而做的修改 */
 
 @media (prefers-color-scheme: light) {
@@ -85,4 +82,10 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Element Plus布局组件强制样式覆盖 */
+.el-container {
+  height: 100%; /* 继承父容器高度 */
+  flex: 1; /* 填充剩余空间 */
 }
