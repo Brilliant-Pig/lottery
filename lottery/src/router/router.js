@@ -2,15 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
     {
-        path: '/',
-        name: 'App',
-        component: () => import('../App.vue'),
-        meta: {
-            title: '默认页面',
-            freeAuth: true
-        }
-    },
-    {
         path: '/LoginMain',
         name: 'LoginMain',
         component: () => import('../pages/LoginMain.vue'),
