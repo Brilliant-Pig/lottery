@@ -105,8 +105,8 @@
     background-color: #ffffff;
     border-right: 2px solid #d5d5d5;
     color: #d27070;
-    width: 130vh;
-    height:636px;
+    width: 130px;
+    height: 100%;
   }
   
   .demo-container .tiny-container :deep(.tiny-container__main) {
