@@ -30,7 +30,8 @@
             </div>
             </el-scrollbar>
         </template>
-        <tiny-layout class="demo-center" >
+        <tiny-layout id="mainP" >
+        <!-- 主体尺寸调整 -->
         <router-view v-slot="{ Component }">
             <transition name="fade-slide" mode="out-in">
             <component :is="Component" />
@@ -221,5 +222,10 @@ const handleClick = (path: string) => {
 .fade-slide-leave-to {
     opacity: 0;
     transform: translateX(-30px);
+}
+
+#mainP {
+    height: 100%;
+    width: 100%;
 }
 </style> 
