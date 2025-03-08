@@ -100,7 +100,7 @@ const icons = {
   Link: markRaw(Link)
 }
 const customItems = ref([
-  { text: '使用说明', type: 'primary', icon: MagicStick, path: '/' },
+  { text: '使用说明', type: 'primary', icon: MagicStick, path: '/LotteryMain' },
   { text: '创建抽奖', type: 'success', icon: Discount, children: [
       { 
         text: '模式一: 上传CSV/Excel',
@@ -112,7 +112,7 @@ const customItems = ref([
         text: '模式二: 生成分享URL',
         type: 'success',
         icon: Link,
-        path: '/share-url'
+        path: '/ManagersMain'
       } 
     ]}, 
   { text: '参与名单', type: 'warning', icon: Document, path: '/CustomersMain' },
@@ -130,7 +130,7 @@ const customItems = ref([
       path: '/ResultMan'
     }
   ]  }, // 或ResultMan根据需求
-  { text: '个人中心', type: 'info', icon: User, path: '/LotteryMain' }
+  { text: '个人中心', type: 'info', icon: User, path: '/LoginMain' }
 ])
 
 const hoverIndex = ref(-1)
