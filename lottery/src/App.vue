@@ -190,7 +190,16 @@ const handleClick = (path: string) => {
   z-index: 2;
 }
 
-
+.demo-container .tiny-container :deep(.tiny-container__aside) {
+  background-color: #ffffff;
+  border-right: 1px solid #a7a7a7;
+  box-shadow: 2px 0px 19px -10px rgba(255, 255, 255, 0.3);/*对侧边栏添加了适当阴影，增加视觉效果*/
+  color: #d27070;
+  width: 130vh;
+  height:91%;
+  z-index: 1;
+  overflow: visible; 
+}
 
 .demo-container .tiny-container :deep(.tiny-container__main) {
   border: 1px solid #ffffff;
