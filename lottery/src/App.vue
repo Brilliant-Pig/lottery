@@ -201,7 +201,12 @@ const handleClick = (path: string) => {
   overflow: visible; 
 }
 
-
+.demo-container .tiny-container :deep(.tiny-container__main) {
+  border: 1px solid #ffffff;
+  color: #4f4f4f;
+  height:91.7%;
+  z-index: 1;
+}
 
 .demo-container .tiny-container :deep(.main .changePattern .tiny-radio) {
   color: #a3a355;
