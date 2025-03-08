@@ -198,7 +198,7 @@ const handleClick = (path: string) => {
   width: 130vh;
   height:91%;/*对左侧栏高进行了修改 */
   z-index: 1;
-  overflow: visible; /* 新增 */
+  overflow: visible; 
 }
 
 .demo-container .tiny-container :deep(.tiny-container__main) {
