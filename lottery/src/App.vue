@@ -115,7 +115,7 @@ const customItems = ref([
         path: '/ManagersMain'
       } 
     ]}, 
-  { text: '参与名单', type: 'warning', icon: Document, path: '/CustomersMain' },
+  { text: '参与抽奖', type: 'warning', icon: Document, path: '/CustomersMain' },
   { text: '抽奖结果', type: 'danger', icon: PieChart,children:[
     { 
       text: '进行中抽奖',
@@ -205,6 +205,7 @@ const handleClick = (path: string) => {
   border: 1px solid #ffffff;
   color: #4f4f4f;
   height:91.7%;
+  z-index: 2;
 }
 
 .demo-container .tiny-container :deep(.main .changePattern .tiny-radio) {
@@ -251,7 +252,7 @@ const handleClick = (path: string) => {
   position: absolute;
   left: 0;
   top: 100%; /* 关键修改：定位到父元素底部 */
-  width: 100%; /* 保持与父按钮同宽 */
+  width: 99%; /* 保持与父按钮同宽 */
   min-width: auto;
   margin-top: 8px; /* 添加间隔 */
   transform-origin: top center; /* 调整动画基准点 */
@@ -286,10 +287,10 @@ const handleClick = (path: string) => {
 
 /* 子菜单动画 */
 .submenu-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .submenu-leave-active {
-  transition: all 0.2s cubic-bezier(0.6, -0.3, 0.74, 0.05);
+  transition: all 0.3s cubic-bezier(0.6, -0.3, 0.74, 0.05);
 }
 .submenu-enter-from {
   opacity: 0;
