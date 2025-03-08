@@ -204,7 +204,7 @@ const handleClick = (path: string) => {
 .demo-container .tiny-container :deep(.tiny-container__main) {
   border: 1px solid #ffffff;
   color: #4f4f4f;
-  height:91%;/*对主体高进行了修改。 */
+  height:91.7%;
   z-index: 1;
 }
 
