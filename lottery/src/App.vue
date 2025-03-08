@@ -196,7 +196,7 @@ const handleClick = (path: string) => {
   box-shadow: 2px 0px 19px -10px rgba(255, 255, 255, 0.3);/*对侧边栏添加了适当阴影，增加视觉效果*/
   color: #d27070;
   width: 130vh;
-  height:91%;/*对左侧栏高进行了修改 */
+  height:91%;
   z-index: 1;
   overflow: visible; 
 }
