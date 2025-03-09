@@ -14,9 +14,14 @@ import Timer from '../components/Timer.vue'
     <div id="whole">
         <div id="null">space</div><!-- 用于垫个盒子调整布局 -->
         <h1>抽奖活动{{正在进行/已结束}}</h1>
+        <p1>抽奖剩余时间：</p1>
+        <p2>剩余人数：</p2>
         <div id="timer">
-            XX<span>小时</span>XX<span>分</span>XX<span>秒</span>
+            XX<span class="CM">小时</span>XX<span class="CM">分</span>XX<span class="CM">秒</span>
         </div><!-- 此处为倒计时Timer组件的初设计预留位置 -->
+        <div id="men">
+
+        </div><!-- 此处为倒计时实时人数组件的初设计预留位置 -->
     </div>
 </template>
 
@@ -25,26 +30,36 @@ export default {  }
 </script>
 
 <style>
-#whole {
+#whole {                /*页面整体的尺寸 */
     height: 100%;
     width: 100%;
     background-color:rgb(255, 255, 255);
 }
 
-#null {
+#null {                 /*垫了个盒子协调整体布局 */
     width: 100%;
     margin-top: 0px;
     color:white;
 }
 
-h1 {
+h1 {                    /*h1的CSS */
     width:90%;
     margin-top: 5px;
     text-align: center;
 }
 
-#timer {
-    width: 90%;
+#timer {                /*计时器的预测样式 */
+    width: 60%;
     text-align: center;
+    font-size: 4.5em;
+}
+
+.CM {
+    font-size: 30px ;
+}
+
+p1 {
+    margin: left 10%;
+    font-size: 30px;
 }
 </style>
