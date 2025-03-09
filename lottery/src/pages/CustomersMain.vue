@@ -33,7 +33,6 @@ export default {  }
 #whole {                /*页面整体的尺寸 */
     height: 100%;
     width: 100%;
-    background-color:rgb(255, 255, 255);
 }
 
 #null {                 /*垫了个盒子协调整体布局 */
