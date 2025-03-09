@@ -12,7 +12,12 @@ import Timer from '../components/Timer.vue'
 
 <template>
     <div id="whole">
-        <div id="null">space</div><!-- 用于垫个盒子调整布局 -->
+        <div id="null">
+            <tiny-select v-model="value" placeholder="请选择抽奖活动">
+            <tiny-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" :icon="item.icon">
+            </tiny-option>
+            </tiny-select>
+        </div>
         <h1>抽奖活动{{正在进行/已结束}}</h1>
         <p1>抽奖剩余时间：</p1>
         <p2>剩余人数：</p2>
@@ -20,8 +25,10 @@ import Timer from '../components/Timer.vue'
             XX<span class="CM">小时</span>XX<span class="CM">分</span>XX<span class="CM">秒</span>
         </div><!-- 此处为倒计时Timer组件的初设计预留位置 -->
         <div id="men">
-
+            XX<span class="CM">人</span>
         </div><!-- 此处为倒计时实时人数组件的初设计预留位置 -->
+        <div>
+        </div>
     </div>
 </template>
 
@@ -36,29 +43,50 @@ export default {  }
 }
 
 #null {                 /*垫了个盒子协调整体布局 */
-    width: 100%;
+    width: auto;
+    margin-left: 10px;
     margin-top: 0px;
-    color:white;
+    color:rgb(0, 0, 0);
+}
+
+.tiny-select {
+    width: 280px;
 }
 
 h1 {                    /*h1的CSS */
     width:90%;
     margin-top: 5px;
+    margin-bottom: 80px;
     text-align: center;
 }
 
 #timer {                /*计时器的预测样式 */
+    margin-top: 20px;
     width: 60%;
     text-align: center;
-    font-size: 4.5em;
+    font-size: 125px;
+}
+
+#men {
+    position: absolute;
+    width: 20%;
+    top: 240px;
+    left: 70%;
+    font-size: 125px;
 }
 
 .CM {
-    font-size: 30px ;
+    font-size: 45px ;
 }
 
 p1 {
-    margin: left 10%;
+    margin-left: 5%;
     font-size: 30px;
 }
+
+p2 {
+    margin-left: 40%;
+    font-size: 30px;
+}
+
 </style>
