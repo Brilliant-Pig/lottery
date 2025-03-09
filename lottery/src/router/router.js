@@ -54,6 +54,15 @@ const routes = [
             title: '组织人抽奖结果展示',
             freeAuth: true
         }
+    },
+        {
+        path: '/Register',
+        name: 'Register',
+        component: () => import('../pages/Register.vue'),
+        meta: {
+            title: '注册页面',
+            freeAuth: true
+        }
     }
 ];
 
