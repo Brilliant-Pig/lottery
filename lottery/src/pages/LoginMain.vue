@@ -1,22 +1,134 @@
 <template>
-    <div>
-        <h1>Login Main</h1>
+<div id="whole">
+<div class="login-container">
+    <h1>用户登录</h1>
+    <form @submit.prevent="handleLogin">
+    <div class="input-group">
+        <label for="username">用户名：</label>
+        <input
+        type="text"
+        id="username"
+        v-model="username"
+        placeholder="请输入用户名"
+        required
+    />
     </div>
+    <div class="input-group">
+        <label for="password">密码：</label>
+        <input
+        type="password"
+        id="password"
+        v-model="password"
+        placeholder="请输入密码"
+        required
+    />
+    </div>
+    <button type="submit" class="login-btn">登录</button>
+    </form>
+    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <div class="register-link">
+    <p>还没有账号？<router-link to="/Register">立即注册</router-link></p>
+    </div>
+</div>
+</div>
 </template>
 
 <script>
 export default {
-    name: 'LoginMain',
-    components: {
-    },
-    setup() {
-        return {
-        }
+data() {
+    return {
+    username: "",
+    password: "",
+    errorMessage: "",
+    };
+},
+methods: {
+    handleLogin() {
+    if (!this.username || !this.password) {
+        this.errorMessage = "用户名和密码不能为空！";
+        return;
     }
-
-}
+        setTimeout(() => {
+        if (this.username === "admin" && this.password === "123456") {
+        this.errorMessage = "";
+        alert("登录成功！");
+        this.$router.push("/dashboard");
+        } else {
+        this.errorMessage = "用户名或密码错误！";
+        }
+    }, 500);
+    },
+    },
+    goToRegister() {
+      this.$router.push("/Register"); // 跳转到注册页面
+    },
+};
 </script>
 
-<style>
+<style scoped>
+.login-container {
+max-width: 400px;
+margin: 50px auto;
+padding: 20px;
+border: 1px solid #ccc;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
+h1 {
+text-align: center;
+margin-bottom: 20px;
+}
+
+.input-group {
+margin-bottom: 15px;
+}
+
+label {
+display: block;
+margin-bottom: 5px;
+font-weight: bold;
+}
+
+input {
+width: 100%;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 4px;
+}
+
+.login-btn {
+width: 100%;
+padding: 10px;
+background-color: #007bff;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.login-btn:hover {
+background-color: #0056b3;
+}
+
+.register-link {
+margin-top: 15px;
+text-align: center;
+}
+
+.register-link a {
+color: #007bff;
+text-decoration: none;
+font-weight: bold;
+}
+
+.register-link a:hover {
+text-decoration: underline;
+}
+
+.error-message {
+color: red;
+text-align: center;
+margin-top: 10px;
+}
 </style>
