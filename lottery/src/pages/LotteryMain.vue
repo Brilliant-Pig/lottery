@@ -9,9 +9,26 @@
             {{ link.text }}
             </a>
         </nav>
-    
         <!-- 内容容器 -->
         <div class="manual-content">
+            <!-- 快速入门 -->
+            <section id="快速入门" class="manual-section">
+            <h1>快速入门指南</h1>
+            <div class="quickstart-steps">
+                <div v-for="(step, index) in quickSteps" 
+                    :key="index" 
+                    class="step-card">
+                <div class="step-content">
+                    <h3>{{ step.title }}</h3>
+                    <p>{{ step.desc }}</p>
+                    <button v-if="step.action" 
+                        @click="handleStepAction(step.action)">
+                    {{ step.actionText }}
+                    </button>
+                </div>
+                </div>
+            </div>
+            </section>
             <!-- 系统架构 -->
             <section id="系统架构" class="manual-section">
             <h1>系统架构</h1>
@@ -75,7 +92,7 @@
                 <div class="user-flow">
                 <h2>终端用户流程</h2>
                 <div class="mermaid-diagram">
-                    <img src="../assets/终端用户流程.png" alt="用户流程图" />
+                    <img style="width: 100%;" src="../assets/终端用户流程.png" alt="用户流程图" />
                     <UserJourney />
                 </div>
                 </div>
@@ -83,7 +100,7 @@
                 <div class="admin-flow">
                 <h2>管理员流程</h2>
                 <div class="mermaid-diagram">
-                    <img src="../assets/管理员流程.png" alt="管理员流程图" />
+                    <img style="width: 100%;" src="../assets/管理员流程.png" alt="管理员流程图" />
                     <AdminSequence />
                 </div>
                 </div>
@@ -108,6 +125,86 @@
                 <h3>安全认证体系</h3>
                 
                 <div class="mermaid-diagram">
+        <!-- 新增详细说明 -->
+    <div class="security-details">
+        <h4>详细说明</h4>
+        <div class="detail-section">
+        <h5>1. 多因素认证（MFA）</h5>
+        <p>
+            系统采用基于时间的一次性密码（TOTP）算法，支持以下认证方式：
+            <ul>
+            <li>短信验证码：通过运营商通道实时发送</li>
+            <li>邮箱验证：支持自定义发件服务器配置</li>
+            <li>身份验证器：兼容Google Authenticator等标准协议</li>
+            </ul>
+        </p>
+        </div>
+
+        <div class="detail-section">
+        <h5>2. 密码强度检测</h5>
+        <p>
+            实时密码强度评估算法：
+            <pre><code>function checkPasswordStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    return score >= 3; // 需满足至少3个条件
+    }</code></pre>
+        </p>
+        </div>
+
+        <div class="detail-section">
+        <h5>3. 风险控制机制</h5>
+        <p>
+            实时风险评分模型：
+            <table class="risk-table">
+            <thead>
+                <tr>
+                <th>风险因素</th>
+                <th>权重</th>
+                <th>检测方法</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td>异地登录</td>
+                <td>30%</td>
+                <td>IP地理位置分析</td>
+                </tr>
+                <tr>
+                <td>设备变更</td>
+                <td>25%</td>
+                <td>设备指纹比对</td>
+                </tr>
+                <tr>
+                <td>异常时间</td>
+                <td>20%</td>
+                <td>用户行为基线</td>
+                </tr>
+                <tr>
+                <td>频繁失败</td>
+                <td>25%</td>
+                <td>登录尝试计数</td>
+                </tr>
+            </tbody>
+            </table>
+        </p>
+        </div>
+
+        <div class="detail-section">
+        <h5>4. 会话管理</h5>
+        <p>
+            采用JWT（JSON Web Token）实现无状态认证：
+            <ul>
+            <li>有效期：默认2小时</li>
+            <li>刷新机制：支持静默续期</li>
+            <li>安全特性：支持吊销列表（Blacklist）</li>
+            </ul>
+        </p>
+        </div>
+    </div>
                     <SecurityFlow />
                 </div>
     
@@ -141,27 +238,10 @@
                 </div>
                 </div>
             </div>
+    
             </section>
     
-            <!-- 快速入门 -->
-            <section id="快速入门" class="manual-section">
-            <h1>快速入门指南</h1>
-            <div class="quickstart-steps">
-                <div v-for="(step, index) in quickSteps" 
-                    :key="index" 
-                    class="step-card">
-                <div class="step-number">{{ index + 1 }}</div>
-                <div class="step-content">
-                    <h3>{{ step.title }}</h3>
-                    <p>{{ step.desc }}</p>
-                    <button v-if="step.action" 
-                            @click="handleStepAction(step.action)">
-                    {{ step.actionText }}
-                    </button>
-                </div>
-                </div>
-            </div>
-            </section>
+
     
             <!-- 动态内容加载 -->
             <component 
@@ -249,11 +329,11 @@
         return {
             architectureImg: '../assets/architecture.png',  
             navLinks: [
+            { text: '快速入门', anchor: '快速入门' },
             { text: '系统架构', anchor: '系统架构' },
             { text: '角色权限', anchor: '角色权限说明' },
             { text: '操作流程', anchor: '全流程操作指南' },
-            { text: '系统概述', anchor: '系统概述' },
-            { text: '快速入门', anchor: '快速入门' }
+            { text: '系统概述', anchor: '系统概述' }
             ],
             deployArch: [
             {component: 'Web服务器', spec: '4核8G/100G SSD', solution: 'Nginx集群+Keepalived'},
@@ -354,7 +434,7 @@
             color: #2c3e50;
             margin-bottom: 1rem;
         }
-    
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -393,12 +473,46 @@
         border: 1px solid #eee;
         border-radius: 8px;
         transition: transform 0.3s;
-    
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .quickstart-steps {
+    .step-card {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+
+        .step-content {
+        flex: 1;
+
+        h3 {
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
         }
-    
+
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #42b983;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+
+            &:hover {
+            background: darken(#42b983, 10%);
+            }
+        }
+        }
+    }
+    }
+
         .icon {
             font-size: 2.5rem;
             display: block;
@@ -450,7 +564,7 @@
         .flow-guides {
         display: grid;
         gap: 2rem;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
         }
     
         .mermaid-diagram {
@@ -482,5 +596,61 @@
             padding: 1rem;
         }
         }
+    }
+    .security-details {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    h4 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+
+        h5 {
+        color: #42b983;
+        margin-bottom: 0.8rem;
+        }
+
+        p {
+        line-height: 1.8;
+        margin-bottom: 1rem;
+        }
+
+        ul {
+        padding-left: 2rem;
+        margin: 1rem 0;
+
+        li {
+            margin: 0.5rem 0;
+        }
+        }
+
+        pre {
+        background: #e9ecef;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin: 1rem 0;
+        }
+
+        .risk-table {
+        width: 100%;
+        margin: 1rem 0;
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+        }
+    }
     }
     </style>
