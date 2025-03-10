@@ -14,20 +14,135 @@
             <!-- 快速入门 -->
             <section id="快速入门" class="manual-section">
             <h1>快速入门指南</h1>
-            <div class="quickstart-steps">
-                <div v-for="(step, index) in quickSteps" 
-                    :key="index" 
-                    class="step-card">
-                <div class="step-content">
-                    <h3>{{ step.title }}</h3>
-                    <p>{{ step.desc }}</p>
-                    <button v-if="step.action" 
-                        @click="handleStepAction(step.action)">
-                    {{ step.actionText }}
-                    </button>
+    <!-- 注册登录模块 -->
+    <section id="注册登录">
+        <h2>一、注册与登录</h2>
+        
+        <!-- 新用户注册部分添加按钮 -->
+        <div class="auth-section">
+            <h3>1. 新用户注册</h3>
+            <ul>
+            <li>点击「📧 邮箱/手机注册」</li>
+            <li>输入邮箱/手机号并设置密码（8-16位字符）</li>
+            <li>完成验证：
+                <ul>
+                <li>邮箱用户：查收激活邮件并点击验证链接</li>
+                <li>手机用户：输入短信验证码</li>
+                </ul>
+            </li>
+            </ul>
+            <button 
+            class="black-border-button"
+            @click="handleAuthActionone('register')">
+            🚀 立即注册
+            </button>
+        </div>
+
+        <!-- 已有账号登录部分添加按钮 -->
+        <div class="auth-section">
+            <h3>2. 已有账号登录</h3>
+            <ul>
+            <li><strong>密码登录</strong>：输入注册邮箱/手机 + 密码</li>
+            <li><strong>第三方登录</strong>：点击「🌐 微信/Google」图标快速授权</li>
+            <li><strong>忘记密码</strong>：通过注册邮箱重置密码</li>
+            </ul>
+            <button 
+            class="black-border-button"
+            @click="handleAuthActiontwo('login')">
+            🔑 立即登录
+            </button>
+        </div>
+        </section>
+
+        <!-- 创建抽奖模块添加按钮 -->
+        <section id="创建抽奖">
+        <h2>二、创建抽奖活动</h2>
+        <div class="creation-section">
+            <button 
+            class="black-border-button"
+            @click="handleCreateAction">
+            🎯 开始创建抽奖
+            </button>
+        </div>
+        </section>
+
+<!-- 参与流程模块 -->
+<section>
+    <h2>三、参与抽奖流程</h2>
+    <table class="process-table">
+        <tr>
+        <th>方式</th>
+        <th>操作步骤</th>
+        </tr>
+        <tr>
+        <td>名单用户</td>
+        <td>
+            1. 收到系统通知<br>
+            2. 点击确认参与
+        </td>
+        </tr>
+        <tr>
+        <td>链接用户</td>
+        <td>
+        1. 打开分享链接<br>
+        2. 点击立即参与
+        </td>
+        </tr>
+    </table>
+    </section>
+
+    <!-- 注意事项模块 -->
+    <section class="warning-section">
+    <h2>⚠️ 注意事项</h2>
+    <ul>
+        <li v-for="(item, index) in warnings" :key="index">
+        {{ item }}
+        </li>
+    </ul>
+</section>
+</section>
+            <!-- 全流程操作指南 -->
+            <section id="全流程操作指南" class="manual-section">
+            <h1>操作流程图解</h1>
+            <div class="flow-guides">
+                <div class="user-flow">
+                <h2>终端用户流程</h2>
+                <div class="mermaid-diagram">
+                    <img style="width: 100%;" src="../assets/终端用户流程.png" alt="用户流程图" />
+                    <UserJourney />
+                </div>
+                </div>
+                
+                <div class="admin-flow">
+                <h2>管理员流程</h2>
+                <div class="mermaid-diagram">
+                    <img style="width: 100%;" src="../assets/管理员流程.png" alt="管理员流程图" />
+                    <AdminSequence />
                 </div>
                 </div>
             </div>
+            </section>
+            <!-- 角色权限说明 -->
+            <section id="角色权限说明" class="manual-section">
+            <h1>角色权限矩阵</h1>
+            <table class="role-matrix">
+                <thead>
+                <tr>
+                    <th>权限项</th>
+                    <th>普通用户</th>
+                    <th>活动管理员</th>
+                    <th>系统管理员</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(perm, index) in permissions" :key="index">
+                    <td>{{ perm.name }}</td>
+                    <td>{{ perm.user }}</td>
+                    <td>{{ perm.manager }}</td>
+                    <td>{{ perm.admin }}</td>
+                </tr>
+                </tbody>
+            </table>
             </section>
             <!-- 系统架构 -->
             <section id="系统架构" class="manual-section">
@@ -62,50 +177,8 @@
             </div>
             </section>
     
-            <!-- 角色权限说明 -->
-            <section id="角色权限说明" class="manual-section">
-            <h1>角色权限矩阵</h1>
-            <table class="role-matrix">
-                <thead>
-                <tr>
-                    <th>权限项</th>
-                    <th>普通用户</th>
-                    <th>活动管理员</th>
-                    <th>系统管理员</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(perm, index) in permissions" :key="index">
-                    <td>{{ perm.name }}</td>
-                    <td>{{ perm.user }}</td>
-                    <td>{{ perm.manager }}</td>
-                    <td>{{ perm.admin }}</td>
-                </tr>
-                </tbody>
-            </table>
-            </section>
+
     
-            <!-- 全流程操作指南 -->
-            <section id="全流程操作指南" class="manual-section">
-            <h1>操作流程图解</h1>
-            <div class="flow-guides">
-                <div class="user-flow">
-                <h2>终端用户流程</h2>
-                <div class="mermaid-diagram">
-                    <img style="width: 100%;" src="../assets/终端用户流程.png" alt="用户流程图" />
-                    <UserJourney />
-                </div>
-                </div>
-                
-                <div class="admin-flow">
-                <h2>管理员流程</h2>
-                <div class="mermaid-diagram">
-                    <img style="width: 100%;" src="../assets/管理员流程.png" alt="管理员流程图" />
-                    <AdminSequence />
-                </div>
-                </div>
-            </div>
-            </section>
     
             <!-- 系统概述增强 -->
             <section id="系统概述" class="manual-section">
@@ -327,12 +400,18 @@
         
         data() {
         return {
+            warnings: [
+        '文件模式最多支持5000人参与',
+        '时间修改需在活动开始前1小时完成',
+        '每个手机号/邮箱仅可参与1次',
+        '推荐使用Chrome/Edge最新版浏览器'
+        ],
             architectureImg: '../assets/architecture.png',  
             navLinks: [
             { text: '快速入门', anchor: '快速入门' },
-            { text: '系统架构', anchor: '系统架构' },
-            { text: '角色权限', anchor: '角色权限说明' },
             { text: '操作流程', anchor: '全流程操作指南' },
+            { text: '角色权限', anchor: '角色权限说明' },
+            { text: '系统架构', anchor: '系统架构' },
             { text: '系统概述', anchor: '系统概述' }
             ],
             deployArch: [
@@ -393,81 +472,115 @@
                 this.$router.push('/create')
                 break
             }
-        }
+        },
+    handleAuthActiontwo(type) {
+        this.$emit('show-auth-modal', type);
+        this.$router.push('./LoginMain');
+    },
+    handleAuthActionone(type) {
+        this.$emit('show-auth-modal', type);
+        this.$router.push('./Register');
+    },
+    handleCreateAction() {
+        this.$router.push('./ManagersMain');
+    }
         }
     }
     </script>
     
     <style lang="scss" scoped>
-    .user-manual {
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-    
-        .manual-nav {
+.user-manual {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    /* 顶部导航 */
+    .manual-nav {
         position: sticky;
         top: 0;
-        background: white;
+        background: rgba(255, 255, 255, 0.565);
         padding: 1rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         z-index: 100;
-        
+        /* 顶部导航文字 */
         a {
             margin-right: 2rem;
             cursor: pointer;
             transition: color 0.3s;
             
             &:hover {
-            color: #42b983;
+            color: #626262;
             }
         }
         }
+/* 黑色边框按钮样式 */
+.black-border-button {
+    border: 2px solid #c6c6c6 !important;
+    background: #ffffff;
+    color: #000000ba;
+    padding: 12px 24px;
+    margin: 1rem 0;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+/* 快速入门 */
+.manual-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #ffffff5d;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     
-        .manual-section {
-        margin: 2rem 0;
-        padding: 2rem;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    
-        h1, h2, h3 {
-            color: #2c3e50;
-            margin-bottom: 1rem;
-        }
+    h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #acacacc2;
+    padding-bottom: 0.5rem;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1.5rem 0;
-    
-            th, td {
-            padding: 12px;
-            border: 1px solid #eee;
-            text-align: left;
-            }
-    
-            th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            }
+    h2 {
+    color: #34495e;
+    margin-top: 2rem;
+    }
+
+    h3 {
+    color: #4a5568;
+    }
+/* 参与流程模块 */
+table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+    /* 参与流程文字 */
+    th, td {
+        padding: 12px;
+        border: 1px solid #eee;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
         }
-    
-        pre {
-            background: #f8f8f8;
-            padding: 1rem;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: 'Fira Code', monospace;
+}
+    /* 实时密码评估预算 */
+    pre {
+    background: #f8f8f8;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+    margin: 1rem 0;}
         }
-        }
-    
+    /* 核心功能概述 */
         .overview-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 2rem;
         margin: 2rem 0;
         }
-    
+    /* 核心功能概述卡片 */
         .feature-card {
         padding: 1.5rem;
         border: 1px solid #eee;
@@ -493,21 +606,6 @@
         p {
             color: #666;
             line-height: 1.6;
-        }
-
-        button {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background: #42b983;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.3s;
-
-            &:hover {
-            background: darken(#42b983, 10%);
-            }
         }
         }
     }
@@ -612,7 +710,7 @@
         margin-bottom: 2rem;
 
         h5 {
-        color: #42b983;
+        color: #636363;
         margin-bottom: 0.8rem;
         }
 
@@ -653,4 +751,43 @@
         }
     }
     }
+    .code-block {
+    background: #f6f8fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    }
+
+    .process-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    }
+
+    .process-table th,
+    .process-table td {
+    border: 1px solid #e2e8f0;
+    padding: 0.8rem;
+    }
+
+    .warning-section {
+    background: #fff5f5;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 2rem;
+    }
+
+    .warning-section h2 {
+    color: #c53030;
+    }
+/* 创建抽奖区块样式 */
+.creation-section {
+    padding: 2rem;
+    text-align: center;
+    border: 1px dashed #eee;
+    background:     #e3e3e362;
+    box-shadow:  2px 3px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin: 2rem 0;
+}
     </style>
