@@ -63,7 +63,16 @@ const routes = [
             title: '注册页面',
             freeAuth: true
         }
-    }
+    },
+    {
+        path: '/mainpages',
+        name: 'mainpages',
+        component: () => import('../pages/mainpages.vue'),
+        meta: {
+            title: '主页面',
+            freeAuth: true
+        }
+    },
 ];
 
 const router = createRouter({

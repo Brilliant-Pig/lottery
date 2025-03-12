@@ -7,6 +7,7 @@
       :aside-width="asideWidth"
       :header-height="headerHeight"
       >
+
       <!-- 头部插槽 -->
       <template #header>
           <div class="header-container">
@@ -18,8 +19,15 @@
           </div>
           </div>
       </template>
-      <!-- 侧边栏插槽 -->
+
       <template #aside>
+        <div :class="['aside-container', { 'is-collapsed': isCollapsed }]">
+          <!-- 侧边栏插槽 -->
+          <div class="collapse-button" @click="toggleCollapse">
+            <el-icon :class="['arrow-icon', { 'is-collapsed': isCollapsed }]">
+              <arrow-left />
+            </el-icon>
+          </div>
         <!-- 侧边栏背景图 -->
         <div class="fullscreen-background">
           <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery"/>
@@ -40,7 +48,7 @@
             <component :is="item.icon" />
           </el-icon>
           <span class="menu-text">{{ item.text }}</span>
-            <el-icon v-if="item.children" class="ml-2">
+            <el-icon class="ml-2" v-if="item.children" >
           <arrow-down />
             </el-icon>
         </el-button>
@@ -69,7 +77,8 @@
         </div>
       </transition>
     </div>
-  </el-scrollbar>
+  </el-scrollbar> 
+  </div> 
 </template>
       <tiny-layout id="mainP" >
       <!-- 路由视图调整 -->
@@ -79,10 +88,11 @@
           </transition>
       </router-view>
       </tiny-layout>
+
       </tiny-container>
   </div>
   <!-- 头像区域显示 -->
-  <el-row class="demo-avatar demo-basic">
+  <el-row class="demo-avatar demo-basic" @click="login">
     <div class="sub-title" style="margin-top: 10px">head portrait</div>
     <div class="demo-basic--circle">
         <div class="block">
@@ -143,15 +153,16 @@ const customItems = ref([
       path: '/ResultMan'
     }
   ]  }, // 或ResultMan根据需求
-  { text: '个人中心', type: 'info', icon: User, path: '/LoginMain' }
+  { text: '个人中心', type: 'info', icon: User, path: '/mainpages' }
 ])
 
 // 交互状态
 const hoverIndex = ref(-1)
 const childHover = ref(-1)
+const isCollapsed = ref(false)
 // 布局配置
-const pattern = ref('legend')
-const asideWidth = ref(200)
+const pattern = ref('default')
+const asideWidth = ref(195)
 const headerHeight = ref(80)
 
 // 响应式数据（头像）
@@ -170,6 +181,14 @@ const handleClick = (path: string) => {
   router.push(path)
 }
 
+// 切换伸缩状态
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+  asideWidth.value = isCollapsed.value ? 64 : 195
+}
+const login = () => {
+  router.push('LoginMain');
+};
 </script>
 
 <style scoped>
@@ -180,7 +199,7 @@ const handleClick = (path: string) => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1;/* 置于底层 */
+  z-index: -2;/* 置于底层 */
   overflow: hidden;/* 隐藏溢出内容 */
 }
 
@@ -199,8 +218,7 @@ const handleClick = (path: string) => {
 
 /* 头部容器样式 */
 .demo-container .tiny-container :deep(.tiny-container__header) {
-  background-color: #ffffff;
-  border-bottom: 1px solid #d5d5d5;
+  border-bottom: 1.4px solid #d5d5d5;
   color: #4f4f4f;
   text-align: center;
   font-size: 40px;
@@ -210,22 +228,60 @@ const handleClick = (path: string) => {
 
 /* 侧边栏样式 */
 .demo-container .tiny-container :deep(.tiny-container__aside) {
-  background-color: #ffffff;
-  border-right: 1px solid #a7a7a7;
-  box-shadow: 2px 0px 19px -10px rgba(255, 255, 255, 0.3);/*对侧边栏添加了适当阴影，增加视觉效果*/
-  color: #d27070;
-  width: 130vh;
-  height:91%;
+  border-right: 1.4px solid #a7a7a7;
+  box-shadow: 10px 0px 25px -5px rgba(146, 146, 146, 0.754); /* 加粗右侧阴影 */
+  height: auto;
   z-index: 1;
   overflow: visible; 
+  transition: width 0.3s ease-in-out;/* 侧边栏过渡动画 */
 }
+
+/* 伸缩按钮样式 */
+.collapse-button {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2000;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.collapse-button:hover {
+  background: #f5f7fa;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.arrow-icon {
+  transition: transform 0.3s;
+  color: #606266;
+}
+
+.arrow-icon.is-collapsed {
+  transform: rotateY(180deg);
+}
+
+/* 侧边栏过渡动画 */
+.demo-container .tiny-container :deep(.tiny-container__aside) {
+  transition: width 0.3s ease-in-out;
+}
+
 
 /* 主内容区样式 */
 .demo-container .tiny-container :deep(.tiny-container__main) {
-  border: 1px solid #ffffff;
+  border: 2px solid #ffffff;
   color: #4f4f4f;
-  height:91%;
-  z-index: 2;
+  height: auto;
+  z-index: 1;
+  background: #ffffff5b;
 }
 
 /* 布局模式切换按钮样式 */
@@ -248,11 +304,11 @@ const handleClick = (path: string) => {
   position: relative; 
   display: flex;
   align-items: center;
-  justify-content: center;
   height: 50px;
   margin: 5px;
   margin-bottom: 5px;
-  text-align: center;
+  justify-content: center !important;
+  padding: 0 5px;
   border-radius: 10px;
   transition: transform 0.5s ease; /* 位移动画 */
   flex-direction: column;     /* 纵向排列 */
@@ -264,15 +320,14 @@ const handleClick = (path: string) => {
   margin-bottom: 90px; /* 为子菜单腾出空间 */
 }
 /* 菜单图标动画 */
-.menu-icon {
+.scrollbar-demo-item:hover .menu-icon {
+  transform: rotate(145deg) scale(1.2); /* 组合变换 */
   transition: transform 0.5s ease;
   margin-right: 8px;
 }
 /* 菜单文字效果 */
 .menu-text {
-  position: relative;
-  transition: color 0.3s ease;/* 颜色过渡 */
-}
+  position: relative;}
 
 /* 子菜单容器样式 */
 .submenu-container {
@@ -286,6 +341,7 @@ const handleClick = (path: string) => {
   background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-radius: 0 0 8px 8px;
+
 }
 
 /* 移动端适配 */
@@ -298,11 +354,6 @@ const handleClick = (path: string) => {
   }
 }
 
-/* 子菜单项悬停效果 */
-.submenu-item:hover {
-  transform: translateX(1px);/* 右移1像素 */
-
-}
 
 /* 子菜单图标样式 */
 .child-icon {
@@ -393,6 +444,7 @@ const handleClick = (path: string) => {
   background: transparent !important;
   border: 1px solid currentColor !important;
   transition: all 0.3s ease !important;
+  padding-left: 41px;
 }
 
 
@@ -460,21 +512,20 @@ const handleClick = (path: string) => {
 }
 
 .el-button {/*调整了按钮大小视觉效果*/
-  width: 180px;
+  width: 170px;
   height: 35px;
   border-radius: 5px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
 }
 
 /* 菜单项悬停时文字效果 */
 .button-hover .menu-text {
-  color: #ffffff42;            /* 文字变白 */
+  color: #ffffff;            /* 文字变灰 */
   text-shadow: 0 0 8px currentColor; /* 文字发光 */
 }
 
-.button-hover .menu-text {
-  color: #ffffff;
-  text-shadow: 0 0 8px currentColor;
-}
 .demo-basic {
   text-align: center;
 }
@@ -539,8 +590,8 @@ padding-bottom: 5px; /* 增加底部间距 */
   transform: translateX(-30px);   /* 左移离开 */
 }
 
-#mainP {
-  height: 100%;
-  width: 100%;
+#mainP { 
+  height: auto;
+  width: auto;
 }
 </style> 
