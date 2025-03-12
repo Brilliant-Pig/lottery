@@ -497,7 +497,6 @@
     .manual-nav {
         position: sticky;
         top: 0;
-        background: rgba(255, 255, 255, 0.565);
         padding: 1rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         z-index: 100;
@@ -527,8 +526,7 @@
 }
 /* 快速入门 */
 .manual-section {
-    margin: 2rem 0;
-    padding: 2rem;
+    padding: 1rem;
     background: #ffffff5d;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
