@@ -13,7 +13,7 @@
             <div class="user-profile">
             <div class="avatar-section">
     <!--             <img src="@/assets/avatar.png" alt="用户头像" class="avatar">
-    -->            <span class="level">VIP5</span>
+    -->
             </div>
             <div class="user-info">
                 <h2 class="username">魔法小王子</h2>
@@ -161,20 +161,11 @@
             </div>
             </div>
         </main>
-    
         <!-- 底部导航 -->
         <footer class="bottom-nav">
-            <div class="nav-item" @click="switchMainTab('home')">
-            <i class="icon-home"></i>
-            <span>首页</span>
-            </div>
             <div class="nav-item" @click="switchMainTab('service')">
             <i class="icon-service"></i>
             <span>联系客服</span>
-            </div>
-            <div class="nav-item" @click="switchMainTab('feedback')">
-            <i class="icon-feedback"></i>
-            <span>给予评价</span>
             </div>
         </footer>
         </div>
@@ -298,13 +289,12 @@
     /* 总的 */
     .user-center {
     width: auto;
-    margin: 0 auto;
-    background: #f8f9fa;
-    min-height: 100vh;
+    margin:auto;
+    background: #f8f9fa70;
 
     .header {
         padding: 15px;
-        background: #ffffff ;
+        background: #f8f9fa70; ;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 /*         .logo-section {
@@ -344,17 +334,6 @@
             height: 70px;
             border-radius: 50%;
             border: 3px solid rgba(255,255,255,0.3);
-            }
-
-            .level {
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            background: #ffd700;
-            color: #000;
-            padding: 2px 10px;
-            border-radius: 10px;
-            font-size: 12px;
             }
         }
 
@@ -415,21 +394,6 @@
         cursor: pointer;
         transition: all 0.3s;
 
-        &:hover {
-            background: #f5f5f5;
-        }
-
-        &.active {
-            color: #2575fc;
-            background: #e8f4ff;
-        }
-
-        [class^="icon-"] {
-            display: block;
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
         span {
             font-size: 14px;
         }
@@ -438,34 +402,20 @@
 
     .main-content {
         padding: 15px;
-        min-height: 300px;
+        height: 300px;
     }
 
     .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
+
         justify-content: space-around;
-        padding: 10px 0;
-        background: white;
+        padding: 12px 0;
+        background:#f8f9faa7;
         box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
 
         .nav-item {
         text-align: center;
         color: #666;
         transition: color 0.3s;
-
-        &.active {
-            color: #2575fc;
-        }
-
-        [class^="icon-"] {
-            font-size: 22px;
-            display: block;
-            margin-bottom: 5px;
-        }
 
         span {
             font-size: 12px;

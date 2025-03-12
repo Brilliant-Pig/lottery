@@ -102,92 +102,106 @@
   </el-row>
 </template>
 
-<script setup lang="ts">
-/* vue相关API */
-import { reactive, toRefs,markRaw,nextTick,ref } from 'vue'
-/* 引入Element相关图标 */
-import { User, Discount, Document, PieChart, MagicStick, ArrowDown, UploadFilled, Link,  } from '@element-plus/icons-vue'
-/* 引用路由 */
-import { useRouter } from 'vue-router'
+<script>
+import { User, Discount, Document, PieChart, MagicStick, ArrowDown, UploadFilled, Link } from '@element-plus/icons-vue'
 
-// 创建图标映射表
-const icons = {
-  User: markRaw(User),
-  Discount: markRaw(Discount),
-  Document: markRaw(Document),
-  PieChart: markRaw(PieChart),
-  MagicStick: markRaw(MagicStick),
-  ArrowDown: markRaw(ArrowDown),
-  UploadFilled: markRaw(UploadFilled),
-  Link: markRaw(Link)
-}
-// 菜单配置项（响应式）
-const customItems = ref([
-  { text: '使用说明', type: 'primary', icon: MagicStick, path: '/LotteryMain' },
-  { text: '创建抽奖', type: 'success', icon: Discount, children: [
-      { 
-        text: '模式一: 上传CSV/Excel',
-        type: 'success',
-        icon: UploadFilled,
-        path: '/ManagersMain'
-      },
-      {
-        text: '模式二: 生成分享URL',
-        type: 'success',
-        icon: Link,
-        path: '/ManagersMain'
-      } 
-    ]}, 
-  { text: '参与抽奖', type: 'warning', icon: Document, path: '/CustomersMain' },
-  { text: '抽奖结果', type: 'danger', icon: PieChart,children:[
-    { 
-      text: '进行中抽奖',
-      type: 'danger',
-      icon: Document,
-      path: '/ResultMan'
+export default {
+    name: 'MinePage',
+    components: {
+        User,
+        Discount,
+        Document,
+        PieChart,
+        MagicStick,
+        ArrowDown,
+        UploadFilled,
+        Link
     },
-    {
-      text: '历史抽奖记录',
-      type: 'danger',
-      icon: PieChart,
-      path: '/ResultMan'
+    data() {
+        return {
+            name: '',
+            hoverIndex: -1,
+            childHover: -1,
+            isCollapsed: false,
+            pattern: 'default',
+            asideWidth: 195,
+            headerHeight: 80,
+            circleUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+            customItems: [
+                { 
+                    text: '使用说明', 
+                    type: 'primary', 
+                    icon: 'MagicStick', 
+                    path: '/LotteryMain' 
+                },
+                { 
+                    text: '创建抽奖', 
+                    type: 'success', 
+                    icon: 'Discount', 
+                    children: [
+                        { 
+                            text: '模式一: 上传CSV/Excel',
+                            type: 'success',
+                            icon: 'UploadFilled',
+                            path: '/ManagersMain'
+                        },
+                        {
+                            text: '模式二: 生成分享URL',
+                            type: 'success',
+                            icon: 'Link',
+                            path: '/ManagersMain'
+                        } 
+                    ]
+                },
+                { 
+                    text: '参与抽奖', 
+                    type: 'warning', 
+                    icon: 'Document', 
+                    path: '/CustomersMain' 
+                },
+                { 
+                    text: '抽奖结果', 
+                    type: 'danger', 
+                    icon: 'PieChart',
+                    children: [
+                        { 
+                            text: '进行中抽奖',
+                            type: 'danger',
+                            icon: 'Document',
+                            path: '/ResultMan'
+                        },
+                        {
+                            text: '历史抽奖记录',
+                            type: 'danger',
+                            icon: 'PieChart',
+                            path: '/ResultMan'
+                        }
+                    ]  
+                },
+                { 
+                    text: '个人中心', 
+                    type: 'info', 
+                    icon: 'User', 
+                    path: '/mainpages' 
+                }
+            ]
+        };
+    },
+    created() {
+
+    },
+    methods: {
+        handleClick(path) {
+            this.$router.push(path);
+        },
+        toggleCollapse() {
+            this.isCollapsed = !this.isCollapsed;
+            this.asideWidth = this.isCollapsed ? 64 : 195;
+        },
+        login() {
+            this.$router.push('LoginMain');
+        }
     }
-  ]  }, // 或ResultMan根据需求
-  { text: '个人中心', type: 'info', icon: User, path: '/mainpages' }
-])
-
-// 交互状态
-const hoverIndex = ref(-1)
-const childHover = ref(-1)
-const isCollapsed = ref(false)
-// 布局配置
-const pattern = ref('default')
-const asideWidth = ref(195)
-const headerHeight = ref(80)
-
-// 响应式数据（头像）
-const state = reactive({
-  circleUrl:
-  'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-})
-
-const { circleUrl} = toRefs(state)
-
-// 路由实例
-const router = useRouter()
-
-// 菜单点击处理
-const handleClick = (path: string) => {
-  router.push(path)
-}
-
-// 切换伸缩状态
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-  asideWidth.value = isCollapsed.value ? 64 : 195
-}
-const login = () => {
-  router.push('LoginMain');
 };
 </script>
 
@@ -207,7 +221,7 @@ const login = () => {
 .fullscreen-background img {
   width: 100%;
   height: 100%;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 /* 修复头像定位 */
@@ -224,6 +238,9 @@ const login = () => {
   font-size: 40px;
   width: 100vw;
   z-index: 2;
+  background: transparent;
+  box-shadow: 5px 0px 15px -5px rgba(146, 146, 146, 0.477); /* 加粗下侧阴影 */
+
 }
 
 /* 侧边栏样式 */
@@ -535,18 +552,7 @@ const login = () => {
   color: var(--el-text-color-secondary);
   margin-left: 120px;
 }
-/* 修改header容器样式 */
-.header-container {
-  position: relative;
-  background: linear-gradient(
-    #00af8c 20%,  /* 主色到30%位置 */
-    #a0ffd4 70%,  /* 主色延伸到60%位置 */
-    #ffffff 100%,  /* 过渡色到80% */
-    transparent 100% /* 完全透明到100% */
-  );
-padding-top: 5px; /* 增加底部间距 */
-padding-bottom: 5px; /* 增加底部间距 */
-}
+
 
 /* 粒子动画样式 */
 .particle {
