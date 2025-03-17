@@ -168,7 +168,7 @@
                                 text: '进行中抽奖',
                                 type: 'danger',
                                 icon: 'Document',
-                                path: '/ResultMan'
+                                path: '/ResultCus'
                             },
                             {
                                 text: '历史抽奖记录',
