@@ -32,7 +32,6 @@
 </template>
 
 <script setup>
-import Timer from '../components/Timer.vue'
 import { useRouter } from 'vue-router';
 const router =useRouter();
 
