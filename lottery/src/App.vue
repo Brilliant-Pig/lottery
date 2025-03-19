@@ -1,6 +1,9 @@
     <template>
         <!-- 主容器 -->
         <div class="demo-container">
+            <div class="fullscreen-background">
+                <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery"/>
+            </div>
         <!-- TinyVue布局容器 -->
             <tiny-container
             :pattern="pattern"
@@ -21,16 +24,17 @@
             </template>
     
             <template #aside>
-            <div :class="['aside-container', { 'is-collapsed': isCollapsed }]">
+            <div :class="['aside-container', { 'is-collapsed': isCollapsed }]"
+            @mouseenter="handleAsideEnter"
+            @mouseleave="handleAsideLeave">
                 <!-- 侧边栏插槽 -->
-                <div class="collapse-button" @click="toggleCollapse">
-                <el-icon :class="['arrow-icon', { 'is-collapsed': isCollapsed }]">
+                <div class="collapse-button" @mouseenter="handleArrowHover" @mouseleave="handleArrowLeave" :style="{ right: isCollapsed ? 'calc(100% - 12px)' : '-12px' }">                
+                    <el-icon :class="['arrow-icon', { 'is-collapsed': isCollapsed }]">
                     <arrow-left />
-                </el-icon>
+                    </el-icon>
                 </div>
-            <!-- 侧边栏背景图 -->
-            <div class="fullscreen-background">
-                <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery"/>
+            <div class="aside-logo">
+                <img src="./assets/logo.png" alt="Logo" class="logo-img" />
             </div>
             <!-- 动态滚条菜单区域 -->
             <el-scrollbar>
@@ -120,6 +124,7 @@
         },
         data() {
             return {
+                isHoveringArrow: false,
                 Loginportrait: '点击头像登录',
                 name: '',
                 hoverIndex: -1,
@@ -202,11 +207,36 @@
             } else {
                 this.$router.push(path);
             }
-            },
-            toggleCollapse() {
-                this.isCollapsed = !this.isCollapsed;
-                this.asideWidth = this.isCollapsed ? 64 : 195;
-            },
+                },  
+    handleAsideEnter() {
+        if (this.isCollapsed) {
+        this.isCollapsed = false;
+        this.asideWidth = 195;
+        }
+    },
+    handleAsideLeave() {
+        // 添加延迟，避免频繁触发
+        setTimeout(() => {
+        if (!this.isCollapsed && !this.isHoveringArrow) {
+            this.isCollapsed = true;
+            this.asideWidth = 64;
+        }
+        }, 100); // 延迟 100ms
+    },
+    handleArrowHover() {
+        this.isHoveringArrow = true; // 标记鼠标在箭头上
+        if (this.isCollapsed) {
+        this.isCollapsed = false;
+        this.asideWidth = 195;
+        }
+    },
+    handleArrowLeave() {
+        this.isHoveringArrow = false; // 标记鼠标离开箭头
+        if (!this.isCollapsed) {
+        this.isCollapsed = true;
+        this.asideWidth = 64;
+        }
+    },
             login() {
                 this.$router.push('LoginMain');
             }
@@ -215,27 +245,25 @@
     </script>
     
     <style scoped>
-    /* 全屏背景容器 */
     .fullscreen-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -2;/* 置于底层 */
-        overflow: hidden;/* 隐藏溢出内容 */
+    position: fixed; /* 固定定位 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 覆盖整个视口宽度 */
+    height: 100vh; /* 覆盖整个视口高度 */
+    z-index: -1; /* 置于底层 */
+    overflow: hidden; /* 隐藏溢出内容 */
     }
-    
+
     /* 背景图片样式 */
     .fullscreen-background img {
-        width: 100%;
-        height: 100%;
-        opacity: 0.7;
-    }
-    
+    width: 100%;
+    height: 100%;
+    opacity: 0.7; /* 背景图片透明度 */
+}
     /* 修复头像定位 */
     .demo-avatar.demo-basic {
-        position: relative;
+        position: absolute;
         z-index: 2;
     }
     
@@ -244,6 +272,7 @@
         border-bottom: 1.4px solid #d5d5d5;
         color: #4f4f4f;
         text-align: center;
+        position: absolute;
         font-size: 40px;
         width: 100vw;
         z-index: 2;
@@ -262,6 +291,24 @@
         transition: width 0.3s ease-in-out;/* 侧边栏过渡动画 */
     }
     
+    .aside-logo {
+    position: absolute;
+    left: 50%; 
+    transform: translateX(-50%);
+    bottom: 40px; 
+    height: 100px; 
+    display: flex;
+    align-items: center; 
+    z-index: 1;
+}
+
+/* Logo 图片样式 */
+.logo-img {
+    height: 100%;
+    width: auto;
+    border-radius: 20%; 
+}
+
     /* 伸缩按钮样式 */
     .collapse-button {
         position: absolute;
@@ -278,7 +325,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s;
+        transition: right 0.3s ease-in-out;
     }
     
     .collapse-button:hover {
@@ -289,17 +336,51 @@
     .arrow-icon {
         transition: transform 0.3s;
         color: #606266;
+        right: -8px;
     }
     
+    /* 收缩状态下的样式 */
+    .aside-container.is-collapsed {
+        overflow: hidden;
+    }
+
+    .aside-container.is-collapsed .el-scrollbar,
+    .aside-container.is-collapsed .fullscreen-background,
+    .aside-container.is-collapsed .aside-logo {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* 展开时的样式 */
+    .aside-container:not(.is-collapsed) .el-scrollbar,
+    .aside-container:not(.is-collapsed) .fullscreen-background,
+    .aside-container:not(.is-collapsed) .aside-logo {
+        opacity: 1;
+        transition-delay: 0.1s;
+    }
+
+    /* 保持箭头始终可见 */
+    .collapse-button {
+    position: absolute;
+    right: -12px; /* 默认位置 */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2000; /* 确保按钮在最上层 */
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: right 0.3s ease-in-out; /* 添加位置过渡动画 */
+    }
+
     .arrow-icon.is-collapsed {
         transform: rotateY(180deg);
     }
-    
-    /* 侧边栏过渡动画 */
-    .demo-container .tiny-container :deep(.tiny-container__aside) {
-        transition: width 0.3s ease-in-out;
-    }
-    
     
     /* 主内容区样式 */
     .demo-container .tiny-container :deep(.tiny-container__main) {
@@ -346,7 +427,7 @@
     }
     /* 菜单图标动画 */
     .scrollbar-demo-item:hover .menu-icon {
-        transform: rotate(145deg) scale(1.2); /* 组合变换 */
+        transform: rotate(30deg) scale(1.2); /* 组合变换 */
         transition: transform 0.5s ease;
         margin-right: 8px;
     }
@@ -382,31 +463,31 @@
     
     /* 子菜单图标样式 */
     .child-icon {
-        margin-right: 6px;         /* 图标右边距 */
-        transition: transform 0.3s; /* 变换动画 */
+        margin-right: 6px;     
+        transition: transform 0.3s; 
     }
     
     /* 子菜单悬停时图标效果 */
     .submenu-hover .child-icon {
-        transform: rotate(15deg);  /* 旋转15度 */
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); /* 投影效果 */
+        transform: rotate(45deg); 
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
     
     /* 子菜单动画 */
     /* 子菜单进入动画 */
     .submenu-enter-active {
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* 缓动函数 */
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
     }
     
     /* 子菜单离开动画 */
     .submenu-leave-active {
-        transition: all 0.01s cubic-bezier(0.6, -0.3, 0.74, 0.05); /* 快速消失 */
+        transition: all 0.01s cubic-bezier(0.6, -0.3, 0.74, 0.05); 
     }
     
     /* 子菜单初始状态 */
     .submenu-enter-from {
-        opacity: 0;                /* 完全透明 */
-        transform: translateY(-10px) scaleY(0.9); /* 位置和缩放 */
+        opacity: 0;       
+        transform: translateY(-10px) scaleY(0.9); 
     }
     
     /* 子菜单最终状态 */
