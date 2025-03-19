@@ -12,11 +12,11 @@
         <div class="user-card">
             <div class="user-profile">
             <div class="avatar-section">
-    <!--             <img src="@/assets/avatar.png" alt="用户头像" class="avatar">
-    -->
+                <img :src="avatarUrl" alt="用户头像" class="avatar">
+
             </div>
             <div class="user-info">
-                <h2 class="username">魔法小王子</h2>
+                <h2 class="username" >{{ portrait }}</h2>
                 <div class="wallet">
                 </div>
             </div>
@@ -174,10 +174,15 @@
     <script>
     export default {
         created(){
-            console.log(this.$route.query.avater)
+            console.log(this.$route.query.avater);
+            console.log(this.$route.query.username); 
+            this.avatarUrl = this.$route.query.avatar || '';
+            this.portrait = this.$route.query.username || '';
         },
         data() {
         return {
+            portrait: '',
+            avatarUrl: '',
             currentTime: this.getCurrentTime(),
             activeNav: 'created',
             activeTab: 'all',

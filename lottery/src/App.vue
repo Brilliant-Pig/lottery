@@ -37,7 +37,8 @@
                 <div v-for="(item, index) in customItems" :key="index" 
                 class="scrollbar-demo-item"
                 @mouseenter="hoverIndex = index"
-                @mouseleave="hoverIndex = -1">
+                @mouseleave="hoverIndex = -1"
+                :style="{ marginBottom: item.children && hoverIndex === index ? '90px' : '5px' }"> 
             <!-- 父级按钮 -->
             <el-button :type="item.type" plain 
                         :class="{ 'button-hover': hoverIndex === index }"
@@ -93,7 +94,7 @@
         </div>
         <!-- 头像区域显示 -->
         <el-row class="demo-avatar demo-basic" @click="login">
-        <div class="sub-title" style="margin-top: 10px">head portrait</div>
+        <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
         <div class="demo-basic--circle">
             <div class="block">
                 <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-250px;"/>          
@@ -119,6 +120,7 @@
         },
         data() {
             return {
+                Loginportrait: '点击头像登录',
                 name: '',
                 hoverIndex: -1,
                 childHover: -1,
@@ -192,7 +194,14 @@
         },
         methods: {
             handleClick(path) {
+            if (path === '/mainpages') {
+                this.$router.push({
+                    path: path,
+                    query: { avatar: this.circleUrl,username: this.Loginportrait } // 传递头像 URL
+                });
+            } else {
                 this.$router.push(path);
+            }
             },
             toggleCollapse() {
                 this.isCollapsed = !this.isCollapsed;
@@ -327,14 +336,13 @@
         justify-content: center !important;
         padding: 0 5px;
         border-radius: 10px;
-        transition: transform 0.5s ease; /* 位移动画 */
+        transition: transform 0.5s ease, margin-bottom 0.3s ease; /* 位移动画 */
         flex-direction: column;     /* 纵向排列 */
     }
     
     /* 菜单项悬停效果 */
     .scrollbar-demo-item:hover {
         transform: translateX(3px);/* 右移3像素 */
-        margin-bottom: 90px; /* 为子菜单腾出空间 */
     }
     /* 菜单图标动画 */
     .scrollbar-demo-item:hover .menu-icon {
