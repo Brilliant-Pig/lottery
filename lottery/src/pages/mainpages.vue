@@ -295,7 +295,7 @@
     .user-center {
     width: auto;
     margin:auto;
-    background: #f8f9fa70;
+    background: #f8f9fa44;
 
     .header {
         padding: 15px;
