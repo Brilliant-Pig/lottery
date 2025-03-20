@@ -5,13 +5,17 @@ module.exports = router;
 const userService = require('../service/userService');
 
 router.get('/getUserList', async (req, res, next) => {
-    const result = await userService.getUserList();
-    res.ResultVO(0, '成功', result);
+    try {
+        const result = await userService.getUserList();
+        res.ResultVO(0, '成功', result);
+    } catch (err) {
+        res.ResultVO(1, '失败', err);
+    }
 });
 
-router.get('/getUserInfo', async (req, res, next) => {
-    const { userId } = req.query; //从请求参数中获取userId
-    const result = await userService.getUserInfo(userId);
+router.get('/getUserId', async (req, res, next) => {
+    const { userId } = req.query; //从请求参数中获取userId，用于前端传输数据
+    const result = await userService.getUserId(userId);
     res.ResultVO(0, '成功', result);
 });
 //只选取某个用户信息
