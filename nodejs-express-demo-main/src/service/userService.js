@@ -5,8 +5,8 @@ exports.getUserList = async () => {
     return userList;
 };
 
-exports.getUserInfo = async (userId) => {
-    const userInfo = await userDao.getUserInfo(userId);
+exports.getUserId = async (userId) => {
+    const userInfo = await userDao.getUserId(userId);
     return userInfo;
 };
 
