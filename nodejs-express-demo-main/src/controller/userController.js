@@ -20,8 +20,14 @@ router.get('/getUserId', async (req, res, next) => {
 });
 //只选取某个用户信息
 
-router.get('/getUserIdByName', async (req, res, next) => {
+router.get('/getUserPortraitByName', async (req, res, next) => {
     const { userName } = req.query; //从请求参数中获取userName
-    const result = await userService.getUserIdByName(userName);
+    const result = await userService.getUserPortraitByName(userName);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getUserName', async (req, res, next) => {
+    const { userName } = req.query; //从请求参数中获取userName
+    const result = await userService.getUserName(userName);
     res.ResultVO(0, '成功', result);
 });
