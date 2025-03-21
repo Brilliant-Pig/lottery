@@ -13,11 +13,11 @@
             </tiny-option>
             </tiny-select>
         </div>
-        <h1>抽奖活动{{正在进行/已结束}}</h1>
-        <p1>抽奖剩余时间：</p1>
+        <h1>{{Activity}}</h1>
+        <p1>抽奖剩余时间：(北京时间)</p1>
         <p2>参与人数：</p2>
         <div id="timer">
-            XX<span class="CM">小时</span>XX<span class="CM">分</span>XX<span class="CM">秒</span>
+            <Timer></Timer>
         </div><!-- 此处为倒计时Timer组件的初设计预留位置 -->
         <div id="men">
             XX<span class="CM">人</span>
@@ -28,10 +28,12 @@
             <tiny-button id="GTExcel" size="large" @click="goToEX"><!-- 用于跳转抽奖页面的按钮 -->
                 <span id="BT2">我 有 名 单 ~</span> 
             </tiny-button>
+            
     </div>
 </template>
 
 <script setup>
+import Timer from '../components/Timer.vue';
 import { useRouter } from 'vue-router';
 const router =useRouter();
 
@@ -45,7 +47,17 @@ const goToEX = () => {
 <!-- 以上为引用组件部分 -->
 
 <script>
-export default { }//1.要写抽奖活动的拉取2.引入插件3.从数据库抓取活动数据
+export default {
+    data(){
+        return {
+            Activity:"暂时未选中活动哦~"
+        }
+    },
+
+    method:{
+        
+    }
+}//1.要写抽奖活动的拉取2.引入插件3.从数据库抓取活动数据
 </script>
 
 <style>
@@ -76,7 +88,6 @@ h1 {                    /*h1的CSS */
     margin-top: 20px;
     width: 60%;
     text-align: center;
-    font-size: 125px;
 }
 
 #men {                   /*参与人数组件的预测样式 */
