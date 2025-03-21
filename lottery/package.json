@@ -12,7 +12,8 @@
     "@opentiny/vue": "3",
     "element-plus": "^2.9.5",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@opentiny/unplugin-tiny-vue": "^1.0.0",
