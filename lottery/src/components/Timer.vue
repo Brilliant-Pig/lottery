@@ -5,7 +5,7 @@
         <span class="time">{{ Mins }}</span><span class="chara">分</span>
         <span class="time">{{ Seconds }}</span><span class="chara">秒</span>
     </div>
-    <div v-else class="expired">活动已经结束啦~</div>
+    <div v-else class="expired"><span class="end">活动已结束</span></div>
 </template>
 
 <script setup>//全局JavaScript设置
@@ -97,6 +97,10 @@ export default {
 }
 
 .time {
+    font-size: 125px;
+}
+
+.end {
     font-size: 125px;
 }
 </style>

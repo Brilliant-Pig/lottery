@@ -1,3 +1,4 @@
+//数据访问层Dao，用于和数据库对接，进行数据的交换，拿数据，用SQL语言交互
 const db = require(`../utils/dbConnPool/db`);
 
 exports.getUserList = async () => {
