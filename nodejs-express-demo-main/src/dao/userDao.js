@@ -40,14 +40,3 @@ exports.getUserPortraitByName = async (userName) => {
     const sqlParams = [userName];
     return await db.query(sql, sqlParams);
 };
-
-exports.getUserName = async (userName) => {
-    const sql = `
-        SELECT
-            user_name AS userName
-        FROM
-            lottery_user
-    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [userName];
-    return await db.query(sql, sqlParams); //用于筛选的
-};

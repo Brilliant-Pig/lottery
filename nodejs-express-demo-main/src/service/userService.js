@@ -14,8 +14,3 @@ exports.getUserPortraitByName = async (userName) => {
     const userPortrait = await userDao.getUserPortraitByName(userName);
     return userPortrait;
 };
-
-exports.getUserName = async (userName) => {
-    const user = await userDao.getUserName(userName);
-    return user;
-};
