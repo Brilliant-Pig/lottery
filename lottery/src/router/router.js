@@ -73,6 +73,15 @@ const routes = [
             freeAuth: true
         }
     },
+    {
+        path: '/App',
+        name: 'App',
+        component: () => import('../App.vue'),
+        meta: {
+            title: '渲染页面',
+            freeAuth: false
+        }
+    },
 ];
 
 const router = createRouter({
