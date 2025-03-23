@@ -1,3 +1,4 @@
+//数据逻辑层Service对数据的处理，计算就在这里解决。
 const userDao = require('../dao/userDao');
 
 exports.getUserList = async () => {
