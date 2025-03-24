@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
     <div class="container">
         <h1>抽奖设置 - 导入参与者信息</h1>
         <input type="file" @change="handleFileUpload" accept=".csv,.xlsx,.xls" />
@@ -90,17 +89,4 @@ table {
     margin-top: 20px;
     color: rgb(30, 125, 249);
 }
-=======
-    <h1>Managers Main</h1>
-</template>
-
-<script>
-export default {
-
-}
-</script>
-
-<style>
-
->>>>>>> 5434ea043ea6d49f03b7f23060e68c04969018f7
 </style>
