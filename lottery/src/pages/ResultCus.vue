@@ -30,7 +30,7 @@ export default {
             result.value = prizeOptions[randomNum];
             showResult.value = true;
         
-        store.commit('addLotteryResult',{
+        store.commit('addLotteryHistory',{
             time: new Date().toLocaleString(),
             award: result.value
         });

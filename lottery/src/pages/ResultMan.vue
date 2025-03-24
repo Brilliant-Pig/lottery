@@ -4,6 +4,9 @@
             <h1>抽奖历史记录</h1>
         </div>
         <div class="list-container">
+            <div v-if="lotteryHistory.length === 0" class="no-record">
+                您还未参与抽奖
+            </div>
             <div v-for="record in lotteryHistory" :key="record.time" class="list-item" :class="{ 'winning':isWin( record.award) }">
                 <div class="avatar">prize</div>
                 <div class="item-content">
@@ -25,10 +28,10 @@ const store = useStore();
 
 const lotteryHistory = computed(() => store.getters.getlotteryHistory);
 const isWin = (award) => {
-    return award !== '未中奖';
+    return award !== '很遗憾，您未中奖';
 };
 const goBack = () => {
-    window.history.back()
+    window.history.back();
 };
 
 </script>
@@ -137,7 +140,13 @@ const goBack = () => {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.back-btn:hover {
+.btn-back:hover {
     background: #06ad56;
+}
+.no-record {    
+    text-align: center;
+    font-size: 16px;
+    color: #888;
+    padding:20px;
 }
 </style>
