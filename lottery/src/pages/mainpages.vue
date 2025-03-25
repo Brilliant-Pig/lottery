@@ -20,6 +20,20 @@
                 <div class="wallet">
                 </div>
             </div>
+                <input 
+                type="file" 
+                ref="fileInput" 
+                accept="image/*" 
+                @change="handleAvatarChange"
+                style="display: none"
+            >
+            <button 
+                class="avatar-upload-btn" 
+                @click="$refs.fileInput.click()"
+                style="margin-left: 72px; position: relative"
+            >
+                修改头像
+            </button>
             </div>
     
             <div class="activity-stats">
@@ -172,17 +186,24 @@
     </template>
     
     <script>
+    import { ref } from 'vue'
+    import emitter from '@/event-bus';
+
     export default {
         created(){
-            console.log(this.$route.query.avater);
-            console.log(this.$route.query.username); 
-            this.avatarUrl = this.$route.query.avatar || '';
-            this.portrait = this.$route.query.username || '';
+            const username = localStorage.getItem('username');
+            if (username) {
+                this.portrait = username; // 如果存在用户名，显示用户名
+            }
+            const avatarUrl = localStorage.getItem('circleUrl');
+            if (avatarUrl) {
+                this.avatarUrl = avatarUrl; // 如果存在用户名，显示用户名
+            }
         },
         data() {
-        return {
+            return {
             portrait: '',
-            avatarUrl: '',
+            avatarUrl: localStorage.getItem('avatarUrl') || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
             currentTime: this.getCurrentTime(),
             activeNav: 'created',
             activeTab: 'all',
@@ -286,8 +307,33 @@
 
         mounted() {
         this.updateTime()
+        },
+        handleAvatarChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // 简单验证
+        if (!file.type.startsWith('image/')) {
+            alert('请选择图片文件');
+            return;
         }
-    }}
+        
+        if (file.size > 2 * 1024 * 1024) {
+            alert('图片大小不能超过2MB');
+            return;
+        }
+        
+        // 创建本地URL预览
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.avatarUrl = e.target.result;
+            // 保存到本地存储
+            localStorage.setItem('avatarUrl', this.avatarUrl);
+            // 通知App.vue更新头像
+            this.$emit('avatar-updated', this.avatarUrl);
+        };
+        reader.readAsDataURL(file);
+        }}}
     </script>
     
     <style lang="scss" scoped>

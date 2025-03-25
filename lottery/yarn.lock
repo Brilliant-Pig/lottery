@@ -2849,10 +2849,10 @@
     "@opentiny/vue-renderless" "~3.21.0"
     "@opentiny/vue-theme" "~3.21.0"
 
-"@opentiny/vue@3":
-  version "3.21.2"
-  resolved "https://registry.npmmirror.com/@opentiny/vue/-/vue-3.21.2.tgz"
-  integrity sha512-WKi0M1/LUo/ZMGVT45N8IihWzetGmMiyckWuEmFxwyt9KEk3mGXZjn91GLzZElnFXkbe0Zp+nApMEX1EM1CRBQ==
+"@opentiny/vue@^3.21.3":
+  version "3.21.3"
+  resolved "https://registry.npmmirror.com/@opentiny/vue/-/vue-3.21.3.tgz"
+  integrity sha512-WekaOI8HN/uZvJqFwj3e9FgcopYRQPLZdFTFxt75cDOi3U3zslWuMmz9UTZppPjncQRwQkW28dup5CuxhfkuZQ==
   dependencies:
     "@opentiny/vue-action-menu" "~3.21.0"
     "@opentiny/vue-action-sheet" "~3.21.0"
@@ -3130,10 +3130,10 @@
   resolved "https://registry.npmmirror.com/@types/web-bluetooth/-/web-bluetooth-0.0.16.tgz"
   integrity sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==
 
-"@vitejs/plugin-vue@^5.2.1":
-  version "5.2.1"
-  resolved "https://registry.npmmirror.com/@vitejs/plugin-vue/-/plugin-vue-5.2.1.tgz"
-  integrity sha512-cxh314tzaWwOLqVes2gnnCtvBDcM1UMdn+iFR+UjAn411dPT3tOmqrJjbMd7koZpMAmBM/GqeV4n9ge7JSiJJQ==
+"@vitejs/plugin-vue@^5.2.3":
+  version "5.2.3"
+  resolved "https://registry.npmmirror.com/@vitejs/plugin-vue/-/plugin-vue-5.2.3.tgz"
+  integrity sha512-IYSLEQj4LgZZuoVpdSUCw3dIynTWQgPlaRP6iAvMle4My0HdYwr5g5wQAfwOeHQBmYwEkqF70nRpSilr6PoUDg==
 
 "@vue/compiler-core@3.5.13":
   version "3.5.13"
@@ -3632,6 +3632,11 @@ immutable@^5.0.2:
   resolved "https://registry.npmmirror.com/immutable/-/immutable-5.0.3.tgz"
   integrity sha512-P8IdPQHq3lA1xVeBRi5VPqUm5HDgKnx0Ru51wZz5mjxHr5n3RWhjIpOFU7ybkUxfB+5IToy+OLaHYDBIWsv+uw==
 
+inherits@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npmmirror.com/inherits/-/inherits-2.0.3.tgz"
+  integrity sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw==
+
 is-arrayish@^0.3.1:
   version "0.3.2"
   resolved "https://registry.npmmirror.com/is-arrayish/-/is-arrayish-0.3.2.tgz"
@@ -3760,6 +3765,11 @@ minimatch@^9.0.3:
   dependencies:
     brace-expansion "^2.0.1"
 
+mitt@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmmirror.com/mitt/-/mitt-3.0.1.tgz"
+  integrity sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==
+
 mlly@^1.7.3, mlly@^1.7.4:
   version "1.7.4"
   resolved "https://registry.npmmirror.com/mlly/-/mlly-1.7.4.tgz"
@@ -3829,6 +3839,14 @@ path-parse@^1.0.7:
   resolved "https://registry.npmmirror.com/path-parse/-/path-parse-1.0.7.tgz"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
+path@^0.12.7:
+  version "0.12.7"
+  resolved "https://registry.npmmirror.com/path/-/path-0.12.7.tgz"
+  integrity sha512-aXXC6s+1w7otVF9UletFkFcDsJeO7lSZBPUQhtb5O0xJe8LtYhj/GxldoL09bBj9+ZmE2hNoHqQSFMN5fikh4Q==
+  dependencies:
+    process "^0.11.1"
+    util "^0.10.3"
+
 pathe@^2.0.1, pathe@^2.0.2, pathe@^2.0.3:
   version "2.0.3"
   resolved "https://registry.npmmirror.com/pathe/-/pathe-2.0.3.tgz"
@@ -3881,6 +3899,11 @@ postcss@^8.4.48, postcss@^8.5.3:
     nanoid "^3.3.8"
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
+
+process@^0.11.1:
+  version "0.11.10"
+  resolved "https://registry.npmmirror.com/process/-/process-0.11.10.tgz"
+  integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
 
 qrcode@1.5.1:
   version "1.5.1"
@@ -4233,6 +4256,13 @@ unplugin@^2.2.0:
   dependencies:
     acorn "^8.14.0"
     webpack-virtual-modules "^0.6.2"
+
+util@^0.10.3:
+  version "0.10.4"
+  resolved "https://registry.npmmirror.com/util/-/util-0.10.4.tgz"
+  integrity sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==
+  dependencies:
+    inherits "2.0.3"
 
 varint@^6.0.0:
   version "6.0.0"
