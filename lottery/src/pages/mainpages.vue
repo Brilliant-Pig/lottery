@@ -29,7 +29,7 @@
             >
             <button 
                 class="avatar-upload-btn" 
-                @click="$refs.fileInput.click()"
+                @click="handleAvatarUploadClick"
                 style="margin-left: 72px; position: relative"
             >
                 修改头像
@@ -186,9 +186,10 @@
     </template>
     
     <script>
-    import { ref } from 'vue'
     import emitter from '@/event-bus';
-
+    import { ElMessage } from 'element-plus';
+    const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+    
     export default {
         created(){
             const username = localStorage.getItem('username');
@@ -199,11 +200,12 @@
             if (avatarUrl) {
                 this.avatarUrl = avatarUrl; // 如果存在用户名，显示用户名
             }
+            this.loadUserData();
         },
         data() {
             return {
             portrait: '',
-            avatarUrl: localStorage.getItem('avatarUrl') || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+            avatarUrl: DEFAULT_AVATAR,
             currentTime: this.getCurrentTime(),
             activeNav: 'created',
             activeTab: 'all',
@@ -308,32 +310,60 @@
         mounted() {
         this.updateTime()
         },
+        loadUserData() {
+        this.portrait = localStorage.getItem('username') || '';
+        const savedAvatar = localStorage.getItem('avatarUrl');
+        this.avatarUrl = savedAvatar || DEFAULT_AVATAR;
+        },
+    
         handleAvatarChange(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        // 简单验证
-        if (!file.type.startsWith('image/')) {
-            alert('请选择图片文件');
-            return;
-        }
-        
-        if (file.size > 2 * 1024 * 1024) {
-            alert('图片大小不能超过2MB');
-            return;
-        }
-        
-        // 创建本地URL预览
-        const reader = new FileReader();
-        reader.onload = (e) => {
+            if (!localStorage.getItem('username')) {
+            ElMessage.error('请先登录');
+            event.preventDefault(); // 阻止默认行为
+            return; // 直接返回
+            }
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
+        ElMessage.error('请选择图片文件');
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        ElMessage.error('图片大小不能超过2MB');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
             this.avatarUrl = e.target.result;
-            // 保存到本地存储
             localStorage.setItem('avatarUrl', this.avatarUrl);
-            // 通知App.vue更新头像
-            this.$emit('avatar-updated', this.avatarUrl);
-        };
-        reader.readAsDataURL(file);
-        }}}
+            ElMessage.success('头像更新成功');
+            
+            // 触发事件，通知其他组件
+            emitter.emit('avatar-updated', this.avatarUrl); // 确保 emitter 已导入
+        } catch (error) {
+            ElMessage.error('头像更新失败');
+            console.error(error);
+        }
+    };
+    reader.onerror = () => {
+        ElMessage.error('图片读取失败');
+    };
+    reader.readAsDataURL(file);
+    },
+    handleAvatarUploadClick() {
+        if (!localStorage.getItem('username')) {
+            ElMessage.error('请先登录');
+            return; // 直接返回，不触发文件选择
+        }
+        this.$refs.fileInput.click(); // 只有已登录时才触发文件选择
+    },   
+        }
+    }
     </script>
     
     <style lang="scss" scoped>

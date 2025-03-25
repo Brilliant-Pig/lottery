@@ -116,6 +116,8 @@
     <script>
     import { User, Discount, Document, PieChart, MagicStick, ArrowDown, UploadFilled, Link } from '@element-plus/icons-vue'
     import emitter from '@/event-bus';
+    const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+
 
     export default {
         name: 'MinePage',
@@ -218,14 +220,40 @@
             this.isLoggedIn = false; 
             this.$router.push('/LoginMain'); // 跳转到登录页面
         }
-        emitter.on('avatar-updated', (newAvatarUrl) => {
-            this.circleUrl = newAvatarUrl;
+        const loadData = () => {
+            this.Loginportrait = localStorage.getItem('username') || '请点击登录';
+            const avatar = localStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
+            this.circleUrl = avatar;
+            this.isLoggedIn = !!localStorage.getItem('username');
+        };
+        
+        // 初始加载
+        loadData();
+        this.loadUserData();
+        
+        // 监听头像更新事件
+        emitter.on('avatar-updated', (newAvatar) => {
+            this.circleUrl = newAvatar;
+            localStorage.setItem('avatarUrl', newAvatar);
         });
     },
     beforeUnmount() {
         emitter.off('avatar-updated');
     },
         methods: {
+            loadUserData() {
+            this.Loginportrait = localStorage.getItem('username') || '请点击登录';
+            const avatar = localStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
+            this.circleUrl = avatar;
+            this.isLoggedIn = !!localStorage.getItem('username');
+            
+            // 根据登录状态跳转
+            if (this.isLoggedIn) {
+                this.$router.push('/LotteryMain');
+            } else {
+                this.$router.push('/LoginMain');
+            }
+        },
         handleClick(path) {
                 localStorage.setItem('circleUrl', this.circleUrl);
                 this.$router.push(path);
@@ -745,5 +773,9 @@
     #mainP { 
         height: auto;
         width: auto;
+    }
+    .login-tip {
+    font-size: 14px;
+    margin-top: 8px;
     }
     </style> 
