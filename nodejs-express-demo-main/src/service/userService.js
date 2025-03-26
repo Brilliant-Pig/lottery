@@ -20,3 +20,13 @@ exports.getUserName = async (userName) => {
     const user = await userDao.getUserName(userName);
     return user;
 };
+
+exports.getActivityNameById = async (activityId) => {
+    const Activity = await userDao.getActivityNameById(activityId);
+    return Activity;
+};
+
+exports.getActivityEndTimeById = async (activityId) => {
+    const ActivityET = await userDao.getActivityEndTimeById(activityId);
+    return ActivityET;
+};
