@@ -25,3 +25,22 @@ router.get('/getUserPortraitByName', async (req, res, next) => {
     const result = await userService.getUserPortraitByName(userName);
     res.ResultVO(0, '成功', result);
 });
+
+
+router.get('/getUserName', async (req, res, next) => {
+    const { userName } = req.query; //从请求参数中获取userName
+    const result = await userService.getUserName(userName);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getActivity', async (req, res, next) => {
+    const { activityId } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityNameById(activityId);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getActivityEndTime', async (req, res, next) => {
+    const { activityId } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityEndTimeById(activityId);
+    res.ResultVO(0, '成功', result);
+});

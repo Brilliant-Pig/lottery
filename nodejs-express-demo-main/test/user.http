@@ -6,10 +6,21 @@ Content-Type: application/json
 
 ### 获取用户详细信息，通过id
 GET http://127.0.0.1:33001/api/user/getUserId
-    ?userId=24209170533
+    ?userId=123456
 
 
 ### 获取用户信息，通过名字获取头像
 GET http://127.0.0.1:33001/api/user/getUserPortraitByName
     ?userName=tingting
 
+### 获取用户名
+GET http://127.0.0.1:33001/api/user/getUserName
+    ?userName=tingting
+
+### 获取活动名称
+GET http://127.0.0.1:33001/api/user/getActivity
+    ?activityId=1
+
+### 获取活动终止时间戳
+GET http://127.0.0.1:33001/api/user/getActivityEndTime
+    ?activityId=1
