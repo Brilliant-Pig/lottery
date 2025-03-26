@@ -101,15 +101,24 @@
         <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
         <div class="demo-basic--circle">
             <div class="block">
-                <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-250px;"/>          
+                <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-200px;"/>          
             </div>
             </div>
         </el-row>
+        <el-button 
+            v-if="isLoggedIn" 
+            @click="logout" 
+            style="margin-left: 1050px;margin-top: 18px; text-align: center; padding: auto; z-index: 2;">
+            退出登录
+        </el-button>
     </template>
     
     <script>
     import { User, Discount, Document, PieChart, MagicStick, ArrowDown, UploadFilled, Link } from '@element-plus/icons-vue'
-    
+    import emitter from '@/event-bus';
+    const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+
+
     export default {
         name: 'MinePage',
         components: {
@@ -124,8 +133,9 @@
         },
         data() {
             return {
+                isLoggedIn: false,
                 isHoveringArrow: false,
-                Loginportrait: '点击头像登录',
+                Loginportrait: '',
                 name: '',
                 hoverIndex: -1,
                 childHover: -1,
@@ -195,18 +205,58 @@
             };
         },
         created() {
-    
-        },
-        methods: {
-            handleClick(path) {
-            if (path === '/mainpages') {
-                this.$router.push({
-                    path: path,
-                    query: { avatar: this.circleUrl,username: this.Loginportrait } // 传递头像 URL
-                });
-            } else {
-                this.$router.push(path);
+        const username = localStorage.getItem('username');
+        if (username) {
+            this.Loginportrait = username; // 如果存在用户名，显示用户名
+            const avatarUrl = localStorage.getItem('avatarUrl');
+            if (avatarUrl) {
+                this.circleUrl = avatarUrl; 
             }
+            this.isLoggedIn = true; 
+            this.$router.push('/LotteryMain'); // 跳转到 LotteryMain
+        } else {
+            this.Loginportrait = '请点击登录'; 
+            this.circleUrl = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'; // 重置为默认头像
+            this.isLoggedIn = false; 
+            this.$router.push('/LoginMain'); // 跳转到登录页面
+        }
+        const loadData = () => {
+            this.Loginportrait = localStorage.getItem('username') || '请点击登录';
+            const avatar = localStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
+            this.circleUrl = avatar;
+            this.isLoggedIn = !!localStorage.getItem('username');
+        };
+        
+        // 初始加载
+        loadData();
+        this.loadUserData();
+        
+        // 监听头像更新事件
+        emitter.on('avatar-updated', (newAvatar) => {
+            this.circleUrl = newAvatar;
+            localStorage.setItem('avatarUrl', newAvatar);
+        });
+    },
+    beforeUnmount() {
+        emitter.off('avatar-updated');
+    },
+        methods: {
+            loadUserData() {
+            this.Loginportrait = localStorage.getItem('username') || '请点击登录';
+            const avatar = localStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
+            this.circleUrl = avatar;
+            this.isLoggedIn = !!localStorage.getItem('username');
+            
+            // 根据登录状态跳转
+            if (this.isLoggedIn) {
+                this.$router.push('/LotteryMain');
+            } else {
+                this.$router.push('/LoginMain');
+            }
+        },
+        handleClick(path) {
+                localStorage.setItem('circleUrl', this.circleUrl);
+                this.$router.push(path);
                 },  
     handleAsideEnter() {
         if (this.isCollapsed) {
@@ -216,10 +266,10 @@
     },
     handleAsideLeave() {
         // 添加延迟，避免频繁触发
-        setTimeout(() => {
+    setTimeout(() => {
         if (!this.isCollapsed && !this.isHoveringArrow) {
             this.isCollapsed = true;
-            this.asideWidth = 64;
+            this.asideWidth = 15;
         }
         }, 100); // 延迟 100ms
     },
@@ -234,13 +284,36 @@
         this.isHoveringArrow = false; // 标记鼠标离开箭头
         if (!this.isCollapsed) {
         this.isCollapsed = true;
-        this.asideWidth = 64;
+        this.asideWidth = 15;
         }
     },
-            login() {
-                this.$router.push('LoginMain');
-            }
+    login() {
+        const username = localStorage.getItem('username');
+        if (username) {
+            window.location.href = '/LotteryMain';
+        } else {
+            // 如果用户未登录，跳转到登录页面
+            this.$router.push('/LoginMain');
         }
+    },
+    logout() {
+        // 清除 localStorage 中的用户数据
+        localStorage.removeItem('username');
+        localStorage.removeItem('avatarUrl');
+
+        // 重置页面状态
+        this.Loginportrait = '请点击登录';
+        this.circleUrl = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'; // 重置为默认头像
+        this.isLoggedIn = false; // 用户未登录
+
+        // 跳转到登录页面
+        this.$router.push('/LoginMain');
+    },
+    updateAvatar(newAvatarUrl) {
+            this.circleUrl = newAvatarUrl;
+            localStorage.setItem('avatarUrl', newAvatarUrl);
+        },
+}
     };
     </script>
     
@@ -267,6 +340,18 @@
         z-index: 2;
     }
     
+    .avatar-upload-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    }
+    .avatar-upload-btn:hover {
+    background: #f5f5f5;
+    }
+
     /* 头部容器样式 */
     .demo-container .tiny-container :deep(.tiny-container__header) {
         border-bottom: 1.4px solid #d5d5d5;
@@ -639,7 +724,7 @@
         margin-bottom: 10px;
         font-size: 14px;
         color: var(--el-text-color-secondary);
-        margin-left: 120px;
+        margin-left: 100px;
     }
     
     
@@ -688,5 +773,9 @@
     #mainP { 
         height: auto;
         width: auto;
+    }
+    .login-tip {
+    font-size: 14px;
+    margin-top: 8px;
     }
     </style> 
