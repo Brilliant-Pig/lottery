@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@opentiny/vue": "^3.21.3",
+    "axios": "^1.8.4",
     "element-plus": "^2.9.5",
     "mitt": "^3.0.1",
     "papaparse": "^5.5.2",
