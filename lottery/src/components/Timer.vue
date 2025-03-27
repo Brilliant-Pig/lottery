@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import user from '../api/user'
+import request from '../utils/request'
 
 export default {
     data(){
@@ -18,7 +18,7 @@ export default {
             Mins: 0,
             Seconds: 0,
             isExpired: false,
-            EndTime:null,
+            endTime:null,
         }
     },
     props: {
@@ -37,16 +37,12 @@ export default {
         activityId:{
             type:Number,
             default:1
-        },
-        activityEndTime:{
-            type:Date,
-            default:''
-        },
+        }
     },
     methods:{
         calculate() {//计算函数
             const RTime = new Date().getTime()//获取现在的时间
-            const EndTime = new Date(this.endTime)//从后端获取终止时间
+            const EndTime = this.endTime//从后端获取终止时间
 
             const RemainTime = EndTime - RTime//计算差值
             //最近时间戳：1742578500000，可以以此进行CSS修正
@@ -61,10 +57,10 @@ export default {
         },
         async fetchEndTime(){//从后端抓取终止时间
             try{
-                const response = await user.getActivityEndTime({
+                const response = await request.get('/127.0.0.1:33001/api/user/getActivityEndTime',{
                     activityId: this.activityId//动态时内部应该改成this.activityId
                 })
-                this.endTime = response[0].activityEndTime//用apiUrl的地址抓取
+                this.endTime = response.data//用apiUrl的地址抓取
             } catch (error){//错误判断
                 console.error('获取数据失败了:',error);
             }
@@ -77,7 +73,7 @@ export default {
         //每30秒重复执行一次抓取校准
         this.dataTimer = setInterval(() =>{
             this.fetchEndTime()
-        },60000)
+        },30000)
         this.timer = setInterval(() => {//开始循环计算函数
             this.calculate()
         },1000)
