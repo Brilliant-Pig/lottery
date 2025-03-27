@@ -188,6 +188,7 @@
     <script>
     import emitter from '@/event-bus';
     import { ElMessage } from 'element-plus';
+    import axios from 'axios';
     const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
     
     export default {
@@ -201,12 +202,14 @@
                 this.avatarUrl = avatarUrl; // 如果存在用户名，显示用户名
             }
             this.loadUserData();
+            this.updateTime();
         },
         data() {
             return {
             portrait: '',
             avatarUrl: DEFAULT_AVATAR,
             currentTime: this.getCurrentTime(),
+            userId: localStorage.getItem('userId') || '',
             activeNav: 'created',
             activeTab: 'all',
             resultTab: 'ongoing',
@@ -310,7 +313,7 @@
         mounted() {
         this.updateTime()
         },
-        loadUserData() {
+/*         loadUserData() {
         this.portrait = localStorage.getItem('username') || '';
         const savedAvatar = localStorage.getItem('avatarUrl');
         this.avatarUrl = savedAvatar || DEFAULT_AVATAR;
@@ -361,7 +364,85 @@
             return; // 直接返回，不触发文件选择
         }
         this.$refs.fileInput.click(); // 只有已登录时才触发文件选择
-    },   
+    },    */
+    async loadUserData() {
+    try {
+      const username = localStorage.getItem('username');
+      const userId = localStorage.getItem('userId');
+      
+      this.portrait = username || '';
+      
+      // 从后端获取用户头像
+      if (userId) {
+        const response = await axios.get('/api/user/getUserAvatar', {
+          params: { userId }
+        });
+        
+        if (response.data.code === 0 && response.data.data.avatarUrl) {
+          this.avatarUrl = response.data.data.avatarUrl;
+          localStorage.setItem('avatarUrl', this.avatarUrl); // 仍然本地缓存
+        } else {
+          this.avatarUrl = DEFAULT_AVATAR;
+        }
+      }
+    } catch (error) {
+      console.error('加载用户数据失败:', error);
+      this.avatarUrl = DEFAULT_AVATAR;
+    }
+  },
+
+  async handleAvatarChange(event) {
+    if (!localStorage.getItem('username')) {
+      ElMessage.error('请先登录');
+      return;
+    }
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
+      ElMessage.error('请选择图片文件');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      ElMessage.error('图片大小不能超过2MB');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      const response = await axios.post('http://localhost:33001/api/user/uploadAvatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.data.code === 0) {
+        this.avatarUrl = response.data.data.avatarUrl;
+        localStorage.setItem('avatarUrl', this.avatarUrl);
+        ElMessage.success('头像更新成功');
+        emitter.emit('avatar-updated', this.avatarUrl);
+      } else {
+        ElMessage.error(response.data.message || '头像上传失败');
+      }
+    } catch (error) {
+      console.error('上传失败:', error);
+      ElMessage.error('头像上传失败');
+    }
+  },
+
+  handleAvatarUploadClick() {
+    if (!localStorage.getItem('username')) {
+      ElMessage.error('请先登录');
+      return;
+    }
+    this.$refs.fileInput.click();
+  }
         }
     }
     </script>
