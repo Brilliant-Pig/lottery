@@ -25,3 +25,45 @@ router.get('/getUserPortraitByName', async (req, res, next) => {
     const result = await userService.getUserPortraitByName(userName);
     res.ResultVO(0, '成功', result);
 });
+
+router.get('/getUserName', async (req, res, next) => {
+    const { userName } = req.query; //从请求参数中获取userName
+    const result = await userService.getUserName(userName);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getActivity', async (req, res, next) => {
+    const { activityId } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityNameById(activityId);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getActivityEndTime', async (req, res, next) => {
+    const { activityId } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityEndTimeById(activityId);
+    res.ResultVO(0, '成功', result);
+});
+
+// 获取用户头像
+router.get('/getUserAvatar', async (req, res, next) => {
+    try {
+        const { userId } = req.query;
+        const result = await userService.getUserAvatar(userId);
+        res.ResultVO(0, '成功', result);
+    } catch (err) {
+        res.ResultVO(1, '失败', err);
+    }
+});
+
+// 上传用户头像
+router.post('/uploadAvatar', async (req, res, next) => {
+    try {
+        // 注意：实际文件上传需要使用multer等中间件处理
+        // 这里简化处理，实际项目中应该处理文件上传
+        const { userId, avatarUrl } = req.body;
+        const result = await userService.uploadAvatar(userId, avatarUrl);
+        res.ResultVO(0, '头像上传成功', result);
+    } catch (err) {
+        res.ResultVO(1, '头像上传失败', err);
+    }
+});

@@ -15,3 +15,28 @@ exports.getUserPortraitByName = async (userName) => {
     const userPortrait = await userDao.getUserPortraitByName(userName);
     return userPortrait;
 };
+
+exports.getUserName = async (userName) => {
+    const user = await userDao.getUserName(userName);
+    return user;
+};
+
+exports.getActivityNameById = async (activityId) => {
+    const Activity = await userDao.getActivityNameById(activityId);
+    return Activity;
+};
+
+exports.getActivityEndTimeById = async (activityId) => {
+    const ActivityET = await userDao.getActivityEndTimeById(activityId);
+    return ActivityET;
+};
+
+exports.getUserAvatar = async (userId) => {
+    const avatarInfo = await userDao.getUserAvatar(userId);
+    return avatarInfo;
+};
+
+exports.uploadAvatar = async (userId, avatarUrl) => {
+    const result = await userDao.uploadAvatar(userId, avatarUrl);
+    return result;
+};

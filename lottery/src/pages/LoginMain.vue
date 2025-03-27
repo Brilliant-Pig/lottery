@@ -52,7 +52,8 @@ methods: {
         if (this.username === "admin" && this.password === "123456") {
         this.errorMessage = "";
         alert("登录成功！");
-        this.$router.push("/dashboard");
+        localStorage.setItem('username', this.username);
+        window.location.href = '/LotteryMain';
         } else {
         this.errorMessage = "用户名或密码错误！";
         }

@@ -5,6 +5,7 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 // vite.config.ts
 import autoImportPlugin from '@opentiny/unplugin-tiny-vue'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -18,6 +19,11 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
   define: {
     'process.env': process.env 
   },

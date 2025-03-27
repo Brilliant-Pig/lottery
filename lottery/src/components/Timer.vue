@@ -8,21 +8,9 @@
     <div v-else class="expired"><span class="end">活动已结束</span></div>
 </template>
 
-<script setup>//全局JavaScript设置
-import request from '../utils/request';
-
-// 获取用户列表
-request.get('http://0.0.0.0:33001', { params: { page: 1, size: 10 } })
-    .then(response => {
-    console.log('响应数据:', response.data);
-    })
-    .catch(error => {
-    console.error('请求失败:', error);
-    });
-
-</script>
-
 <script>
+import user from '../api/user'
+
 export default {
     data(){
         return {
@@ -30,6 +18,7 @@ export default {
             Mins: 0,
             Seconds: 0,
             isExpired: false,
+            EndTime:null,
         }
     },
     props: {
@@ -44,12 +33,20 @@ export default {
         format: { 
             type: String, 
             default: 'HH:mm:ss' 
-        } // 时间格式
+        }, // 时间格式
+        activityId:{
+            type:Number,
+            default:1
+        },
+        activityEndTime:{
+            type:Date,
+            default:''
+        },
     },
     methods:{
         calculate() {//计算函数
             const RTime = new Date().getTime()//获取现在的时间
-            const EndTime = this.endTime//从后端获取终止时间
+            const EndTime = new Date(this.endTime)//从后端获取终止时间
 
             const RemainTime = EndTime - RTime//计算差值
             //最近时间戳：1742578500000，可以以此进行CSS修正
@@ -64,9 +61,10 @@ export default {
         },
         async fetchEndTime(){//从后端抓取终止时间
             try{
-                const response = await fetch(this.apiUrl)//用apiUrl的地址抓取
-                const data = await response.json()//存储在data的json中
-                this.endTime = data.endTime//写入endtime
+                const response = await user.getActivityEndTime({
+                    activityId: this.activityId//动态时内部应该改成this.activityId
+                })
+                this.endTime = response[0].activityEndTime//用apiUrl的地址抓取
             } catch (error){//错误判断
                 console.error('获取数据失败了:',error);
             }
@@ -79,7 +77,7 @@ export default {
         //每30秒重复执行一次抓取校准
         this.dataTimer = setInterval(() =>{
             this.fetchEndTime()
-        },30000)
+        },60000)
         this.timer = setInterval(() => {//开始循环计算函数
             this.calculate()
         },1000)

@@ -1,4 +1,5 @@
 const apiUrl = import.meta.env.VITE_API_URL;
+//const apiUrl =127.0.0.1:33001;
 
 // 封装常规请求函数
 const request = {
