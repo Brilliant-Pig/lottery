@@ -91,3 +91,25 @@ exports.getActivityEndTimeById = async (activityId) => {
     const sqlParams = [activityId];
     return await db.query(sql, sqlParams); //用于筛选的
 };
+exports.getUserAvatar = async (userId) => {
+    const sql = `
+        SELECT
+            user_portrait AS avatarUrl
+        FROM
+            lottery_user
+        WHERE
+            user_id = ?
+    `;
+    const sqlParams = [userId];
+    return await db.query(sql, sqlParams);
+};
+
+exports.uploadAvatar = async (userId, avatarUrl) => {
+    const sql = `
+        UPDATE lottery_user
+        SET user_portrait = ?
+        WHERE user_id = ?
+    `;
+    const sqlParams = [avatarUrl, userId];
+    return await db.query(sql, sqlParams);
+};
