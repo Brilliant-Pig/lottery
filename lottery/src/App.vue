@@ -2,9 +2,8 @@
         <!-- 主容器 -->
         <div class="demo-container">
             <div class="fullscreen-background">
-                <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery" />
+                <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery"/>
             </div>
-
         <!-- TinyVue布局容器 -->
             <tiny-container
             :pattern="pattern"
@@ -88,18 +87,16 @@
                 </transition>
             </router-view>
             </tiny-layout>
-   
+    
             </tiny-container>
         </div>
         <!-- 头像区域显示 -->
         <el-row class="demo-avatar demo-basic" @click="login">
-
         <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
         <div class="demo-basic--circle">
             <div class="block">
                 <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-200px;"/>          
             </div>
-
             </div>
         </el-row>
         <el-button 
@@ -109,7 +106,7 @@
             退出登录
         </el-button>
     </template>
-
+    
     <script>
     import { User, Discount, Document, PieChart, MagicStick, UploadFilled, Link } from '@element-plus/icons-vue'
     import emitter from '@/event-bus';
@@ -245,12 +242,10 @@
             // 根据登录状态跳转
             if (this.isLoggedIn) {
                 this.$router.push('/LotteryMain');
-
             } else {
                 this.$router.push('/LoginMain');
             }
         },
-
         handleClick(path) {
                 localStorage.setItem('circleUrl', this.circleUrl);
                 this.$router.push(path);
@@ -305,24 +300,18 @@
     position: fixed; /* 固定定位 */
     top: 0;
     left: 0;
-    width: 100vw;
-    /* 覆盖整个视口宽度 */
-    height: 100vh;
-    /* 覆盖整个视口高度 */
-    z-index: -1;
-    /* 置于底层 */
-    overflow: hidden;
-    /* 隐藏溢出内容 */
-}
+    width: 100vw; /* 覆盖整个视口宽度 */
+    height: 100vh; /* 覆盖整个视口高度 */
+    z-index: -1; /* 置于底层 */
+    overflow: hidden; /* 隐藏溢出内容 */
+    }
 
-/* 背景图片样式 */
-.fullscreen-background img {
+    /* 背景图片样式 */
+    .fullscreen-background img {
     width: 100%;
     height: 100%;
-    opacity: 0.7;
-    /* 背景图片透明度 */
+    opacity: 0.7; /* 背景图片透明度 */
 }
-
     /* 修复头像定位 */
     .demo-avatar.demo-basic {
         position: absolute;
@@ -367,44 +356,12 @@
     
     .aside-logo {
     position: absolute;
-    z-index: 2;
-}
-
-/* 头部容器样式 */
-.demo-container .tiny-container :deep(.tiny-container__header) {
-    border-bottom: 1.4px solid #d5d5d5;
-    color: #4f4f4f;
-    text-align: center;
-    position: absolute;
-    font-size: 40px;
-    width: 100vw;
-    z-index: 2;
-    background: transparent;
-    box-shadow: 5px 0px 15px -5px rgba(146, 146, 146, 0.477);
-    /* 加粗下侧阴影 */
-
-}
-
-/* 侧边栏样式 */
-.demo-container .tiny-container :deep(.tiny-container__aside) {
-    border-right: 1.4px solid #a7a7a7;
-    box-shadow: 10px 0px 25px -5px rgba(146, 146, 146, 0.754);
-    /* 加粗右侧阴影 */
-    height: auto;
-    z-index: 1;
-    overflow: visible;
-    transition: width 0.3s ease-in-out;
-    /* 侧边栏过渡动画 */
-}
-
-.aside-logo {
-    position: absolute;
-    left: 50%;
+    left: 50%; 
     transform: translateX(-50%);
-    bottom: 40px;
-    height: 100px;
+    bottom: 40px; 
+    height: 100px; 
     display: flex;
-    align-items: center;
+    align-items: center; 
     z-index: 1;
 }
 
@@ -412,7 +369,6 @@
 .logo-img {
     height: 100%;
     width: auto;
-
     border-radius: 20%; 
 }
 
@@ -446,13 +402,28 @@
         overflow: hidden;
     }
 
-/* 伸缩按钮样式 */
-.collapse-button {
+    .aside-container.is-collapsed .el-scrollbar,
+    .aside-container.is-collapsed .fullscreen-background,
+    .aside-container.is-collapsed .aside-logo {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* 展开时的样式 */
+    .aside-container:not(.is-collapsed) .el-scrollbar,
+    .aside-container:not(.is-collapsed) .fullscreen-background,
+    .aside-container:not(.is-collapsed) .aside-logo {
+        opacity: 1;
+        transition-delay: 0.1s;
+    }
+
+    /* 保持箭头始终可见 */
+    .collapse-button {
     position: absolute;
-    right: -12px;
+    right: -12px; /* 默认位置 */
     top: 50%;
     transform: translateY(-50%);
-    z-index: 2000;
+    z-index: 2000; /* 确保按钮在最上层 */
     cursor: pointer;
     width: 24px;
     height: 24px;
@@ -462,62 +433,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: right 0.3s ease-in-out;
-}
-
-.collapse-button:hover {
-    background: #f5f7fa;
-    transform: translateY(-50%) scale(1.1);
-}
-
-.arrow-icon {
-    transition: transform 0.3s;
-    color: #606266;
-    right: -8px;
-}
-
-/* 收缩状态下的样式 */
-.aside-container.is-collapsed {
-    overflow: hidden;
-}
-
-.aside-container.is-collapsed .el-scrollbar,
-.aside-container.is-collapsed .fullscreen-background,
-.aside-container.is-collapsed .aside-logo {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-/* 展开时的样式 */
-.aside-container:not(.is-collapsed) .el-scrollbar,
-.aside-container:not(.is-collapsed) .fullscreen-background,
-.aside-container:not(.is-collapsed) .aside-logo {
-    opacity: 1;
-    transition-delay: 0.1s;
-}
-
-/* 保持箭头始终可见 */
-.collapse-button {
-    position: absolute;
-    right: -12px;
-    /* 默认位置 */
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2000;
-    /* 确保按钮在最上层 */
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    background: #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: right 0.3s ease-in-out;
-    /* 添加位置过渡动画 */
-}
-
+    transition: right 0.3s ease-in-out; /* 添加位置过渡动画 */
+    }
 
     
     /* 主内容区样式 */
@@ -575,11 +492,26 @@
     
     /* 子菜单容器样式 */
     .submenu-container {
+        position: absolute;
+        left: 0;
+        top: 100%; /* 关键修改：定位到父元素底部 */
+        width: 100%; /* 保持与父按钮比例长度 */
+        min-width: auto;
+        margin-top: 8px; /* 添加间隔 */
+        transform-origin: top center; /* 调整动画基准点 */
+        background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 0 0 8px 8px;
+    
+    }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        .submenu-container {
         position: fixed;
         width: 80vw;
         left: 50% !important;
         transform: translateX(-50%);
-
         }
     }
     
@@ -793,20 +725,18 @@
     
     .fade-slide-enter-from {
         opacity: 0;
+        transform: translateX(30px);
     }
-
-    50% {
-        transform: translateY(-150px) scale(1.2);
-        /* 上升放大 */
-        opacity: 1;
-    }
-
-    100% {
-        transform: translateY(-300px) scale(0);
-        /* 消失位置 */
+    
+    .fade-slide-leave-to {
         opacity: 0;
+        transform: translateX(-30px);   /* 左移离开 */
     }
-
+    
+    #mainP { 
+        height: auto;
+        width: auto;
+    }
     .login-tip {
     font-size: 14px;
     margin-top: 8px;
