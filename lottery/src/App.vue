@@ -28,11 +28,6 @@
             @mouseenter="handleAsideEnter"
             @mouseleave="handleAsideLeave">
                 <!-- 侧边栏插槽 -->
-                <div class="collapse-button" @mouseenter="handleArrowHover" @mouseleave="handleArrowLeave" :style="{ right: isCollapsed ? 'calc(100% - 12px)' : '-12px' }">                
-                    <el-icon :class="['arrow-icon', { 'is-collapsed': isCollapsed }]">
-                    <arrow-left />
-                    </el-icon>
-                </div>
             <div class="aside-logo">
                 <img src="./assets/logo.png" alt="Logo" class="logo-img" />
             </div>
@@ -54,7 +49,6 @@
                 </el-icon>
                 <span class="menu-text">{{ item.text }}</span>
                 <el-icon class="ml-2" v-if="item.children" >
-                <arrow-down />
                 </el-icon>
             </el-button>
     
@@ -114,7 +108,7 @@
     </template>
     
     <script>
-    import { User, Discount, Document, PieChart, MagicStick, ArrowDown, UploadFilled, Link } from '@element-plus/icons-vue'
+    import { User, Discount, Document, PieChart, MagicStick, UploadFilled, Link } from '@element-plus/icons-vue'
     import emitter from '@/event-bus';
     const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
 
@@ -127,14 +121,12 @@
             Document,
             PieChart,
             MagicStick,
-            ArrowDown,
             UploadFilled,
             Link
         },
         data() {
             return {
                 isLoggedIn: false,
-                isHoveringArrow: false,
                 Loginportrait: '',
                 name: '',
                 hoverIndex: -1,
@@ -267,25 +259,11 @@
     handleAsideLeave() {
         // 添加延迟，避免频繁触发
     setTimeout(() => {
-        if (!this.isCollapsed && !this.isHoveringArrow) {
+        if (!this.isCollapsed ) {
             this.isCollapsed = true;
             this.asideWidth = 15;
         }
         }, 100); // 延迟 100ms
-    },
-    handleArrowHover() {
-        this.isHoveringArrow = true; // 标记鼠标在箭头上
-        if (this.isCollapsed) {
-        this.isCollapsed = false;
-        this.asideWidth = 195;
-        }
-    },
-    handleArrowLeave() {
-        this.isHoveringArrow = false; // 标记鼠标离开箭头
-        if (!this.isCollapsed) {
-        this.isCollapsed = true;
-        this.asideWidth = 15;
-        }
     },
     login() {
         const username = localStorage.getItem('username');
@@ -418,11 +396,6 @@
         transform: translateY(-50%) scale(1.1);
     }
     
-    .arrow-icon {
-        transition: transform 0.3s;
-        color: #606266;
-        right: -8px;
-    }
     
     /* 收缩状态下的样式 */
     .aside-container.is-collapsed {
@@ -463,9 +436,6 @@
     transition: right 0.3s ease-in-out; /* 添加位置过渡动画 */
     }
 
-    .arrow-icon.is-collapsed {
-        transform: rotateY(180deg);
-    }
     
     /* 主内容区样式 */
     .demo-container .tiny-container :deep(.tiny-container__main) {
@@ -585,13 +555,6 @@
     .submenu-leave-to {
         opacity: 0;                /* 完全透明 */
         transform: translateX(-10px); /* 左移消失 */
-    }
-    
-    /* 调整父级按钮箭头样式 */
-    /* 所有涉及第三方组件的样式都需要穿透 */
-    :deep(.el-icon.arrow-down) {
-        transition: transform 0.3s;
-        margin-left: auto;
     }
     
     /* 调整子菜单按钮样式 */
