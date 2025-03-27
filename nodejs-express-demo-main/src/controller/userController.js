@@ -26,7 +26,6 @@ router.get('/getUserPortraitByName', async (req, res, next) => {
     res.ResultVO(0, '成功', result);
 });
 
-
 router.get('/getUserName', async (req, res, next) => {
     const { userName } = req.query; //从请求参数中获取userName
     const result = await userService.getUserName(userName);
