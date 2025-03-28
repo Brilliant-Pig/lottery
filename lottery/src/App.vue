@@ -158,7 +158,7 @@
                                 text: '模式二: 生成分享URL',
                                 type: 'success',
                                 icon: 'Link',
-                                path: '/ManagersMain'
+                                path: '/ManagersURL'
                             } 
                         ]
                     },

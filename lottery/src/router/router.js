@@ -33,7 +33,16 @@ const routes = [
         name: 'ManagersMain',
         component: () => import('../pages/ManagersMain.vue'),
         meta: {
-            title: '管理人页面',
+            title: '管理人Excel/CSV页面',
+            freeAuth: true
+        }
+    },
+    {
+        path: '/ManagersURL',
+        name: 'ManagersURL',
+        component: () => import('../pages/ManagersURL.vue'),
+        meta: {
+            title: '管理人URL页面',
             freeAuth: true
         }
     },

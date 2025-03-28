@@ -77,57 +77,58 @@ export default {
 <style scoped>
 .register-container {
     max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
+    margin: 0 auto;
+    padding: 80px;
     border: 1px solid #ccc;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: none;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+    margin-bottom: 60px;
+    color: #555;
 }
 
 .input-group {
     margin-bottom: 15px;
+    font-size: 1.4em;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-weight: bold;
     color: #555;
 }
 
 input {
     width: 100%;
-    padding: 10px;
+    padding: 20px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 20px;
     font-size: 16px;
 }
 
 .register-btn {
-    width: 100%;
-    padding: 10px;
-    background-color: #28a745; /* 绿色背景 */
+    width: 110%;
+    padding: 20px;
+    background-color: #28a745; 
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.2s ease-in-out;
+    margin-top: 50px;
 }
 
 .register-btn:hover {
-    background-color: #218838; /* 深绿色 */
+    background-color: #218838; 
 }
 
-  /* 返回登录链接样式 */
 .login-link {
-    margin-top: 15px;
+    margin-top: 30px;
     text-align: center;
 }
 

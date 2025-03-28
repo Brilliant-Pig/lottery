@@ -30,3 +30,13 @@ exports.getActivityEndTimeById = async (activityId) => {
     const ActivityET = await userDao.getActivityEndTimeById(activityId);
     return ActivityET;
 };
+
+exports.getUserAvatar = async (userId) => {
+    const avatarInfo = await userDao.getUserAvatar(userId);
+    return avatarInfo;
+};
+
+exports.uploadAvatar = async (userId, avatarUrl) => {
+    const result = await userDao.uploadAvatar(userId, avatarUrl);
+    return result;
+};
