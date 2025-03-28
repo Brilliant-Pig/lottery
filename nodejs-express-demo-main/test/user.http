@@ -20,3 +20,7 @@ GET http://127.0.0.1:33001/api/user/getActivity
 ### 获取活动终止时间戳
 GET http://127.0.0.1:33001/api/user/getActivityEndTime
     ?activityId=1
+
+### 获取活动剩余人数
+GET http://127.0.0.1:33001/api/user/getActivityRemainsById
+    ?activityId=1

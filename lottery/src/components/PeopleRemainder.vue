@@ -1,14 +1,16 @@
 <template>
     <div id="PR">
-        <span>{{PRe}}</span><span>人</span>
+        <span class="Re">{{Re}}</span><span class="chara">人</span>
     </div>
 </template>
 
 <script>
+import user from '../api/user';
+
 export default {
     data(){
         return{
-            PRe:0,
+            Re:0,
         }
     },
     props: {
@@ -23,15 +25,52 @@ export default {
         format: { 
             type: String, 
             default: '' 
-        } // 时间格式
+        },// 时间格式
+        activityRemainPeople:{
+            type: Number,
+            default:''
+        }, //人数格式
+        activityId:{
+            type:Number,
+            default:1 //Id格式
+        }
     },
-    method(){
-        const getReal = this.RealRemainder
-        
-    }
+    methods:{
+        async getNewRemainder(){//异步处理获取后端活动剩余人数信息
+            try{
+                const response = await user.getActivityRemainsById({
+                    activityId: this.activityId//动态时内部应该改成this.activityId
+                })
+                this.Re = response[0].activityRemainPeople//用数组中自己需要的数据
+            } catch (error){//错误判断
+                console.error('获取数据失败了:',error);
+            }
+        }
+    },
+    mounted(){
+        this.getNewRemainder()//取用函数先调取目标活动
+
+        this.dataTimer = setInterval(() =>{
+            this.getNewRemainder()//使用计时器30秒校准一次
+        },30000)
+    },
+    
+    beforeUnMount(){
+        clearInterval(this.dataTimer)//离开页面清除调用
+    },
 }
 </script>
 
 <style>
+.chara {                    /*大小字体重点突出的样式 */
+    font-size: 45px ;
+}
 
+.Re {
+    font-size: 125px;
+}
+
+.end {
+    font-size: 125px;
+}
 </style>

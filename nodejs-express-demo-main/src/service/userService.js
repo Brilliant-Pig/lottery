@@ -40,3 +40,8 @@ exports.uploadAvatar = async (userId, avatarUrl) => {
     const result = await userDao.uploadAvatar(userId, avatarUrl);
     return result;
 };
+
+exports.getActivityRemainsById = async (activityId) => {
+    const result = await userDao.getActivityRemainsById(activityId);
+    return result;
+};
