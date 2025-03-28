@@ -36,11 +36,11 @@ export default {
         }, // 时间格式
         activityId:{
             type:Number,
-            default:1
+            default:1 //Id格式
         },
         activityEndTime:{
             type:Date,
-            default:''
+            default:'' //日期格式
         },
     },
     methods:{

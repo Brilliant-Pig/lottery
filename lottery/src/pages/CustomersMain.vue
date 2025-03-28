@@ -20,7 +20,7 @@
             <Timer></Timer>
         </div><!-- 此处为倒计时Timer组件的初设计预留位置 -->
         <div id="men">
-            XX<span class="CM">人</span>
+            <PeopleRemainder></PeopleRemainder>
         </div><!-- 此处为倒计时实时人数组件的初设计预留位置 -->
             <tiny-button id="GTlottery" type="info" size="large" @click="goToRC"><!-- 用于跳转抽奖页面的按钮 -->
                 <span id="BT1">点 我 抽 奖 !</span> 
@@ -34,6 +34,7 @@
 
 <script setup>
 import Timer from '../components/Timer.vue';
+import PeopleRemainder from '../components/PeopleRemainder.vue';
 import { useRouter } from 'vue-router';
 const router =useRouter();
 

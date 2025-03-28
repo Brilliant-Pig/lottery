@@ -66,6 +66,7 @@ exports.getUserName = async (userName) => {
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
+//用活动id来获取活动信息
 exports.getActivityNameById = async (activityId) => {
     const sql = `
         SELECT
@@ -112,4 +113,18 @@ exports.uploadAvatar = async (userId, avatarUrl) => {
     `;
     const sqlParams = [avatarUrl, userId];
     return await db.query(sql, sqlParams);
+};
+
+//用活动id来获取活动剩余人数
+exports.getActivityRemainsById = async (activityId) => {
+    const sql = `
+        SELECT
+            Remain_People AS activityRemainPeople
+        FROM
+            Activity_Table
+        WHERE
+            Activity_ID = ?
+    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
+    const sqlParams = [activityId];
+    return await db.query(sql, sqlParams); //用于筛选的
 };

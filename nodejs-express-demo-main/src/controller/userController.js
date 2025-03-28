@@ -67,3 +67,10 @@ router.post('/uploadAvatar', async (req, res, next) => {
         res.ResultVO(1, '头像上传失败', err);
     }
 });
+
+//获取活动剩余人数
+router.get('/getActivityRemainsById', async (req, res, next) => {
+    const { activityId } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityRemainsById(activityId);
+    res.ResultVO(0, '成功', result);
+});
