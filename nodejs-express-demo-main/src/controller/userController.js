@@ -20,9 +20,9 @@ router.get('/getUserId', async (req, res, next) => {
 });
 //只选取某个用户信息
 
-router.get('/getUserPortraitByName', async (req, res, next) => {
+router.get('/getUserByName', async (req, res, next) => {
     const { userName } = req.query; //从请求参数中获取userName
-    const result = await userService.getUserPortraitByName(userName);
+    const result = await userService.getUserByName(userName);
     res.ResultVO(0, '成功', result);
 });
 
@@ -33,22 +33,22 @@ router.get('/getUserName', async (req, res, next) => {
 });
 
 router.get('/getActivity', async (req, res, next) => {
-    const { activityId } = req.query; //从请求参数中获取userId
-    const result = await userService.getActivityNameById(activityId);
+    const { activityUrl } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityNameByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });
 
-router.get('/getActivityEndTime', async (req, res, next) => {
-    const { activityId } = req.query; //从请求参数中获取userId
-    const result = await userService.getActivityEndTimeById(activityId);
+router.get('/getActivityEndTimeByUrl', async (req, res, next) => {
+    const { activityUrl } = req.query;
+    const result = await userService.getActivityEndTimeByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });
 
 // 获取用户头像
 router.get('/getUserAvatar', async (req, res, next) => {
     try {
-        const { userId } = req.query;
-        const result = await userService.getUserAvatar(userId);
+        const { userUrl } = req.query;
+        const result = await userService.getUserAvatar(userUrl);
         res.ResultVO(0, '成功', result);
     } catch (err) {
         res.ResultVO(1, '失败', err);
@@ -69,8 +69,26 @@ router.post('/uploadAvatar', async (req, res, next) => {
 });
 
 //获取活动剩余人数
-router.get('/getActivityRemainsById', async (req, res, next) => {
-    const { activityId } = req.query; //从请求参数中获取userId
-    const result = await userService.getActivityRemainsById(activityId);
+router.get('/getActivityRemainsByUrl', async (req, res, next) => {
+    const { activityUrl } = req.query;
+    const result = await userService.getActivityRemainsByUrl(activityUrl);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getCreatedActivities', async (req, res, next) => {
+    const { userName } = req.query;
+    const result = await userService.getCreatedActivities(userName);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getParticipatedActivities', async (req, res, next) => {
+    const { userName } = req.query;
+    const result = await userService.getParticipatedActivities(userName);
+    res.ResultVO(0, '成功', result);
+});
+
+router.get('/getWinningResults', async (req, res, next) => {
+    const { userName } = req.query;
+    const result = await userService.getWinningResults(userName);
     res.ResultVO(0, '成功', result);
 });

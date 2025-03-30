@@ -2,25 +2,35 @@
 GET http://127.0.0.1:33001/api/user/getUserList
 Content-Type: application/json
 
-
-
 ### 获取用户详细信息，通过id
-GET http://127.0.0.1:33001/api/user/getUserId
-    ?userId=24209170533
+#GET http://127.0.0.1:33001/api/user/getUserId
+    #?userId=24209170533
 
 
-### 获取用户信息，通过名字获取头像
-GET http://127.0.0.1:33001/api/user/getUserPortraitByName
-    ?userName=ting
+### 获取用户信息，通过名字获取信息
+GET http://127.0.0.1:33001/api/user/getUserByName
+    ?userName=admin
 
 ### 获取活动名称
 GET http://127.0.0.1:33001/api/user/getActivity
-    ?activityId=1
+    ?activityUrl=1
 
 ### 获取活动终止时间戳
-GET http://127.0.0.1:33001/api/user/getActivityEndTime
-    ?activityId=1
+GET http://127.0.0.1:33001/api/user/getActivityEndTimeByUrl
+    ?activityUrl=1
 
 ### 获取活动剩余人数
-GET http://127.0.0.1:33001/api/user/getActivityRemainsById
-    ?activityId=1
+GET http://127.0.0.1:33001/api/user/getActivityRemainsByUrl
+    ?activityUrl=1
+
+### 获取活动列表
+GET http://127.0.0.1:33001/api/user/getCreatedActivities
+    ?userName=admin
+
+###获取参与者信息
+GET http://127.0.0.1:33001/api/user/getParticipatedActivities
+    ?userName=admin
+
+###获取结果
+GET http://127.0.0.1:33001/api/user/getWinningResults
+    ?userName=admin
