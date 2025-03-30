@@ -6,7 +6,7 @@ Content-Type: application/json
 
 ### 获取用户详细信息，通过id
 GET http://127.0.0.1:33001/api/user/getUserId
-    ?userId=24
+    ?userId=24209170533
 
 
 ### 获取用户信息，通过名字获取头像

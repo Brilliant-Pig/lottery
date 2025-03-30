@@ -117,7 +117,7 @@
                 <span v-if="item.status === 'ended'" class="result">
                 结果：{{ item.win ? '已中奖' : '未中奖' }}
                 </span>
-                <button class="detail-btn">详情</button>
+                <button class="detail-btn" >详情</button>
             </div>
             </div>
         </div>
@@ -298,9 +298,9 @@ export default {
         }
         return statusMap[status] || '未知状态'
     },
-/*         viewDetail(id) {
+    viewDetail(id) {
         console.log('查看详情:', id)
-    }, */
+    }, 
     switchMainTab(tab) {
         // 处理底部导航切换逻辑
         if (tab === 'service') {

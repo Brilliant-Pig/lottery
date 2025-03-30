@@ -48,7 +48,7 @@ methods: {
         this.errorMessage = "用户名和密码不能为空！";
         return;
     }
-        setTimeout(() => {
+    setTimeout(() => {
         if (this.username === "admin" && this.password === "123456") {
         this.errorMessage = "";
         alert("登录成功！");
