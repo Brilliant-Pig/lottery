@@ -70,11 +70,11 @@ exports.getUserName = async (userName) => {
 exports.getActivityNameById = async (activityId) => {
     const sql = `
         SELECT
-            Activity_Name AS activityName
+            activity_name AS activityName
         FROM
             Activity_Table
         WHERE
-            Activity_ID = ?
+            activity_id = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [activityId];
     return await db.query(sql, sqlParams); //用于筛选的
@@ -83,11 +83,11 @@ exports.getActivityNameById = async (activityId) => {
 exports.getActivityEndTimeById = async (activityId) => {
     const sql = `
         SELECT
-            End_Time AS activityEndTime
+            end_time AS activityEndTime
         FROM
             Activity_Table
         WHERE
-            Activity_ID = ?
+            activity_id = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [activityId];
     return await db.query(sql, sqlParams); //用于筛选的
@@ -119,11 +119,11 @@ exports.uploadAvatar = async (userId, avatarUrl) => {
 exports.getActivityRemainsById = async (activityId) => {
     const sql = `
         SELECT
-            Remain_People AS activityRemainPeople
+            remain_people AS activityRemainPeople
         FROM
             Activity_Table
         WHERE
-            Activity_ID = ?
+            activity_id = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [activityId];
     return await db.query(sql, sqlParams); //用于筛选的
