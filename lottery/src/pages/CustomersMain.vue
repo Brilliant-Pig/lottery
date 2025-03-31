@@ -48,17 +48,55 @@ const goToEX = () => {
 <!-- 以上为引用组件部分 -->
 
 <script>
+import user from '../api/user';
+
 export default {
     data(){
         return {
             Activity:"暂时未选中活动哦~"
-        }
+        };
+    },
+    props: {
+        apiUrl: { 
+            type: String, 
+            required: true 
+        },  // 后端接口地址
+        interval: { 
+            type: Number, 
+            default: 30000 
+        }, // 数据更新间隔（默认30秒）
+        activityId:{
+            type:Number,
+            default:1 //Id格式测试用
+        },
     },
 
-    method(){
-        
-    }
-}//1.要写抽奖活动的拉取2.引入插件3.从数据库抓取活动数据
+    methods:{
+        async getActive(){//从后端调取相关活动的开展情况
+            try{
+                const response = await user.getActivityActiveById({
+                    activityId: this.activityId//动态获取
+                })
+                this.Activity = response[0].activityName;
+            } catch(error){
+                console.error('获取数据失败了:',error);
+            }
+        }
+    },
+    mounted(){
+        //组件运行先抓活动状态
+        this.getActive()
+
+        //每30秒重复执行一次抓取校准
+        this.dataTimer = setInterval(() =>{
+            this.getActive()
+        },60000)
+    },
+
+    beforeUnmount(){//在卸载完成前要加载的函数，结束倒计时
+        clearInterval(this.dataTimer)
+    },
+}
 </script>
 
 <style>
@@ -79,7 +117,7 @@ export default {
 }
 
 h1 {                    /*h1的CSS */
-    width:90%;
+    width:100%;
     margin-top: 5px;
     margin-bottom: 80px;
     text-align: center;

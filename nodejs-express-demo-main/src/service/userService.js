@@ -45,3 +45,8 @@ exports.getActivityRemainsById = async (activityId) => {
     const result = await userDao.getActivityRemainsById(activityId);
     return result;
 };
+
+exports.getActivityActiveById = async (activityId) => {
+    const result = await userDao.getActivityActiveById(activityId);
+    return result;
+};
