@@ -54,7 +54,7 @@ router.get('/getUserName', async (req, res, next) => {
 });
 
 router.get('/getActivity', async (req, res, next) => {
-    const { activityUrl } = req.query; //从请求参数中获取userId
+    const { activityUrl } = req.query; //从请求参数中获取userUrl
     const result = await userService.getActivityNameByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });
@@ -129,8 +129,8 @@ router.get('/getWinningResults', async (req, res, next) => {
 });
 
 //获取活动开展状态
-router.get('/getActivityActiveById', async (req, res, next) => {
-    const { activityId } = req.query; //从请求参数中获取userId
-    const result = await userService.getActivityActiveById(activityId);
+router.get('/getActivityActiveByUrl', async (req, res, next) => {
+    const { activityUrl } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityActiveByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });

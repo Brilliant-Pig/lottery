@@ -34,7 +34,7 @@ export default {
             type: String, 
             default: 'HH:mm:ss' 
         }, // 时间格式
-        activityId:{
+        activityUrl:{
             type:Number,
             default:1 //Id格式
         },
@@ -62,7 +62,7 @@ export default {
         async fetchEndTime(){//从后端抓取终止时间
             try{
                 const response = await user.getActivityEndTime({
-                    activityId: this.activityId//动态时内部应该改成this.activityId
+                    activityUrl: this.activityUrl//动态时内部应该改成this.activityId
                 })
                 this.endTime = response[0].activityEndTime//用apiUrl的地址抓取
             } catch (error){//错误判断
