@@ -495,56 +495,68 @@ formatDate(timestamp) {
 },
 
 async handleAvatarChange(event) {
-if (!localStorage.getItem('username')) {
+    if (!localStorage.getItem('username')) {
     ElMessage.error('请先登录');
     return;
-}
+    }
 
-const file = event.target.files[0];
-if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-// 验证文件类型和大小
-if (!file.type.startsWith('image/')) {
+  // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
     ElMessage.error('请选择图片文件');
     return;
-}
+    }
 
-if (file.size > 2 * 1024 * 1024) {
+  if (file.size > 2 * 1024 * 1024) {
     ElMessage.error('图片大小不能超过2MB');
     return;
-}
+    }
 
-try {
+    try {
+    // 先本地预览
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // 本地预览（直接显示图片）
+        this.avatarUrl = e.target.result;
+        localStorage.setItem('avatarUrl', this.avatarUrl);
+        ElMessage.success('头像符合条件');
+    };
+    reader.onerror = () => {
+        ElMessage.error('图片读取失败');
+    };
+    reader.readAsDataURL(file); // 读取文件为 Data URL
+
+    // 再上传到服务器
     const formData = new FormData();
     formData.append('avatar', file);
-    formData.append('userId', localStorage.getItem('userId'));
-    
-    const response = await axios.post('http://localhost:33001/api/user/uploadAvatar', formData, {
+    formData.append('userName', localStorage.getItem('username'));
+
+    const response = await axios.post(
+        'http://127.0.0.1:33001/api/user/uploadAvatar',
+        formData,
+        {
         headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         }
-    });
-    
+    );
+
     if (response.data.code === 0) {
-        // 更新头像显示
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.avatarUrl = e.target.result;
-            localStorage.setItem('avatarUrl', this.avatarUrl);
-            ElMessage.success('头像更新成功');
-            emitter.emit('avatar-updated', this.avatarUrl);
-        };
-        reader.readAsDataURL(file);
+        // 更新数据库中的头像 URL
+        const serverAvatarUrl = `http://127.0.0.1:33001${response.data.data.avatarUrl}`;
+        localStorage.setItem('serverAvatarUrl', serverAvatarUrl); // 可选：存储服务器返回的 URL
+        ElMessage.success('上传成功');
+        window.location.reload(true);
     } else {
         ElMessage.error(response.data.message || '头像上传失败');
     }
-} catch (error) {
+    } catch (error) {
     console.error('上传失败:', error);
-    ElMessage.error('头像上传失败');
-}
+    ElMessage.error(error.response?.data?.message || '头像上传失败');
+    }
 },
-
 handleAvatarUploadClick() {
 if (!localStorage.getItem('username')) {
     ElMessage.error('请先登录');

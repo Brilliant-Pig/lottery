@@ -27,6 +27,19 @@ GET http://127.0.0.1:33001/api/user/getActivityEndTimeByUrl
 GET http://127.0.0.1:33001/api/user/getActivityRemainsByUrl
     ?activityUrl=1
 
+### 获取用户头像
+GET http://127.0.0.1:33001/api/user/getUserAvatar
+    ?userName=admin
+
+### 上传/更新用户头像
+POST http://127.0.0.1:33001/api/user/uploadAvatar
+Content-Type: application/json
+
+{
+    "userName": "admin",
+    "avatarUrl": "https://example.com/path/to/avatar.jpg"
+}
+
 ### 获取活动列表
 GET http://127.0.0.1:33001/api/user/getCreatedActivities
     ?userName=admin
