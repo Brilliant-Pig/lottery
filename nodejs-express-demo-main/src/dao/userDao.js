@@ -7,7 +7,7 @@ exports.getUserList = async () => {
         SELECT
             *
         FROM
-            lottery_user
+            lottery
     `; //AS代表将前面的命名改为后面的别名
     const res = await db.query(sql, []);
     console.log(res);
@@ -20,7 +20,7 @@ exports.getActivityTable = async () => {
         SELECT
             *
         FROM
-            Activity_Table
+            lottery
     `; //AS代表将前面的命名改为后面的别名
     const res = await db.query(sql, []);
     console.log(res);
@@ -30,24 +30,22 @@ exports.getActivityTable = async () => {
 exports.getUserId = async (userId) => {
     const sql = `
         SELECT
-            user_id AS userId,
-            user_name AS userName
+            *
         FROM
-            lottery_user
+            lottery
         WHERE
-            user_id = ?
+            user_name = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [userId];
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
-exports.getUserPortraitByName = async (userName) => {
+exports.getUserByName = async (userName) => {
     const sql = `
         SELECT
-            user_portrait AS userPortrait,
-            user_name AS userName
+            *
         FROM
-            lottery_user
+            lottery
         WHERE
             user_name = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
@@ -60,85 +58,133 @@ exports.getUserName = async (userName) => {
         SELECT
             user_name AS userName
         FROM
-            lottery_user
+            lottery
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [userName];
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
 //用活动id来获取活动信息
-exports.getActivityNameById = async (activityId) => {
+exports.getActivityNameByUrl = async (activityUrl) => {
     const sql = `
         SELECT
             activity_name AS activityName
         FROM
-            Activity_Table
+            lottery
         WHERE
-            activity_id = ?
+            activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityId];
+    const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
-exports.getActivityEndTimeById = async (activityId) => {
+exports.getActivityEndTimeByUrl = async (activityUrl) => {
     const sql = `
         SELECT
             end_time AS activityEndTime
         FROM
-            Activity_Table
+            lottery
         WHERE
-            activity_id = ?
+            activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityId];
+    const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
 };
-exports.getUserAvatar = async (userId) => {
+exports.getUserAvatar = async (userName) => {
     const sql = `
         SELECT
             user_portrait AS avatarUrl
         FROM
-            lottery_user
+            lottery
         WHERE
-            user_id = ?
+            user_name = ?
     `;
-    const sqlParams = [userId];
+    const sqlParams = [userName];
     return await db.query(sql, sqlParams);
 };
 
-exports.uploadAvatar = async (userId, avatarUrl) => {
+exports.uploadAvatar = async (userName, avatarUrl) => {
     const sql = `
-        UPDATE lottery_user
+        UPDATE lottery
         SET user_portrait = ?
-        WHERE user_id = ?
+        WHERE user_name = ?
     `;
-    const sqlParams = [avatarUrl, userId];
+    const sqlParams = [avatarUrl, userName];
     return await db.query(sql, sqlParams);
 };
 
 //用活动id来获取活动剩余人数
-exports.getActivityRemainsById = async (activityId) => {
+exports.getActivityRemainsByUrl = async (activityUrl) => {
     const sql = `
         SELECT
             remain_people AS activityRemainPeople
         FROM
-            Activity_Table
+            lottery
         WHERE
-            activity_id = ?
+            activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityId];
+    const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
+
 //用活动id来获取活动开展状态
-exports.getActivityActiveById = async (activityId) => {
+exports.getActivityActiveByUrl = async (activityUrl) => {
     const sql = `
         SELECT
             activity_name AS activityName
         FROM
-            Activity_Table
+            lottery
         WHERE
-            activity_id = ?
+            activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityId];
+    const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
+
+// 获取用户创建的抽奖活动
+exports.getCreatedActivities = async (userName) => {
+    const sql = `
+        SELECT 
+            user_name AS id,
+            activity_name AS title,
+            create_time AS createTime,
+            status
+        FROM 
+            lottery
+        WHERE 
+            user_name = ?
+    `;
+    return await db.query(sql, [userName]);
+};
+
+// 获取用户参与的抽奖活动
+exports.getParticipatedActivities = async (userName) => {
+    const sql = `
+        SELECT 
+            user_name AS id,
+            activity_name AS title,
+            join_time AS joinTime,
+            status
+        FROM 
+            lottery
+        WHERE 
+            user_name = ?
+    `;
+    return await db.query(sql, [userName]);
+};
+
+// 获取用户中奖结果
+exports.getWinningResults = async (userName) => {
+    const sql = `
+        SELECT 
+            user_name AS id,
+            activity_name AS prizeName,
+            join_time AS winTime,
+            activity_result AS activityResult
+        FROM 
+            lottery
+        WHERE 
+            user_name = ?
+    `;
+    return await db.query(sql, [userName]);
 };

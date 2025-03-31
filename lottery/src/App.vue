@@ -277,6 +277,7 @@
     logout() {
         // 清除 localStorage 中的用户数据
         localStorage.removeItem('username');
+        localStorage.removeItem('token');
         localStorage.removeItem('avatarUrl');
 
         // 重置页面状态

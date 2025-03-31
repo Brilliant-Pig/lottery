@@ -11,9 +11,9 @@ exports.getUserId = async (userId) => {
     return userInfo;
 };
 
-exports.getUserPortraitByName = async (userName) => {
-    const userPortrait = await userDao.getUserPortraitByName(userName);
-    return userPortrait;
+exports.getUserByName = async (userName) => {
+    const userinfo = await userDao.getUserByName(userName);
+    return userinfo;
 };
 
 exports.getUserName = async (userName) => {
@@ -21,28 +21,43 @@ exports.getUserName = async (userName) => {
     return user;
 };
 
-exports.getActivityNameById = async (activityId) => {
-    const Activity = await userDao.getActivityNameById(activityId);
+exports.getActivityNameByUrl = async (activityUrl) => {
+    const Activity = await userDao.getActivityNameByUrl(activityUrl);
     return Activity;
 };
 
-exports.getActivityEndTimeById = async (activityId) => {
-    const ActivityET = await userDao.getActivityEndTimeById(activityId);
+exports.getActivityEndTimeByUrl = async (activityUrl) => {
+    const ActivityET = await userDao.getActivityEndTimeByUrl(activityUrl);
     return ActivityET;
 };
 
-exports.getUserAvatar = async (userId) => {
-    const avatarInfo = await userDao.getUserAvatar(userId);
+exports.getUserAvatar = async (userName) => {
+    const avatarInfo = await userDao.getUserAvatar(userName);
     return avatarInfo;
 };
 
-exports.uploadAvatar = async (userId, avatarUrl) => {
-    const result = await userDao.uploadAvatar(userId, avatarUrl);
+exports.uploadAvatar = async (userName, avatarUrl) => {
+    const result = await userDao.uploadAvatar(userName, avatarUrl);
     return result;
 };
 
-exports.getActivityRemainsById = async (activityId) => {
-    const result = await userDao.getActivityRemainsById(activityId);
+exports.getActivityRemainsByUrl = async (activityUrl) => {
+    const result = await userDao.getActivityRemainsByUrl(activityUrl);
+    return result;
+};
+
+exports.getCreatedActivities = async (username) => {
+    const result = await userDao.getCreatedActivities(username);
+    return result;
+};
+
+exports.getWinningResults = async (username) => {
+    const result = await userDao.getWinningResults(username);
+    return result;
+};
+
+exports.getParticipatedActivities = async (username) => {
+    const result = await userDao.getCreatedActivities(username);
     return result;
 };
 

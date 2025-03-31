@@ -88,26 +88,7 @@
         </div>
 
         <!-- 已参与抽奖 -->
-        <div v-if="activeNav === 'participated'" class="lottery-list">
-        <div class="list-header">
-            <h3>已参与的抽奖（{{ participatedLottories.length }}）</h3>
-            <div class="filter-tabs">
-            <button 
-                v-for="tab in statusTabs"
-                :key="tab.value"
-                :class="{ active: activeTab === tab.value }"
-                @click="activeTab = tab.value"
-            >
-                {{ tab.label }}
-            </button>
-            </div>
-        </div>
-        <div class="list-content">
-            <div 
-            v-for="item in filteredParticipated"
-            :key="item.id" 
-            class="lottery-item"
-            >
+        <div v-for="item in participatedLottories" :key="item.id" class="lottery-item">
             <div class="item-left">
                 <h4>{{ item.title }}</h4>
                 <p class="time">参与时间：{{ item.joinTime }}</p>
@@ -115,12 +96,9 @@
             </div>
             <div class="item-right">
                 <span v-if="item.status === 'ended'" class="result">
-                结果：{{ item.win ? '已中奖' : '未中奖' }}
+                    结果：{{ item.win ? '已中奖' : '未中奖' }}
                 </span>
-                <button class="detail-btn">详情</button>
             </div>
-            </div>
-        </div>
         </div>
 
         <!-- 抽奖结果 -->
@@ -213,6 +191,10 @@ export default {
         activeNav: 'created',
         activeTab: 'all',
         resultTab: 'ongoing',
+        createdLottories: [], // 初始化为空数组
+        participatedLottories: [], // 初始化为空数组
+        historyResults: [], // 初始化为空数组
+        ongoingResults: [] , // 初始化为空数组
         statusTabs: [
         { value: 'all', label: '全部' },
         { value: 'ongoing', label: '进行中' },
@@ -224,7 +206,7 @@ export default {
         { id: 'results', title: '抽奖结果', icon: 'icon-result' }
         ],
         // 模拟数据
-        createdLottories: [
+/*         createdLottories: [
         {
             id: 1,
             title: '周年庆大抽奖',
@@ -257,7 +239,7 @@ export default {
             winTime: '2024-02-10',
             status: 'received'
         }
-        ]
+        ] */
     }
     },
     computed: {
@@ -292,15 +274,14 @@ export default {
     },
     getStatus(status) {
         const statusMap = {
-        ongoing: '进行中',
-        ended: '已结束',
-        preparing: '准备中'
-        }
-        return statusMap[status] || '未知状态'
-    },
-/*         viewDetail(id) {
+            ongoing: '进行中',
+            ended: '已结束',
+            preparing: '准备中'
+        };
+        return statusMap[status] || status || '未知状态';},
+    viewDetail(id) {
         console.log('查看详情:', id)
-    }, */
+    }, 
     switchMainTab(tab) {
         // 处理底部导航切换逻辑
         if (tab === 'service') {
@@ -366,84 +347,216 @@ handleAvatarUploadClick() {
     this.$refs.fileInput.click(); // 只有已登录时才触发文件选择
 },    */
 // 在methods中添加或修改以下方法
-
-async loadUserData() {
-try {
-    const username = localStorage.getItem('username');
-    const userId = localStorage.getItem('userId');
-    
-    this.portrait = username || '';
-    
-    // 从后端获取用户头像
-    if (userId) {
-        const response = await axios.get('/api/user/getUserAvatar', {
-            params: { userId }
-        });
-        
-        if (response.data.code === 0 && response.data.data[0]?.avatarUrl) {
-            this.avatarUrl = response.data.data[0].avatarUrl;
-            localStorage.setItem('avatarUrl', this.avatarUrl);
+beforeRouteEnter(to, from, next) {
+        if (!localStorage.getItem('username')) {
+            next('/login');
         } else {
-            this.avatarUrl = DEFAULT_AVATAR;
+            next();
         }
+    },
+    formatDateTime(timestamp) {
+    try {
+        // 1. 检查空值
+        if (!timestamp) {
+            console.warn('时间戳为空:', timestamp);
+            return '未知时间';
+        }
+
+        // 2. 处理多种时间格式
+        let date;
+        if (typeof timestamp === 'string') {
+            // 处理ISO格式(如"2023-01-01T00:00:00Z")
+            if (timestamp.includes('T')) {
+                date = new Date(timestamp);
+            } 
+            // 处理时间戳字符串
+            else if (!isNaN(timestamp)) {
+                date = new Date(parseInt(timestamp));
+            } else {
+                console.warn('无法识别的时间字符串:', timestamp);
+                return '未知时间';
+            }
+        } 
+        // 处理数字时间戳
+        else if (typeof timestamp === 'number') {
+            date = new Date(timestamp);
+        } else {
+            console.warn('不支持的时间格式:', typeof timestamp, timestamp);
+            return '未知时间';
+        }
+
+        // 3. 验证日期有效性
+        if (isNaN(date.getTime())) {
+            console.warn('无效的时间戳:', timestamp);
+            return '未知时间';
+        }
+
+        // 4. 格式化输出
+        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+        
+    } catch (e) {
+        console.error('日期格式化异常:', e, '原始时间戳:', timestamp);
+        return '未知时间';
     }
-} catch (error) {
-    console.error('加载用户数据失败:', error);
-    this.avatarUrl = DEFAULT_AVATAR;
-}
+},
+
+formatDate(timestamp) {
+        if (!timestamp) return '未知时间';
+        const date = new Date(timestamp);
+        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+    },
+    
+    calculateRemainingTime(joinTime) {
+        if (!joinTime) return '未知时间';
+        const now = new Date();
+        const joinDate = new Date(joinTime);
+        const diff = joinDate - now;
+        
+        if (diff <= 0) return '已结束';
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return `${days}天${hours}小时${minutes}分钟`;
+    },
+    async loadUserData() {
+    try {
+        const username = localStorage.getItem('username');
+        if (username) {
+            // 使用完整的后端URL
+            const baseUrl = 'http://127.0.0.1:33001/api/user';
+            
+            // 获取用户创建的抽奖
+            const createdRes = await axios.get(`${baseUrl}/getCreatedActivities`, {
+                params: { userName: username }
+            });
+            
+            // 获取用户参与的抽奖
+            const participatedRes = await axios.get(`${baseUrl}/getParticipatedActivities`, {
+                params: { userName: username }
+            });
+            
+            // 获取中奖结果
+            const resultsRes = await axios.get(`${baseUrl}/getWinningResults`, {
+                params: { userName: username }
+            });
+        
+            console.log('创建活动响应:', createdRes.data);
+            console.log('参与活动响应:', participatedRes.data);
+            console.log('中奖结果响应:', resultsRes.data);
+            console.log('创建活动原始数据:', JSON.stringify(createdRes.data?.data, null, 2));
+            console.log('参与活动原始数据:', JSON.stringify(participatedRes.data?.data, null, 2));
+            
+            // 处理已创建的抽奖
+            this.createdLottories = (createdRes.data?.data || []).map(item => ({
+                id: item.id + '_created',
+                title: item.activity_name || '未命名活动',
+                createTime: this.formatDateTime(item.createTime),
+                status: item.status || 'ongoing',
+                isCreated: true,
+            }));
+            
+            // 处理已参与的抽奖
+            this.participatedLottories = (participatedRes.data?.data || [])
+                .filter(item => !createdRes.data?.data?.some(c => c.id === item.id))
+                .map(item => ({
+                    id: item.id + '_participated', // 添加后缀区分
+                    title: item.title || '未命名活动',
+                    joinTime: this.formatDateTime(item.createTime),
+                    status: item.status || 'ongoing',
+                    win: item.activity_result === 'win',
+                    isCreated: false // 标记为参与的活动
+                }));
+            
+            // 处理中奖结果
+            this.historyResults = (resultsRes.data?.data || []).map(item => ({
+                id: item.id || Math.random().toString(36).substr(2, 9),
+                prizeName: item.prize_name || '神秘奖品',
+                winTime: this.formatDate(item.win_time)
+            }));
+            
+            // 初始化进行中的抽奖
+            this.ongoingResults = this.participatedLottories
+                .filter(item => item.status === 'ongoing')
+                .map(item => ({
+                    ...item,
+                    drawTime: this.formatDateTime(item.joinTime),
+                    remainingTime: this.calculateRemainingTime(item.joinTime)
+                }));
+            }
+    } catch (error) {
+        console.error('加载数据失败:', error);
+        this.createdLottories = [];
+        this.participatedLottories = [];
+        this.historyResults = [];
+        this.ongoingResults = [];
+    }
 },
 
 async handleAvatarChange(event) {
-if (!localStorage.getItem('username')) {
+    if (!localStorage.getItem('username')) {
     ElMessage.error('请先登录');
     return;
-}
+    }
 
-const file = event.target.files[0];
-if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-// 验证文件类型和大小
-if (!file.type.startsWith('image/')) {
+  // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
     ElMessage.error('请选择图片文件');
     return;
-}
+    }
 
-if (file.size > 2 * 1024 * 1024) {
+  if (file.size > 2 * 1024 * 1024) {
     ElMessage.error('图片大小不能超过2MB');
     return;
-}
+    }
 
-try {
+    try {
+    // 先本地预览
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // 本地预览（直接显示图片）
+        this.avatarUrl = e.target.result;
+        localStorage.setItem('avatarUrl', this.avatarUrl);
+        ElMessage.success('头像符合条件');
+    };
+    reader.onerror = () => {
+        ElMessage.error('图片读取失败');
+    };
+    reader.readAsDataURL(file); // 读取文件为 Data URL
+
+    // 再上传到服务器
     const formData = new FormData();
     formData.append('avatar', file);
-    formData.append('userId', localStorage.getItem('userId'));
-    
-    const response = await axios.post('http://localhost:33001/api/user/uploadAvatar', formData, {
+    formData.append('userName', localStorage.getItem('username'));
+
+    const response = await axios.post(
+        'http://127.0.0.1:33001/api/user/uploadAvatar',
+        formData,
+        {
         headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         }
-    });
-    
+    );
+
     if (response.data.code === 0) {
-        // 更新头像显示
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.avatarUrl = e.target.result;
-            localStorage.setItem('avatarUrl', this.avatarUrl);
-            ElMessage.success('头像更新成功');
-            emitter.emit('avatar-updated', this.avatarUrl);
-        };
-        reader.readAsDataURL(file);
+        // 更新数据库中的头像 URL
+        const serverAvatarUrl = `http://127.0.0.1:33001${response.data.data.avatarUrl}`;
+        localStorage.setItem('serverAvatarUrl', serverAvatarUrl); // 可选：存储服务器返回的 URL
+        ElMessage.success('上传成功');
+        window.location.reload(true);
     } else {
         ElMessage.error(response.data.message || '头像上传失败');
     }
-} catch (error) {
+    } catch (error) {
     console.error('上传失败:', error);
-    ElMessage.error('头像上传失败');
-}
+    ElMessage.error(error.response?.data?.message || '头像上传失败');
+    }
 },
-
 handleAvatarUploadClick() {
 if (!localStorage.getItem('username')) {
     ElMessage.error('请先登录');
