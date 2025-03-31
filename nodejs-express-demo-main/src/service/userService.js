@@ -60,3 +60,8 @@ exports.getParticipatedActivities = async (username) => {
     const result = await userDao.getCreatedActivities(username);
     return result;
 };
+
+exports.getActivityActiveById = async (activityId) => {
+    const result = await userDao.getActivityActiveById(activityId);
+    return result;
+};

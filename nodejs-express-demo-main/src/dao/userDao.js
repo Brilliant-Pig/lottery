@@ -127,6 +127,20 @@ exports.getActivityRemainsByUrl = async (activityUrl) => {
     return await db.query(sql, sqlParams); //用于筛选的
 };
 
+
+//用活动id来获取活动开展状态
+exports.getActivityActiveByUrl = async (activityUrl) => {
+    const sql = `
+        SELECT
+            activity_name AS activityName
+        FROM
+            lottery
+        WHERE
+            activity_url = ?
+    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
+    const sqlParams = [activityUrl];
+    return await db.query(sql, sqlParams); //用于筛选的
+
 // 获取用户创建的抽奖活动
 exports.getCreatedActivities = async (userName) => {
     const sql = `

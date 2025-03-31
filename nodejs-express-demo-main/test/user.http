@@ -23,6 +23,10 @@ GET http://127.0.0.1:33001/api/user/getActivity
 GET http://127.0.0.1:33001/api/user/getActivityEndTimeByUrl
     ?activityUrl=1
 
+### 获取活动开展情况
+GET http://127.0.0.1:33001/api/user/getActivityActiveByUrl
+    ?activityUrl=1
+
 ### 获取活动剩余人数
 GET http://127.0.0.1:33001/api/user/getActivityRemainsByUrl
     ?activityUrl=1

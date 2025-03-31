@@ -26,6 +26,10 @@ const user = {
     //通过向后端发送id返还活动剩余人数
     getActivityRemainsById(data){
         return request.get(`${moduleUrl}/getActivityRemainsById`,data);
+    },
+    //通过向后端发送id返还活动开展状态
+    getActivityActiveById(data){
+        return request.get(`${moduleUrl}/getActivityActiveById`,data);
     }
 };
 
