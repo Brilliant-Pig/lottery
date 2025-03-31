@@ -81,7 +81,7 @@ exports.getActivityNameByUrl = async (activityUrl) => {
 exports.getActivityEndTimeByUrl = async (activityUrl) => {
     const sql = `
         SELECT
-            draw_time AS activityEndTime
+            end_time AS activityEndTime
         FROM
             lottery
         WHERE
@@ -90,7 +90,7 @@ exports.getActivityEndTimeByUrl = async (activityUrl) => {
     const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
 };
-exports.getUserAvatar = async (userId) => {
+exports.getUserAvatar = async (userName) => {
     const sql = `
         SELECT
             user_portrait AS avatarUrl
@@ -99,17 +99,17 @@ exports.getUserAvatar = async (userId) => {
         WHERE
             user_name = ?
     `;
-    const sqlParams = [userId];
+    const sqlParams = [userName];
     return await db.query(sql, sqlParams);
 };
 
-exports.uploadAvatar = async (userId, avatarUrl) => {
+exports.uploadAvatar = async (userName, avatarUrl) => {
     const sql = `
-        UPDATE lottery_user
+        UPDATE lottery
         SET user_portrait = ?
         WHERE user_name = ?
     `;
-    const sqlParams = [avatarUrl, userId];
+    const sqlParams = [avatarUrl, userName];
     return await db.query(sql, sqlParams);
 };
 

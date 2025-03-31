@@ -11,6 +11,10 @@ Content-Type: application/json
 GET http://127.0.0.1:33001/api/user/getUserByName
     ?userName=admin
 
+### 获取头像
+GET http://127.0.0.1:33001/api/user/getUserAvatar
+    ?userName=admin
+
 ### 获取活动名称
 GET http://127.0.0.1:33001/api/user/getActivity
     ?activityUrl=1
