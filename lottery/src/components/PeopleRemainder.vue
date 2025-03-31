@@ -30,7 +30,7 @@ export default {
             type: Number,
             default:''
         }, //人数格式
-        activityId:{
+        activityUrl:{
             type:Number,
             default:1 //Id格式
         }
@@ -38,8 +38,8 @@ export default {
     methods:{
         async getNewRemainder(){//异步处理获取后端活动剩余人数信息
             try{
-                const response = await user.getActivityRemainsById({
-                    activityId: this.activityId//动态时内部应该改成this.activityId
+                const response = await user.getActivityRemainsByUrl({
+                    activityUrl: this.activityUrl//动态时内部应该改成this.activityUrl
                 })
                 this.Re = response[0].activityRemainPeople//用数组中自己需要的数据
             } catch (error){//错误判断

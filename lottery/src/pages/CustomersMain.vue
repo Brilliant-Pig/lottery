@@ -65,7 +65,7 @@ export default {
             type: Number, 
             default: 30000 
         }, // 数据更新间隔（默认30秒）
-        activityId:{
+        activityUrl:{
             type:Number,
             default:1 //Id格式测试用
         },
@@ -74,8 +74,8 @@ export default {
     methods:{
         async getActive(){//从后端调取相关活动的开展情况
             try{
-                const response = await user.getActivityActiveById({
-                    activityId: this.activityId//动态获取
+                const response = await user.getActivityActiveByUrl({
+                    activityUrl: this.activityUrl//动态获取
                 })
                 this.Activity = response[0].activityName;
             } catch(error){

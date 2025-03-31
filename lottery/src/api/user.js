@@ -21,15 +21,15 @@ const user = {
     },
     //通过向后端发送id返还活动数据
     getActivityEndTime(data){
-        return request.get(`${moduleUrl}/getActivityEndTime`,data);
+        return request.get(`${moduleUrl}/getActivityEndTimeByUrl`,data);
     },
     //通过向后端发送id返还活动剩余人数
-    getActivityRemainsById(data){
-        return request.get(`${moduleUrl}/getActivityRemainsById`,data);
+    getActivityRemainsByUrl(data){
+        return request.get(`${moduleUrl}/getActivityRemainsByUrl`,data);
     },
     //通过向后端发送id返还活动开展状态
-    getActivityActiveById(data){
-        return request.get(`${moduleUrl}/getActivityActiveById`,data);
+    getActivityActiveByUrl(data){
+        return request.get(`${moduleUrl}/getActivityActiveByUrl`,data);
     }
 };
 
