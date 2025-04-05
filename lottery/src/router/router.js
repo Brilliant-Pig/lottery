@@ -33,7 +33,16 @@ const routes = [
         name: 'ManagersMain',
         component: () => import('../pages/ManagersMain.vue'),
         meta: {
-            title: '管理人页面',
+            title: '管理人Excel/CSV页面',
+            freeAuth: true
+        }
+    },
+    {
+        path: '/ManagersURL',
+        name: 'ManagersURL',
+        component: () => import('../pages/ManagersURL.vue'),
+        meta: {
+            title: '管理人URL页面',
             freeAuth: true
         }
     },
@@ -54,7 +63,34 @@ const routes = [
             title: '组织人抽奖结果展示',
             freeAuth: true
         }
-    }
+    },
+        {
+        path: '/Register',
+        name: 'Register',
+        component: () => import('../pages/Register.vue'),
+        meta: {
+            title: '注册页面',
+            freeAuth: true
+        }
+    },
+    {
+        path: '/mainpages',
+        name: 'mainpages',
+        component: () => import('../pages/mainpages.vue'),
+        meta: {
+            title: '主页面',
+            freeAuth: true
+        }
+    },
+    {
+        path: '/App',
+        name: 'App',
+        component: () => import('../App.vue'),
+        meta: {
+            title: '渲染页面',
+            freeAuth: false
+        }
+    },
 ];
 
 const router = createRouter({

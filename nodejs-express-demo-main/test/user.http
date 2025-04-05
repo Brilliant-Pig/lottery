@@ -2,13 +2,56 @@
 GET http://127.0.0.1:33001/api/user/getUserList
 Content-Type: application/json
 
+### 获取用户详细信息，通过id
+#GET http://127.0.0.1:33001/api/user/getUserId
+    #?userId=24209170533
 
 
-### 获取用户详细信息
-GET http://127.0.0.1:33001/api/user/getUserInfo
-    ?userId=2
+### 获取用户信息，通过名字获取信息
+GET http://127.0.0.1:33001/api/user/getUserByName
+    ?userName=admin
 
+### 获取头像
+GET http://127.0.0.1:33001/api/user/getUserAvatar
+    ?userName=admin
 
-### 获取用户信息，通过名字获取学号
-GET http://127.0.0.1:33001/api/user/getUserIdByName
-    ?userName=张三
+### 获取活动名称
+GET http://127.0.0.1:33001/api/user/getActivity
+    ?activityUrl=1
+
+### 获取活动终止时间戳
+GET http://127.0.0.1:33001/api/user/getActivityEndTimeByUrl
+    ?activityUrl=1
+
+### 获取活动开展情况
+GET http://127.0.0.1:33001/api/user/getActivityActiveByUrl
+    ?activityUrl=1
+
+### 获取活动剩余人数
+GET http://127.0.0.1:33001/api/user/getActivityRemainsByUrl
+    ?activityUrl=1
+
+### 获取用户头像
+GET http://127.0.0.1:33001/api/user/getUserAvatar
+    ?userName=admin
+
+### 上传/更新用户头像
+POST http://127.0.0.1:33001/api/user/uploadAvatar
+Content-Type: application/json
+
+{
+    "userName": "admin",
+    "avatarUrl": "https://example.com/path/to/avatar.jpg"
+}
+
+### 获取活动列表
+GET http://127.0.0.1:33001/api/user/getCreatedActivities
+    ?userName=admin
+
+###获取参与者信息
+GET http://127.0.0.1:33001/api/user/getParticipatedActivities
+    ?userName=admin
+
+###获取结果
+GET http://127.0.0.1:33001/api/user/getWinningResults
+    ?userName=admin
