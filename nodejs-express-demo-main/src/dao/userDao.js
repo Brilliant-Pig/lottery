@@ -7,7 +7,7 @@ exports.getUserList = async () => {
         SELECT
             *
         FROM
-            lottery
+            users
     `; //AS代表将前面的命名改为后面的别名
     const res = await db.query(sql, []);
     console.log(res);
@@ -20,7 +20,7 @@ exports.getActivityTable = async () => {
         SELECT
             *
         FROM
-            lottery
+            activities
     `; //AS代表将前面的命名改为后面的别名
     const res = await db.query(sql, []);
     console.log(res);
@@ -45,9 +45,9 @@ exports.getUserByName = async (userName) => {
         SELECT
             *
         FROM
-            lottery
+            users
         WHERE
-            user_name = ?
+            username = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [userName];
     return await db.query(sql, sqlParams);
@@ -56,9 +56,9 @@ exports.getUserByName = async (userName) => {
 exports.getUserName = async (userName) => {
     const sql = `
         SELECT
-            user_name AS userName
+            username AS userName
         FROM
-            lottery
+            users
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
     const sqlParams = [userName];
     return await db.query(sql, sqlParams); //用于筛选的
@@ -70,7 +70,7 @@ exports.getActivityNameByUrl = async (activityUrl) => {
         SELECT
             activity_name AS activityName
         FROM
-            lottery
+            activities
         WHERE
             activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
@@ -83,7 +83,7 @@ exports.getActivityEndTimeByUrl = async (activityUrl) => {
         SELECT
             end_time AS activityEndTime
         FROM
-            lottery
+            activities
         WHERE
             activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
@@ -95,9 +95,9 @@ exports.getUserAvatar = async (userName) => {
         SELECT
             user_portrait AS avatarUrl
         FROM
-            lottery
+            users
         WHERE
-            user_name = ?
+            username = ?
     `;
     const sqlParams = [userName];
     return await db.query(sql, sqlParams);
@@ -105,9 +105,9 @@ exports.getUserAvatar = async (userName) => {
 
 exports.uploadAvatar = async (userName, avatarUrl) => {
     const sql = `
-        UPDATE lottery
+        UPDATE users
         SET user_portrait = ?
-        WHERE user_name = ?
+        WHERE username = ?
     `;
     const sqlParams = [avatarUrl, userName];
     return await db.query(sql, sqlParams);
@@ -119,7 +119,7 @@ exports.getActivityRemainsByUrl = async (activityUrl) => {
         SELECT
             remain_people AS activityRemainPeople
         FROM
-            lottery
+            activities
         WHERE
             activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
@@ -131,9 +131,10 @@ exports.getActivityRemainsByUrl = async (activityUrl) => {
 exports.getActivityActiveByUrl = async (activityUrl) => {
     const sql = `
         SELECT
-            activity_name AS activityName
+            activity_name AS activityName,
+            status AS activityStatus
         FROM
-            lottery
+            activities
         WHERE
             activity_url = ?
     `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
@@ -145,14 +146,14 @@ exports.getActivityActiveByUrl = async (activityUrl) => {
 exports.getCreatedActivities = async (userName) => {
     const sql = `
         SELECT 
-            user_name AS id,
+            username AS id,
             activity_name AS title,
             create_time AS createTime,
             status
         FROM 
-            lottery
+            activities
         WHERE 
-            user_name = ?
+            username = ?
     `;
     return await db.query(sql, [userName]);
 };
@@ -161,14 +162,14 @@ exports.getCreatedActivities = async (userName) => {
 exports.getParticipatedActivities = async (userName) => {
     const sql = `
         SELECT 
-            user_name AS id,
+            username AS id,
             activity_name AS title,
-            join_time AS joinTime,
+            participation_time AS joinTime,
             status
         FROM 
-            lottery
+            participations
         WHERE 
-            user_name = ?
+            username = ?
     `;
     return await db.query(sql, [userName]);
 };
@@ -177,14 +178,14 @@ exports.getParticipatedActivities = async (userName) => {
 exports.getWinningResults = async (userName) => {
     const sql = `
         SELECT 
-            user_name AS id,
+            username AS id,
             activity_name AS prizeName,
-            join_time AS winTime,
-            activity_result AS activityResult
+            win_time AS winTime,
+            participation_time AS activityResult
         FROM 
-            lottery
+            activity_results
         WHERE 
-            user_name = ?
+            username = ?
     `;
     return await db.query(sql, [userName]);
 };
