@@ -1,5 +1,7 @@
 <template>
     <div class="container">
+
+        <!-- 抽奖结果 -->
         <div v-if="showResult" class="result-modal">
             <div class="modal-content">
                 <h1 class="result-title">{{ result }}</h1>
@@ -9,14 +11,16 @@
     </div>
 </template>
 
-
 <script>
 import { ref, onMounted } from 'vue';
-import {useStore} from 'vuex';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default {
+    
     setup() {
         const store = useStore();
+        const router = useRouter();
         const showResult = ref(false);
         const result = ref('');
         const prizeOptions = [
@@ -25,87 +29,80 @@ export default {
             '恭喜您获得三等奖',
             '很遗憾，您未中奖'
         ];
+
         const generateResult = () => {
-            const randomNum = Math.floor(Math.random() * prizeOptions.length);
-            result.value = prizeOptions[randomNum];
-            showResult.value = true;
-        
-        store.commit('addLotteryHistory',{
-            time: new Date().toLocaleString(),
-            award: result.value
-        });
-    };
-        const goBack = () => {
-            window.history.back();
+            setTimeout(() => {
+                const randomNum = Math.floor(Math.random() * prizeOptions.length);
+                result.value = prizeOptions[randomNum];
+                showResult.value = true;
+
+                store.commit('addLotteryHistory', {
+                    time: new Date().toLocaleString(),
+                    award: result.value,
+                });
+            }, 1000);
         };
-        onMounted(() => { generateResult(); 
+
+        const goBack = () => {
+            router.push({ name: 'ResultMan' })
+        };
+
+        onMounted(() => {
+            generateResult();
         });
+
         return {
             showResult,
-            result, goBack
+            result,
+            goBack
         };
     }
 };
-
-
 </script>
 
 <style scoped>
 .container {
     min-height: 100vh;
-    background: #fbfbfc;
+    width:100%;
+    background: #f5f5f5;
+    /* 浅灰色背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .result-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 200px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.modal-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    background: white;
+    /* 白底 */
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 40%;
+    max-width: 300px;
 }
 
 .result-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    color: #0f0e0e;
+    /* 黑色文字 */
+    font-size: 25px;
+    margin-bottom: 30px;
 }
 
 .back-btn {
-    width: 100px;
-    height: 40px;
     background: #2f8ae4;
-    color: #fff;
+    /* 蓝色按钮 */
+    color: white;
     border: none;
-    border-radius: 5px;
+    padding: 10px 30px;
+    border-radius: 10px;
     cursor: pointer;
-    margin-top: 15px;
+    font-size: 16px;
+    transition: background 0.1s;
 }
 
-@keyframes popup {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+.back-btn:hover {
+    background: #214566;
+    /* 深蓝色悬停效果 */
 }
 </style>
