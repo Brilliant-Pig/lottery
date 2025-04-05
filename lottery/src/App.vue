@@ -2,7 +2,15 @@
         <!-- 主容器 -->
         <div class="demo-container">
             <div class="fullscreen-background">
-                <img src="https://bpic.588ku.com/back_pic/06/12/54/72624b0dcf20a37.jpg" alt="lottery"/>
+                <div class="fullscreen-background">
+                    <Particles 
+                        :particleColors="['#4a8bfc', '#8a4afc', '#fc4a8b']"
+                        :particleCount="300"
+                        :speed="0.05"
+                        :particleBaseSize="80"
+                        :alphaParticles="true"
+                    />
+                </div>
             </div>
         <!-- TinyVue布局容器 -->
             <tiny-container
@@ -14,12 +22,6 @@
             <!-- 头部插槽 -->
             <template #header>
                 <div class="header-container">
-                <!-- 动态粒子背景 -->
-                <div class="particles">
-                    <tiny-layout class="demo-center" style="margin-top: 1vh;">🎉 欢迎来到魔法抽奖系统 🎉</tiny-layout>
-                    <!-- 生成30个例子 -->
-                    <div v-for="i in 30" :key="i" class="particle"></div>
-                </div>
                 </div>
             </template>
     
@@ -108,6 +110,7 @@
     </template>
     
     <script>
+    import background from '@/components/background.vue';
     import { User, Discount, Document, PieChart, MagicStick, UploadFilled, Link } from '@element-plus/icons-vue'
     import emitter from '@/event-bus';
     const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
@@ -297,22 +300,6 @@
     </script>
     
     <style scoped>
-    .fullscreen-background {
-    position: fixed; /* 固定定位 */
-    top: 0;
-    left: 0;
-    width: 100vw; /* 覆盖整个视口宽度 */
-    height: 100vh; /* 覆盖整个视口高度 */
-    z-index: -1; /* 置于底层 */
-    overflow: hidden; /* 隐藏溢出内容 */
-    }
-
-    /* 背景图片样式 */
-    .fullscreen-background img {
-    width: 100%;
-    height: 100%;
-    opacity: 0.7; /* 背景图片透明度 */
-}
     /* 修复头像定位 */
     .demo-avatar.demo-basic {
         position: absolute;
@@ -689,34 +676,6 @@
         font-size: 14px;
         color: var(--el-text-color-secondary);
         margin-left: 100px;
-    }
-    
-    
-    /* 粒子动画样式 */
-    .particle {
-        width: 7px;               /* 粒子大小 */
-        height: 7px;
-        background: radial-gradient(circle, #e7e6fb 20%, #95e3ae 100%); /* 渐变粒子 */
-        position: absolute;       /* 绝对定位 */
-        border-radius: 50%;       /* 圆形 */
-        box-shadow: 0 0 15px #d1cdf0; /* 发光效果 */
-        animation: float 3.5s infinite ease-in-out; /* 浮动动画 */
-    }
-    
-    /* 粒子动画关键帧 */
-    @keyframes float {
-        0% { 
-        transform: translateY(0) scale(0.8); /* 起始位置 */
-        opacity: 0; 
-        }
-        50% { 
-        transform: translateY(-150px) scale(1.2); /* 上升放大 */
-        opacity: 1; 
-        }
-        100% { 
-        transform: translateY(-300px) scale(0); /* 消失位置 */
-        opacity: 0; 
-        }
     }
     
     .fade-slide-enter-active,
