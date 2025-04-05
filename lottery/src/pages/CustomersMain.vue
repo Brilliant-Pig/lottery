@@ -39,7 +39,7 @@ import { useRouter } from 'vue-router';
 const router =useRouter();
 
 const goToRC = () => {      //路由跳转
-    router.push({ path: '/ResultCus'});
+    router.push({ path: '/animation'});
 };
 const goToEX = () => {
     router.push({ path: '/ManagersMain'});

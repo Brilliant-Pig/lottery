@@ -7,47 +7,58 @@
             <div v-if="lotteryHistory.length === 0" class="no-record">
                 您还未参与抽奖
             </div>
-            <div v-for="record in lotteryHistory" :key="record.time" class="list-item" :class="{ 'winning':isWin( record.award) }">
-                <div class="avatar">prize</div>
+            <div v-for="record in lotteryHistory" :key="record.time" class="list-item"
+                :class="{ 'winning': isWin(record.award) }">
+                <div class="avatar">
+                    <el-icon :size="28" color="#fff"><Present /></el-icon>
+                    </div>
                 <div class="item-content">
                     <div class="title">{{ record.award }}</div>
-                    <div class="time">{{ record.time}}</div>
+                    <div class="time">{{ record.time }}</div>
                 </div>
-                <div class="preview">{{ record.detail }}</div>
             </div>
-            </div>
-    <button class="btn-back" @click="goBack">返回</button>
+        </div>
+        <button class="btn-back" @click="goBack">返回</button>
     </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import {useStore} from 'vuex';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import { Present } from '@element-plus/icons-vue';
+
+const router = useRouter();
 
 const store = useStore();
+const lotteryHistory = computed(() => {
+    console.log('抽奖记录:', store.getters.getLotteryHistory);
+    return store.getters.getLotteryHistory;
+});
 
-const lotteryHistory = computed(() => store.getters.getlotteryHistory);
 const isWin = (award) => {
-    return award !== '很遗憾，您未中奖';
-};
-const goBack = () => {
-    window.history.back();
+    return !award.includes('未中奖');
 };
 
+const goBack = () => {
+    router.push({name:'CustomersMain'});
+};
 </script>
 
 <style scoped>
 .container {
     height: 100vh;
+    width: 100%;
     display: flex;
     flex-direction: column;
     background: #fff;
 }
 
 .header {
-    background: #ededed;
-    padding: 15px;
+    background: #d4d2d2;
+    padding: 18px;
     text-align: center;
+    width:100%;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -63,6 +74,7 @@ const goBack = () => {
 .list-container {
     flex: 1;
     overflow-y: auto;
+    padding: 10px;
 }
 
 .list-item {
@@ -71,6 +83,9 @@ const goBack = () => {
     padding: 12px 15px;
     border-bottom: 1px solid #f0f0f0;
     background: #fff;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .list-item:hover {
@@ -81,23 +96,18 @@ const goBack = () => {
     width: 48px;
     height: 48px;
     border-radius: 8px;
-    background: #07c160;
+    background: #2f8ae4;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 28px;
     margin-right: 12px;
+    color: #fff;
 }
 
 .item-content {
     flex: 1;
     min-width: 0;
-}
-
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
 }
 
 .title {
@@ -114,16 +124,8 @@ const goBack = () => {
     color: #888;
 }
 
-.preview {
-    font-size: 14px;
-    color: #666;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .winning .title {
-    color: #07c160;
+    color: #07c113;
 }
 
 .btn-back {
@@ -132,7 +134,7 @@ const goBack = () => {
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 40px;
-    background: #07c160;
+    background: #2f8ae4;
     color: white;
     border: none;
     border-radius: 25px;
@@ -141,12 +143,13 @@ const goBack = () => {
 }
 
 .btn-back:hover {
-    background: #06ad56;
+    background: #162842;
 }
-.no-record {    
+
+.no-record {
     text-align: center;
     font-size: 16px;
     color: #888;
-    padding:20px;
+    padding: 20px;
 }
 </style>
