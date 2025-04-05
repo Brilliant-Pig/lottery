@@ -91,6 +91,15 @@ const routes = [
             freeAuth: false
         }
     },
+    {
+        path: '/animation',
+        name: 'animation',
+        component: () => import('../pages/animation.vue'),
+        meta: {
+            title: '动画页面',
+            freeAuth: true
+        }
+    },
 ];
 
 const router = createRouter({
