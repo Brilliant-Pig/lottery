@@ -2,15 +2,13 @@
         <!-- 主容器 -->
         <div class="demo-container">
             <div class="fullscreen-background">
-                <div class="fullscreen-background">
                     <Particles 
-                        :particleColors="['#4a8bfc', '#8a4afc', '#fc4a8b']"
-                        :particleCount="300"
+                        :particleColors="['#ffffff', '#fdffe5', '#ffffff']"
+                        :particleCount="1000"
                         :speed="0.05"
                         :particleBaseSize="80"
                         :alphaParticles="true"
                     />
-                </div>
             </div>
         <!-- TinyVue布局容器 -->
             <tiny-container
@@ -110,7 +108,7 @@
     </template>
     
     <script>
-    import background from '@/components/background.vue';
+    import Particles from './components/background.vue';
     import { User, Discount, Document, PieChart, MagicStick, UploadFilled, Link } from '@element-plus/icons-vue'
     import emitter from '@/event-bus';
     const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
@@ -125,7 +123,8 @@
             PieChart,
             MagicStick,
             UploadFilled,
-            Link
+            Link,
+            Particles
         },
         data() {
             return {
@@ -177,13 +176,13 @@
                         icon: 'PieChart',
                         children: [
                             { 
-                                text: '进行中抽奖',
+                                text: '创建的抽奖',
                                 type: 'danger',
                                 icon: 'Document',
                                 path: '/ResultCus'
                             },
                             {
-                                text: '历史抽奖记录',
+                                text: '参与的抽奖',
                                 type: 'danger',
                                 icon: 'PieChart',
                                 path: '/ResultMan'
@@ -300,6 +299,16 @@
     </script>
     
     <style scoped>
+.fullscreen-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -10;
+    background: linear-gradient(135deg, #121224 0%, #000000 100%); /* 添加渐变背景 */
+}
+
     /* 修复头像定位 */
     .demo-avatar.demo-basic {
         position: absolute;
@@ -328,7 +337,7 @@
         width: 100vw;
         z-index: 2;
         background: transparent;
-        box-shadow: 5px 0px 15px -5px rgba(146, 146, 146, 0.477); /* 加粗下侧阴影 */
+        box-shadow: 5px 0px 15px -5px rgba(200, 200, 200, 0.477); /* 加粗下侧阴影 */
     
     }
     
@@ -431,7 +440,6 @@
         color: #4f4f4f;
         height: auto;
         z-index: 1;
-        background: #ffffff5b;
     }
     
     /* 布局模式切换按钮样式 */
