@@ -197,7 +197,7 @@
                 <span class="icon">🔒</span>
                 <h3>安全认证体系</h3>
                 
-                <div class="mermaid-diagram">
+                <div class="%">
         <!-- 新增详细说明 -->
     <div class="security-details">
         <h4>详细说明</h4>
@@ -490,15 +490,16 @@
     
     <style lang="scss" scoped>
 .user-manual {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: auto;
+    margin:auto;
     position: relative;
     /* 顶部导航 */
     .manual-nav {
         position: sticky;
         top: 0;
         padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background:linear-gradient(to right,#6565655c 0%,#6565651a);
+        box-shadow: 0 -2px 8px rgba(90, 90, 90, 0.547);       
         z-index: 100;   
         /* 顶部导航文字 */
         a {
@@ -507,14 +508,13 @@
             transition: color 0.3s;
             
             &:hover {
-            color: #626262;
+            color: #ffffff;
             }
         }
         }
 /* 黑色边框按钮样式 */
 .black-border-button {
     border: 2px solid #c6c6c6 !important;
-    background: #ffffff;
     color: #000000ba;
     padding: 12px 24px;
     margin: 1rem 0;
@@ -527,23 +527,22 @@
 /* 快速入门 */
 .manual-section {
     padding: 1rem;
-    background: #ffffff5d;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     
     h1 {
-    color: #2c3e50;
+    color: #ffffff;
     border-bottom: 2px solid #acacacc2;
     padding-bottom: 0.5rem;
     }
 
     h2 {
-    color: #34495e;
+    color: #ffffff;
     margin-top: 2rem;
     }
 
     h3 {
-    color: #4a5568;
+    color: #ffffff;
     }
 /* 参与流程模块 */
 table {
@@ -554,11 +553,12 @@ table {
     th, td {
         padding: 12px;
         border: 1px solid #eee;
+        color: white;
         text-align: left;
     }
 
     th {
-        background-color: #f8f9fa;
+        background:linear-gradient(to right,#6565655c 0%,#6565651a);
         font-weight: 600;
         }
 }
@@ -630,11 +630,11 @@ table {
             .security-policy {
             margin: 2rem 0;
             padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-    
+            background:linear-gradient(to right,#6565655c 0%,#6565651a);
+            box-shadow: 0 -2px 8px rgba(255, 255, 255, 0.123);
+            border-radius: 8px; 
+            color: white;
             h4 {
-                color: #2c3e50;
                 margin-bottom: 1rem;
             }
     
@@ -650,7 +650,7 @@ table {
             .auth-levels {
             table {
                 th {
-                background-color: #f5f5f5;
+                    background:none
                 }
             }
             }
@@ -666,7 +666,7 @@ table {
         .mermaid-diagram {
         margin: 2rem 0;
         overflow-x: auto;
-        background: #f8f9fa;
+        background: #ffffff;
         padding: 1rem;
         border-radius: 8px;
     
@@ -693,14 +693,18 @@ table {
         }
         }
     }
+    .security-card{
+        background:linear-gradient(to right,#6565655c 0%,#6565651a);
+        box-shadow: 0 -2px 8px rgba(255, 255, 255, 0.123);
+        color: white;
+    }
     .security-details {
     margin-top: 2rem;
     padding: 1.5rem;
-    background: #f8f9fa;
     border-radius: 8px;
 
     h4 {
-        color: #2c3e50;
+        color: white;
         margin-bottom: 1.5rem;
     }
 
@@ -708,7 +712,7 @@ table {
         margin-bottom: 2rem;
 
         h5 {
-        color: #636363;
+        color: white;
         margin-bottom: 0.8rem;
         }
 
@@ -727,11 +731,12 @@ table {
         }
 
         pre {
-        background: #e9ecef;
+        background: #ffffff00;
         padding: 1rem;
         border-radius: 4px;
         overflow-x: auto;
         margin: 1rem 0;
+        font-size: 16px;
         }
 
         .risk-table {
@@ -741,10 +746,7 @@ table {
         th, td {
             padding: 12px;
             border: 1px solid #dee2e6;
-        }
-
-        th {
-            background-color: #f8f9fa;
+            background: none;
         }
         }
     }
@@ -769,21 +771,22 @@ table {
     }
 
     .warning-section {
-    background: #fff5f5;
+    background:linear-gradient(to right,#6565655c 0%,#6565651a);
     padding: 1rem;
     border-radius: 4px;
     margin-top: 2rem;
+    color: #ffffff;
     }
 
     .warning-section h2 {
-    color: #c53030;
+    color: #c53030 !important;
     }
 /* 创建抽奖区块样式 */
 .creation-section {
     padding: 2rem;
     text-align: center;
     border: 1px dashed #eee;
-    background:     #e3e3e362;
+    background:linear-gradient(to right,#6565655c 0%,#6565651a);
     box-shadow:  2px 3px rgba(0,0,0,0.1);
     border-radius: 8px;
     margin: 2rem 0;

@@ -71,7 +71,7 @@
         <!-- 已创建抽奖 -->
         <div v-if="activeNav === 'created'" class="lottery-list">
         <div class="list-header">
-            <h3>已创建的抽奖（{{ createdLottories.length }}）</h3>
+            <h3>已创建的抽奖({{ createdLottories.length }})</h3>
         </div>
         <div class="list-content">
             <div v-for="item in createdLottories" :key="item.id" class="lottery-item">
@@ -573,12 +573,10 @@ this.$refs.fileInput.click();
 .user-center {
 width: auto;
 margin:auto;
-background: #f8f9fa44;
-
 .header {
     padding: 15px;
     background: #f8f9fa70; ;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.413);
 
 /*         .logo-section {
     display: flex;
@@ -590,8 +588,8 @@ background: #f8f9fa44;
     }
 */
     .time {
-        color: #666;
-        font-size: 14px;
+        color: #ffffff;
+        font-size: 20px;
     }
     }
 }
@@ -665,17 +663,19 @@ background: #f8f9fa44;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1px;
-    background: #eee;
     margin: 0 15px;
     border-radius: 8px;
     overflow: hidden;
+    background:#6565655c;
+    box-shadow: 0 -2px 8px rgba(255, 255, 255, 0.123);
 
     .nav-item {
-    background: white;
+    box-shadow: 1px -2px 8px rgba(255, 255, 255, 0.123);
     padding: 15px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    color: #ffffff;
 
     span {
         font-size: 14px;
@@ -686,18 +686,21 @@ background: #f8f9fa44;
 .main-content {
     padding: 15px;
     height: 300px;
+    }
+.lottery-list {
+    color: #ffffff;
 }
 
 .bottom-nav {
 
     justify-content: space-around;
     padding: 12px 0;
-    background:#f8f9faa7;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    background:#6565655c;
+    box-shadow: 0 -2px 8px rgba(255, 255, 255, 0.123);
 
     .nav-item {
     text-align: center;
-    color: #666;
+    color: #ffffff;
     transition: color 0.3s;
 
     span {

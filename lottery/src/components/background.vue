@@ -7,7 +7,7 @@
     
     export default {
         props: {
-        particleCount: { type: Number, default: 200 },
+        particleCount: { type: Number, default: 300 },
         particleSpread: { type: Number, default: 10 },
         speed: { type: Number, default: 0.1 },
         particleColors: { type: Array, default: () => ["#ffffff", "#ffffff"] },
