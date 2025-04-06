@@ -68,7 +68,7 @@ exports.getUserName = async (userName) => {
 exports.getActivityNameByUrl = async (activityUrl) => {
     const sql = `
         SELECT
-            activity_name AS activityName
+            activity_name AS title,
         FROM
             activities
         WHERE
@@ -131,7 +131,7 @@ exports.getActivityRemainsByUrl = async (activityUrl) => {
 exports.getActivityActiveByUrl = async (activityUrl) => {
     const sql = `
         SELECT
-            activity_name AS activityName,
+            activity_name AS title,
             status AS activityStatus
         FROM
             activities
@@ -179,9 +179,10 @@ exports.getWinningResults = async (userName) => {
     const sql = `
         SELECT 
             username AS id,
-            activity_name AS prizeName,
+            activity_name AS title,
+            activity_result AS result,
             win_time AS winTime,
-            participation_time AS activityResult
+            participation_time AS joinTime
         FROM 
             activity_results
         WHERE 

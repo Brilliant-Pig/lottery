@@ -164,7 +164,6 @@
 </template>
 
 <script>
-import emitter from '@/event-bus';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
@@ -575,7 +574,7 @@ width: auto;
 margin:auto;
 .header {
     padding: 15px;
-    background: #f8f9fa70; ;
+    background: rgba(255, 255, 255, 0.193); ;
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.413);
 
 /*         .logo-section {
@@ -595,7 +594,7 @@ margin:auto;
 }
 
 .user-card {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(to right,#6565655c ,#6565651a 70%);
     margin: 15px;
     border-radius: 12px;
     padding: 20px;
