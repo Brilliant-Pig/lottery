@@ -57,7 +57,7 @@ exports.getWinningResults = async (username) => {
 };
 
 exports.getParticipatedActivities = async (username) => {
-    const result = await userDao.getCreatedActivities(username);
+    const result = await userDao.getParticipatedActivities(username);
     return result;
 };
 
