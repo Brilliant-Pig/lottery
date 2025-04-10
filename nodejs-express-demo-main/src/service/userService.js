@@ -65,3 +65,8 @@ exports.getActivityActiveByUrl = async (activityUrl) => {
     const result = await userDao.getActivityActiveByUrl(activityUrl);
     return result;
 };
+
+exports.getActivityStartTimeByUrl = async (activityUrl) => {
+    const result = await userDao.getActivityStartTimeByUrl(activityUrl);
+    return result;
+};

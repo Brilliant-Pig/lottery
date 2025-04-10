@@ -134,3 +134,10 @@ router.get('/getActivityActiveByUrl', async (req, res, next) => {
     const result = await userService.getActivityActiveByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });
+
+//获取活动开始时间
+router.get('/getActivityStartTimeByUrl', async (req, res, next) => {
+    const { activityUrl } = req.query; //从请求参数中获取userId
+    const result = await userService.getActivityStartTimeByUrl(activityUrl);
+    res.ResultVO(0, '成功', result);
+});

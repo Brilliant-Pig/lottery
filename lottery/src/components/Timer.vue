@@ -5,7 +5,7 @@
         <span class="time">{{ Mins }}</span><span class="chara">分</span>
         <span class="time">{{ Seconds }}</span><span class="chara">秒</span>
     </div>
-    <div v-else class="expired"><span class="end">活动已结束</span></div>
+    <div v-else class="expired"><span class="end">未开始/已结束</span></div>
 </template>
 
 <script>
@@ -18,14 +18,11 @@ export default {
             Mins: 0,
             Seconds: 0,
             isExpired: false,
-            EndTime:null,
+            endTime:null,
+            stratTime:null,
         }
     },
     props: {
-        apiUrl: { 
-            type: String, 
-            required: true 
-        },  // 后端接口地址
         interval: { 
             type: Number, 
             default: 30000 
@@ -35,23 +32,28 @@ export default {
             default: 'HH:mm:ss' 
         }, // 时间格式
         activityUrl:{
-            type:Number,
-            default:1 //Id格式
+            type:String,
+            default:'' //Id格式
         },
         activityEndTime:{
             type:Date,
             default:'' //日期格式
         },
     },
+
+    emits: ['check'],
+
     methods:{
         calculate() {//计算函数
             const RTime = new Date().getTime()//获取现在的时间
             const EndTime = new Date(this.endTime)//从后端获取终止时间
+            const StartTime = new Date(this.stratTime)
 
             const RemainTime = EndTime - RTime//计算差值
             //最近时间戳：1742578500000，可以以此进行CSS修正
 
-            if (RemainTime > 0) {
+            if (RemainTime > 0 && StartTime < RTime) {
+                this.isExpired = false;
                 this.Hours = Math.floor(RemainTime / (1000 * 60 * 60))//算剩余小时数
                 this.Mins = Math.floor(RemainTime % (1000 * 60 * 60) / (1000 * 60))//算剩余分数
                 this.Seconds = Math.floor(RemainTime % (1000 * 60) / 1000)//算剩余秒数
@@ -60,20 +62,31 @@ export default {
             }
         },
         async fetchEndTime(){//从后端抓取终止时间
+            this.$emit('check',this.activityUrl);
             try{
                 const response = await user.getActivityEndTime({
-                    activityUrl: this.activityUrl//动态时内部应该改成this.activityId
+                    activityUrl: this.activityUrl
+                })
+                const responseST = await user.getActivityStartTimeByUrl({
+                    activityUrl: this.activityUrl
                 })
                 this.endTime = response[0].activityEndTime//用apiUrl的地址抓取
+                this.stratTime = responseST[0].startTime//抓取开始时间来确定活动状况
+                console.log(responseST);
+                
             } catch (error){//错误判断
                 console.error('获取数据失败了:',error);
             }
         }
     },
+    watch: {
+        activityUrl(newVal) {
+            // 当父组件传入的activityUrl变化时执行操作
+            this.fetchEndTime(newVal)
+            this.calculate(newVal)
+        }
+    },
     mounted(){//每次组件刚加载时必须完成的代码
-        //组件运行先抓终止时间
-        this.fetchEndTime()
-        
         //每30秒重复执行一次抓取校准
         this.dataTimer = setInterval(() =>{
             this.fetchEndTime()
@@ -92,13 +105,16 @@ export default {
 <style>
 .chara {                    /*大小字体重点突出的样式 */
     font-size: 45px ;
+    color: white;
 }
 
 .time {
     font-size: 125px;
+    color: white;
 }
 
 .end {
     font-size: 125px;
+    color: white;
 }
 </style>
