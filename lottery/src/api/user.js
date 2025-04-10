@@ -30,7 +30,11 @@ const user = {
     //通过向后端发送id返还活动开展状态
     getActivityActiveByUrl(data){
         return request.get(`${moduleUrl}/getActivityActiveByUrl`,data);
-    }
+    },
+    //通过向后端发送id返还活动开始时间
+    getActivityStartTimeByUrl(data){
+        return request.get(`${moduleUrl}/getActivityStartTimeByUrl`,data);
+    },
 };
 
 export default user;
