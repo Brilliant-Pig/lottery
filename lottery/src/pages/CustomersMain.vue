@@ -8,19 +8,17 @@
 <template>
     <div id="whole">
         <div id="null">
-            <tiny-select v-model="value" placeholder="请选择抽奖活动">
-            <tiny-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" :icon="item.icon">
-            </tiny-option>
-            </tiny-select>
+            <tiny-input v-model="input" placeholder="请输入活动专属Url  跳转至相应活动抽奖" clearable>
+            </tiny-input>
         </div>
         <h1>{{Activity}}</h1>
         <p1>抽奖剩余时间：(北京时间)</p1>
         <p2>参与人数：</p2>
         <div id="timer">
-            <Timer></Timer>
+            <Timer :activityUrl="input"></Timer>
         </div><!-- 此处为倒计时Timer组件的初设计预留位置 -->
         <div id="men">
-            <PeopleRemainder></PeopleRemainder>
+            <PeopleRemainder :activityUrl="input"></PeopleRemainder>
         </div><!-- 此处为倒计时实时人数组件的初设计预留位置 -->
             <tiny-button id="GTlottery" type="info" size="large" @click="goToRC"><!-- 用于跳转抽奖页面的按钮 -->
                 <span id="BT1">点 我 抽 奖 !</span> 
@@ -36,67 +34,69 @@
 import Timer from '../components/Timer.vue';
 import PeopleRemainder from '../components/PeopleRemainder.vue';
 import { useRouter } from 'vue-router';
-const router =useRouter();
-
-const goToRC = () => {      //路由跳转
-    router.push({ path: '/animation'});
-};
-const goToEX = () => {
-    router.push({ path: '/ManagersMain'});
-};
-</script>
-<!-- 以上为引用组件部分 -->
-
-<script>
+import { TinyInput } from '@opentiny/vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import user from '../api/user';
 
-export default {
-    data(){
-        return {
-            Activity:"暂时未选中活动哦~"
-        };
-    },
-    props: {
-        apiUrl: { 
-            type: String, 
-            required: true 
-        },  // 后端接口地址
-        interval: { 
-            type: Number, 
-            default: 30000 
-        }, // 数据更新间隔（默认30秒）
-        activityUrl:{
-            type:Number,
-            default:1 //Id格式测试用
-        },
-    },
+//data return层，用于存放默认值
+const router =useRouter();
+const input = ref('')
+const Activity = ref("暂时未选中活动哦~");
+const activityUrl = ref('');
+let dataTimer = null;
 
-    methods:{
-        async getActive(){//从后端调取相关活动的开展情况
-            try{
-                const response = await user.getActivityActiveByUrl({
-                    activityUrl: this.activityUrl//动态获取
-                })
-                this.Activity = response[0].activityName;
-            } catch(error){
-                console.error('获取数据失败了:',error);
+// methods层，用于存放函数方法
+    const getActive = async () => {
+        try {
+            const response = await user.getActivityActiveByUrl({
+                activityUrl: input.value
+            });
+            if (response?.length > 0) {
+                Activity.value = response[0].activityName;
             }
+            } catch (error) {
+                console.error('获取数据失败:', error);
         }
-    },
-    mounted(){
-        //组件运行先抓活动状态
-        this.getActive()
+    };
 
-        //每30秒重复执行一次抓取校准
-        this.dataTimer = setInterval(() =>{
-            this.getActive()
-        },60000)
-    },
+    const goToRC = () => { 
+        router.push({ path: '/ResultCus'});
+    };
 
-    beforeUnmount(){//在卸载完成前要加载的函数，结束倒计时
-        clearInterval(this.dataTimer)
-    },
-}
+    const goToEX = () => {
+        router.push({ path: '/ManagersMain'});
+    };
+
+//watch层，用于监测事件
+    watch(input, (newVal) => {
+        router.replace({
+            query: { ...router.query, activityUrl: newVal }
+        })
+    });//向组件传值
+
+    watch(input, (newVal) => {
+        activityUrl.value = newVal; 
+    });// 实现双向同步
+
+    watch(activityUrl, (newVal) => {
+    if (newVal) getActive(); 
+    });// 仅在有效值时触发请求
+
+// Mounted层，预载层，生命周期钩子
+    onMounted(() => {
+        // 初始化请求（根据业务需求决定是否保留）
+        user.getActivityActiveByUrl({ activityUrl: '' });
+
+        // 定时器逻辑优化：使用具名函数避免闭包问题
+        dataTimer = setInterval(() => {
+            if (activityUrl.value) getActive(); // 避免空参数请求
+        }, 5000);
+    });
+
+//BeforeOnMount层，用于卸载事件。
+    onBeforeUnmount(() => {
+        clearInterval(dataTimer); // 清理定时器
+    });
 </script>
 
 <style>
@@ -106,7 +106,7 @@ export default {
 }
 
 #null {                 /*垫了个盒子协调整体布局 */
-    width: auto;
+    width: 25%;
     margin-left: 10px;
     margin-top: 0px;
     color:rgb(0, 0, 0);
@@ -121,6 +121,7 @@ h1 {                    /*h1的CSS */
     margin-top: 5px;
     margin-bottom: 80px;
     text-align: center;
+    color: rgb(107, 252, 216);
 }
 
 #timer {                /*计时器的预测样式 */
@@ -144,11 +145,13 @@ h1 {                    /*h1的CSS */
 p1 {                     
     margin-left: 5%;
     font-size: 30px;
+    color: white;
 }
 
 p2 {                     
     margin-left: 40%;
     font-size: 30px;
+    color: white;
 }
 
 .tiny-button {           /*抽奖按钮的样式 */
@@ -177,3 +180,69 @@ p2 {
     margin-left: 19%;
 }
 </style>
+
+
+<!-- 老代码option API记录 -->
+<!-- <script>
+import user from '../api/user';
+
+export default {
+    data(){
+        return {
+            Activity:"暂时未选中活动哦~",
+            input:'',
+            activityUrl:'',
+        };
+    },
+
+    emits: ['check'],
+
+    methods:{
+        getActivityUrl(){
+            const inputUrl = this.input
+            this.activityUrl = inputUrl
+        },
+
+        async getActive(){//从后端调取相关活动的开展情况    
+            console.log("input",this.input);
+            
+            try{
+                const response = await user.getActivityActiveByUrl({
+                    activityUrl: this.input//动态获取
+                })
+                console.log(response);
+                
+                this.Activity = response[0].activityName;
+            } catch(error){
+                console.error('获取数据失败了:',error);
+            }
+           // this.$emit('check',activityUrl);
+        }
+    },
+
+    watch: {
+        input(newVal) { 
+            this.activityUrl = newVal;
+        }, // 手动同步
+        activityUrl(newVal) { 
+            this.getActive(newVal); 
+            console.log(this.activityUrl);
+            
+        },
+    },
+
+    mounted(){
+        //组件运行先抓活动状态
+        user.getActivityActiveByUrl({})
+        //每30秒重复执行一次抓取校准
+        this.dataTimer = setInterval(() =>{
+            this.getActive();
+        },5000)
+
+    },
+
+    beforeUnmount(){//在卸载完成前要加载的函数，结束倒计时
+        clearInterval(this.dataTimer)
+    },
+}
+</script> -->
