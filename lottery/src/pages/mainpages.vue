@@ -88,6 +88,10 @@
         </div>
 
         <!-- 已参与抽奖 -->
+    <div v-if="activeNav === 'participated'" class="lottery-list">
+        <div class="list-header">
+            <h3>已参与的抽奖({{ participatedLottories.length }})</h3>
+        </div>
         <div v-for="item in participatedLottories" :key="item.id" class="lottery-item">
             <div class="item-left">
                 <h4>{{ item.title }}</h4>
@@ -100,6 +104,7 @@
                 </span>
             </div>
         </div>
+    </div>
 
         <!-- 抽奖结果 -->
         <div v-if="activeNav === 'results'" class="result-section">
@@ -164,7 +169,6 @@
 </template>
 
 <script>
-import emitter from '@/event-bus';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
@@ -196,7 +200,7 @@ export default {
         historyResults: [], // 初始化为空数组
         ongoingResults: [] , // 初始化为空数组
         statusTabs: [
-        { value: 'all', label: '全部' },
+        { value: 'unstarted', label: '未开始' },
         { value: 'ongoing', label: '进行中' },
         { value: 'ended', label: '已结束' }
         ],
@@ -294,59 +298,6 @@ export default {
     mounted() {
     this.updateTime()
     },
-/*         loadUserData() {
-    this.portrait = localStorage.getItem('username') || '';
-    const savedAvatar = localStorage.getItem('avatarUrl');
-    this.avatarUrl = savedAvatar || DEFAULT_AVATAR;
-    },
-
-    handleAvatarChange(event) {
-        if (!localStorage.getItem('username')) {
-        ElMessage.error('请先登录');
-        event.preventDefault(); // 阻止默认行为
-        return; // 直接返回
-        }
-const file = event.target.files[0];
-if (!file) return;
-
-// 验证文件类型和大小
-if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件');
-    return;
-}
-
-if (file.size > 2 * 1024 * 1024) {
-    ElMessage.error('图片大小不能超过2MB');
-    return;
-}
-
-const reader = new FileReader();
-reader.onload = (e) => {
-    try {
-        this.avatarUrl = e.target.result;
-        localStorage.setItem('avatarUrl', this.avatarUrl);
-        ElMessage.success('头像更新成功');
-        
-        // 触发事件，通知其他组件
-        emitter.emit('avatar-updated', this.avatarUrl); // 确保 emitter 已导入
-    } catch (error) {
-        ElMessage.error('头像更新失败');
-        console.error(error);
-    }
-};
-reader.onerror = () => {
-    ElMessage.error('图片读取失败');
-};
-reader.readAsDataURL(file);
-},
-handleAvatarUploadClick() {
-    if (!localStorage.getItem('username')) {
-        ElMessage.error('请先登录');
-        return; // 直接返回，不触发文件选择
-    }
-    this.$refs.fileInput.click(); // 只有已登录时才触发文件选择
-},    */
-// 在methods中添加或修改以下方法
 beforeRouteEnter(to, from, next) {
         if (!localStorage.getItem('username')) {
             next('/login');
@@ -355,48 +306,30 @@ beforeRouteEnter(to, from, next) {
         }
     },
     formatDateTime(timestamp) {
-    try {
-        // 1. 检查空值
-        if (!timestamp) {
-            console.warn('时间戳为空:', timestamp);
-            return '未知时间';
-        }
-
-        // 2. 处理多种时间格式
-        let date;
-        if (typeof timestamp === 'string') {
-            // 处理ISO格式(如"2023-01-01T00:00:00Z")
-            if (timestamp.includes('T')) {
-                date = new Date(timestamp);
-            } 
-            // 处理时间戳字符串
-            else if (!isNaN(timestamp)) {
-                date = new Date(parseInt(timestamp));
-            } else {
-                console.warn('无法识别的时间字符串:', timestamp);
-                return '未知时间';
-            }
-        } 
-        // 处理数字时间戳
-        else if (typeof timestamp === 'number') {
-            date = new Date(timestamp);
-        } else {
-            console.warn('不支持的时间格式:', typeof timestamp, timestamp);
-            return '未知时间';
-        }
-
-        // 3. 验证日期有效性
-        if (isNaN(date.getTime())) {
-            console.warn('无效的时间戳:', timestamp);
-            return '未知时间';
-        }
-
-        // 4. 格式化输出
-        return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-        
-    } catch (e) {
-        console.error('日期格式化异常:', e, '原始时间戳:', timestamp);
+    console.log('接收时间戳:', timestamp); // 调试
+    
+    if (!timestamp) {
+        console.warn('时间戳为空');
         return '未知时间';
+    }
+
+    try {
+        if (typeof timestamp === 'string') {
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(timestamp)) {
+            const [datePart, timePart] = timestamp.split(' ');
+            return datePart; 
+        }
+        return timestamp; 
+        }
+        
+        if (typeof timestamp === 'number') {
+        return new Date(timestamp).toISOString().split('T')[0];
+        }
+        
+        return '未知格式';
+    } catch (e) {
+        console.error('时间格式化异常:', e, '原始值:', timestamp);
+        return '无效时间';
     }
 },
 
@@ -450,28 +383,25 @@ formatDate(timestamp) {
             
             // 处理已创建的抽奖
             this.createdLottories = (createdRes.data?.data || []).map(item => ({
-                id: item.id + '_created',
-                title: item.activity_name || '未命名活动',
+                id: item.id + '_created'|| item.username,
+                title: item.title || '未命名活动',
                 createTime: this.formatDateTime(item.createTime),
-                status: item.status || 'ongoing',
+                status: item.status ,
                 isCreated: true,
             }));
             
             // 处理已参与的抽奖
             this.participatedLottories = (participatedRes.data?.data || [])
-                .filter(item => !createdRes.data?.data?.some(c => c.id === item.id))
                 .map(item => ({
-                    id: item.id + '_participated', // 添加后缀区分
+                    id: item.id + '_participated' || item.username, 
                     title: item.title || '未命名活动',
-                    joinTime: this.formatDateTime(item.createTime),
-                    status: item.status || 'ongoing',
-                    win: item.activity_result === 'win',
-                    isCreated: false // 标记为参与的活动
+                    joinTime: this.formatDateTime(item.joinTime || item.participation_time),
+                    status: item.status ,
                 }));
             
             // 处理中奖结果
             this.historyResults = (resultsRes.data?.data || []).map(item => ({
-                id: item.id || Math.random().toString(36).substr(2, 9),
+                id: item.username || Math.random().toString(36).substr(2, 9),
                 prizeName: item.prize_name || '神秘奖品',
                 winTime: this.formatDate(item.win_time)
             }));
@@ -575,7 +505,7 @@ width: auto;
 margin:auto;
 .header {
     padding: 15px;
-    background: #f8f9fa70; ;
+    background: rgba(255, 255, 255, 0.193); ;
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.413);
 
 /*         .logo-section {
@@ -595,7 +525,7 @@ margin:auto;
 }
 
 .user-card {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(to right,#6565655c ,#6565651a 70%);
     margin: 15px;
     border-radius: 12px;
     padding: 20px;
