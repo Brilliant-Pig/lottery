@@ -147,8 +147,13 @@ router.post('/drawLotteryByUser', async (req, res, next) => {
         console.log('收到抽奖请求:', req.body); // 添加日志
         const { activityUrl, userName } = req.body;
 
-        if (!userName || !activityUrl) {
-            return res.status(400).json({ code: 1, message: '参数不完整' });
+        if (!req.body.userName || !req.body.activityUrl) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少必要参数',
+                required: ['userName', 'activityUrl'],
+                received: Object.keys(req.body)
+            });
         }
 
         const result = await userService.drawLotteryByUser(userName, activityUrl);
