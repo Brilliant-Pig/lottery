@@ -66,20 +66,30 @@ exports.getActivityActiveByUrl = async (activityUrl) => {
     return result;
 };
 
-
 // 执行基于用户名的抽奖逻辑
 exports.drawLotteryByUser = async (userName, activityUrl) => {
-    // 检查用户是否有抽奖资格
+    console.log(`开始处理抽奖请求，用户: ${userName}, 活动URL: ${activityUrl}`);
+
+    // 1. 获取活动信息（包含完整验证）
+    const activity = await userDao.getActivityActiveByUrl(activityUrl);
+    console.log('活动查询结果:', activity);
+
+    if (!activity) {
+        throw new Error('活动不存在、未开始或已结束');
+    }
+
+    // 2. 检查用户资格
     const isEligible = await userDao.checkUserEligibility(userName, activityUrl);
     if (!isEligible) {
         throw new Error('用户没有抽奖资格或已参与过抽奖');
     }
 
-    // 获取奖品配置
+    // 3. 获取奖品配置（添加调试日志）
     const prizes = await userDao.getPrizeConfigByUser(userName, activityUrl);
+    console.log('奖品配置:', prizes);
 
     if (!prizes || prizes.length === 0) {
-        throw new Error('没有可用的奖品配置');
+        throw new Error('活动尚未配置奖品');
     }
 
     // 计算总概率
@@ -114,10 +124,14 @@ exports.drawLotteryByUser = async (userName, activityUrl) => {
     // 记录抽奖结果
     await userDao.recordUserLotteryResult(userName, activityUrl, selectedPrize.prizeName);
 
-    return selectedPrize.prizeName;
+    return {
+        prize: selectedPrize.prizeName,
+        activityUrl: activityUrl,
+        activityName: activity.activityName
+    };
+};
 
 exports.getActivityStartTimeByUrl = async (activityUrl) => {
     const result = await userDao.getActivityStartTimeByUrl(activityUrl);
     return result;
-
 };

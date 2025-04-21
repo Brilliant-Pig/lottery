@@ -131,16 +131,19 @@ exports.getActivityRemainsByUrl = async (activityUrl) => {
 //用活动id来获取活动开展状态
 exports.getActivityActiveByUrl = async (activityUrl) => {
     const sql = `
-        SELECT
-            activity_name AS title,
-            status AS activityStatus
+        SELECT 
+            activity_name AS activityName,
+            activity_url AS activityUrl,
+            status AS activityStatus,
+            start_time AS startTime,
+            end_time AS endTime
         FROM
             activities
         WHERE
             activity_url = ?
-    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityUrl];
-    return await db.query(sql, sqlParams); //用于筛选的
+    `;
+    const result = await db.query(sql, [activityUrl]);
+    return result[0]; // 直接返回单个对象或undefined
 };
 
 // 获取用户创建的抽奖活动
@@ -193,6 +196,20 @@ exports.getWinningResults = async (userName) => {
     return await db.query(sql, [userName]);
 };
 
+//用活动id来获取活动开始时间
+exports.getActivityStartTimeByUrl = async (activityUrl) => {
+    const sql = `
+        SELECT
+            start_time AS startTime
+        FROM
+            activities
+        WHERE
+            activity_url = ?
+    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
+    const sqlParams = [activityUrl];
+    return await db.query(sql, sqlParams); //用于筛选的
+};
+
 // 根据用户名和活动URL获取用户抽奖资格
 exports.checkUserEligibility = async (userName, activityUrl) => {
     const sql = `
@@ -202,8 +219,8 @@ exports.checkUserEligibility = async (userName, activityUrl) => {
             participations
         WHERE 
             username = ? 
-            AND activity_name = (
-                SELECT activity_name FROM activities WHERE activity_url = ?
+            AND activity_url = (
+                SELECT activity_url FROM activities WHERE activity_url = ?
             )
             AND has_participated = 0
     `;
@@ -230,17 +247,16 @@ exports.markUserParticipated = async (userName, activityUrl) => {
 exports.getPrizeConfigByUser = async (userName, activityUrl) => {
     const sql = `
         SELECT 
-            p.prize_name AS prizeName,
-            p.prize_probability AS probability,
-            p.prize_quantity AS quantity
+            prize_name AS prizeName,
+            prize_probability AS probability,
+            prize_quantity AS quantity
         FROM 
-            prizes p
-        JOIN activities a ON p.activity_url = a.activity_url
-        JOIN participations part ON a.activity_name = part.activity_name
+            prizes
         WHERE 
-            part.username = ?
-            AND p.activity_url = ?
-            AND part.has_participated = 0
+            username = ?
+            AND activity_name = (
+                SELECT activity_name FROM activities WHERE activity_url = ?
+            )
     `;
     return await db.query(sql, [userName, activityUrl]);
 };
@@ -279,19 +295,4 @@ exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) =>
         )
     `;
     return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
-
-
-//用活动id来获取活动开始时间
-exports.getActivityStartTimeByUrl = async (activityUrl) => {
-    const sql = `
-        SELECT
-            start_time AS startTime
-        FROM
-            activities
-        WHERE
-            activity_url = ?
-    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
-    const sqlParams = [activityUrl];
-    return await db.query(sql, sqlParams); //用于筛选的
-
 };
