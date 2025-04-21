@@ -134,3 +134,23 @@ router.get('/getActivityActiveByUrl', async (req, res, next) => {
     const result = await userService.getActivityActiveByUrl(activityUrl);
     res.ResultVO(0, '成功', result);
 });
+// 添加基于用户名的抽奖接口
+router.post('/drawLotteryByUser', async (req, res, next) => {
+    try {
+        console.log('收到抽奖请求:', req.body); // 添加日志
+        const { activityUrl, userName } = req.body;
+
+        if (!userName || !activityUrl) {
+            return res.status(400).json({ code: 1, message: '参数不完整' });
+        }
+
+        const result = await userService.drawLotteryByUser(userName, activityUrl);
+        res.json({ code: 0, message: '抽奖成功', prize: result });
+    } catch (err) {
+        console.error('抽奖控制器错误:', err);
+        res.status(500).json({
+            code: 1,
+            message: err.message || '抽奖失败'
+        });
+    }
+});

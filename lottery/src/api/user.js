@@ -30,7 +30,18 @@ const user = {
     //通过向后端发送id返还活动开展状态
     getActivityActiveByUrl(data){
         return request.get(`${moduleUrl}/getActivityActiveByUrl`,data);
-    }
+    },
+    drawLotteryByUser: async (data) => {
+        try {
+            console.log('发送抽奖请求:', data); // 添加这行
+            const response = await axios.post('/api/user/drawLotteryByUser', data);
+            console.log('抽奖响应:', response.data); // 添加这行
+            return response.data;
+        } catch (error) {
+            console.error('抽奖API错误详情:', error.response); // 详细错误日志
+            throw new Error(error.response?.data?.message || '抽奖失败');
+        }
+    },
 };
 
 export default user;

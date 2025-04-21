@@ -165,6 +165,7 @@ exports.getParticipatedActivities = async (userName) => {
             username AS id,
             activity_name AS title,
             participation_time AS joinTime,
+            end_time AS endTime,
             status
         FROM 
             participations
@@ -189,4 +190,91 @@ exports.getWinningResults = async (userName) => {
             username = ?
     `;
     return await db.query(sql, [userName]);
+};
+// 根据用户名和活动URL获取用户抽奖资格
+exports.checkUserEligibility = async (userName, activityUrl) => {
+    const sql = `
+        SELECT 
+            COUNT(*) AS eligible
+        FROM 
+            participations
+        WHERE 
+            username = ? 
+            AND activity_name = (
+                SELECT activity_name FROM activities WHERE activity_url = ?
+            )
+            AND has_participated = 0
+    `;
+    const result = await db.query(sql, [userName, activityUrl]);
+    return result[0].eligible > 0;
+};
+
+// 标记用户已参与抽奖
+exports.markUserParticipated = async (userName, activityUrl) => {
+    const sql = `
+        UPDATE participations
+        SET has_participated = 1,
+            participation_time = CURRENT_TIMESTAMP
+        WHERE 
+            username = ? 
+            AND activity_name = (
+                SELECT activity_name FROM activities WHERE activity_url = ?
+            )
+    `;
+    return await db.query(sql, [userName, activityUrl]);
+};
+
+// 根据用户名和活动URL获取奖品配置
+exports.getPrizeConfigByUser = async (userName, activityUrl) => {
+    const sql = `
+        SELECT 
+            p.prize_name AS prizeName,
+            p.prize_probability AS probability,
+            p.prize_quantity AS quantity
+        FROM 
+            prizes p
+        JOIN activities a ON p.activity_url = a.activity_url
+        JOIN participations part ON a.activity_name = part.activity_name
+        WHERE 
+            part.username = ?
+            AND p.activity_url = ?
+            AND part.has_participated = 0
+    `;
+    return await db.query(sql, [userName, activityUrl]);
+};
+
+// 记录抽奖结果（基于用户名）
+exports.recordUserLotteryResult = async (userName, activityUrl, prizeName) => {
+    const sql = `
+        INSERT INTO activity_results 
+        (activity_name, username, activity_result, win_time, participation_time)
+        VALUES (
+            (SELECT activity_name FROM activities WHERE activity_url = ?),
+            ?,
+            ?,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        )
+    `;
+    return await db.query(sql, [activityUrl, userName, prizeName]);
+};
+
+// 更新奖品剩余数量（基于用户名）
+exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) => {
+    const sql = `
+        UPDATE prizes 
+        SET prize_quantity = prize_quantity - 1 
+        WHERE activity_url = ? 
+        AND prize_name = ? 
+        AND prize_quantity > 0
+        AND EXISTS (
+            SELECT 1 FROM participations 
+            WHERE username = ? 
+            AND activity_name = (
+                SELECT activity_name FROM activities WHERE activity_url = ?
+            )
+            AND has_participated = 0
+        )
+    `;
+    return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
 };

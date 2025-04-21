@@ -2,14 +2,21 @@ import { createStore } from "vuex";
 
 export default createStore({
   state: {
-    lotteryHistory: [],
+    user: {
+      username: 'adimin'
+    },
+    lotteryResult: null
   },
   mutations: {
-    addLotteryHistory(state, payload) {
-      state.lotteryHistory.push(payload);
-    },
+    setLotteryResult(state, payload) {
+      state.lotteryResult = payload;
+    }
   },
   getters: {
     getLotteryHistory: (state) => state.lotteryHistory,
+  },
+  actions: {
+  },
+  modules: {
   },
 });

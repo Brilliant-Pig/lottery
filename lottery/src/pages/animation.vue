@@ -13,8 +13,10 @@
 
     <!-- 抽奖结果展示 - 直接显示白色文字和按钮 -->
     <div v-if="showResult" class="result-container">
-      <h1 class="result-title">{{ result }}</h1>
-      <button @click="goToResultMan" class="result-btn">返回</button>
+        <h1 class="result-title">{{ result }}</h1>
+        <p class="result-info">用户: {{ userName }}</p>
+        <p class="result-info">活动: {{ activityName }}</p>
+        <button @click="goToResultMan" class="result-btn">返回</button>
     </div>
   </div>
 </template>
@@ -48,14 +50,10 @@ export default {
       animationFrameId: null,
       context: null,
       redirectTimer: null,
-      showResult: false,
       result: '',
-      prizeOptions: [
-        '恭喜您获得一等奖',
-        '恭喜您获得二等奖',
-        '恭喜您获得三等奖',
-        '很遗憾，您未中奖'
-      ]
+      userName: '',
+      activityName: '',
+      showResult: false
     }
   },
   mounted() {
@@ -68,6 +66,20 @@ export default {
       clearTimeout(this.redirectTimer)
     }
   },
+  async created() {
+    // 从Vuex获取抽奖结果
+    const lotteryResult = this.store.state.lotteryResult;
+    
+    if (lotteryResult) {
+        this.result = lotteryResult.prize;
+        this.userName = lotteryResult.userName;
+        this.activityName = lotteryResult.activityName;
+        this.showResult = true;
+    } else {
+        this.result = '请从抽奖页面进入';
+        this.showResult = true;
+    }
+},
   methods: {
     initCanvas() {
       const element = this.$refs.blackhole
