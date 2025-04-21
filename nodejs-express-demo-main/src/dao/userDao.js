@@ -90,6 +90,7 @@ exports.getActivityEndTimeByUrl = async (activityUrl) => {
     const sqlParams = [activityUrl];
     return await db.query(sql, sqlParams); //用于筛选的
 };
+
 exports.getUserAvatar = async (userName) => {
     const sql = `
         SELECT
@@ -191,6 +192,7 @@ exports.getWinningResults = async (userName) => {
     `;
     return await db.query(sql, [userName]);
 };
+
 // 根据用户名和活动URL获取用户抽奖资格
 exports.checkUserEligibility = async (userName, activityUrl) => {
     const sql = `
@@ -277,4 +279,19 @@ exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) =>
         )
     `;
     return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
+
+
+//用活动id来获取活动开始时间
+exports.getActivityStartTimeByUrl = async (activityUrl) => {
+    const sql = `
+        SELECT
+            start_time AS startTime
+        FROM
+            activities
+        WHERE
+            activity_url = ?
+    `; //where条件中使用问号，代表参数，参数值将在后面传入，参数代表筛选条件
+    const sqlParams = [activityUrl];
+    return await db.query(sql, sqlParams); //用于筛选的
+
 };

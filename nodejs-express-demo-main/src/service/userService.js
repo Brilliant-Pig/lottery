@@ -66,6 +66,7 @@ exports.getActivityActiveByUrl = async (activityUrl) => {
     return result;
 };
 
+
 // 执行基于用户名的抽奖逻辑
 exports.drawLotteryByUser = async (userName, activityUrl) => {
     // 检查用户是否有抽奖资格
@@ -114,4 +115,9 @@ exports.drawLotteryByUser = async (userName, activityUrl) => {
     await userDao.recordUserLotteryResult(userName, activityUrl, selectedPrize.prizeName);
 
     return selectedPrize.prizeName;
+
+exports.getActivityStartTimeByUrl = async (activityUrl) => {
+    const result = await userDao.getActivityStartTimeByUrl(activityUrl);
+    return result;
+
 };

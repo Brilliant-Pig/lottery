@@ -31,6 +31,7 @@ const user = {
     getActivityActiveByUrl(data){
         return request.get(`${moduleUrl}/getActivityActiveByUrl`,data);
     },
+
     drawLotteryByUser: async (data) => {
         try {
             console.log('发送抽奖请求:', data); // 添加这行
@@ -41,6 +42,9 @@ const user = {
             console.error('抽奖API错误详情:', error.response); // 详细错误日志
             throw new Error(error.response?.data?.message || '抽奖失败');
         }
+    //通过向后端发送id返还活动开始时间
+    getActivityStartTimeByUrl(data){
+        return request.get(`${moduleUrl}/getActivityStartTimeByUrl`,data);
     },
 };
 
