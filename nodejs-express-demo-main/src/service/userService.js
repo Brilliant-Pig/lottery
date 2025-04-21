@@ -115,3 +115,8 @@ exports.drawLotteryByUser = async (userName, activityUrl) => {
 
     return selectedPrize.prizeName;
 };
+
+exports.getActivityStartTimeByUrl = async (activityUrl) => {
+    const result = await userDao.getActivityStartTimeByUrl(activityUrl);
+    return result;
+};

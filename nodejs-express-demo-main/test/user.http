@@ -55,3 +55,7 @@ GET http://127.0.0.1:33001/api/user/getParticipatedActivities
 ###获取结果
 GET http://127.0.0.1:33001/api/user/getWinningResults
     ?userName=admin
+
+### 获取活动启动时间戳
+GET http://127.0.0.1:33001/api/user/getActivityStartTimeByUrl
+    ?activityUrl=1
