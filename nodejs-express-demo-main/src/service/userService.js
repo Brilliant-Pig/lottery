@@ -66,6 +66,71 @@ exports.getActivityActiveByUrl = async (activityUrl) => {
     return result;
 };
 
+// 执行基于用户名的抽奖逻辑
+exports.drawLotteryByUser = async (userName, activityUrl) => {
+    console.log(`开始处理抽奖请求，用户: ${userName}, 活动URL: ${activityUrl}`);
+
+    // 1. 获取活动信息（包含完整验证）
+    const activity = await userDao.getActivityActiveByUrl(activityUrl);
+    console.log('活动查询结果:', activity);
+
+    if (!activity) {
+        throw new Error('活动不存在、未开始或已结束');
+    }
+
+    // 2. 检查用户资格
+    const isEligible = await userDao.checkUserEligibility(userName, activityUrl);
+    if (!isEligible) {
+        throw new Error('用户没有抽奖资格或已参与过抽奖');
+    }
+
+    // 3. 获取奖品配置（添加调试日志）
+    const prizes = await userDao.getPrizeConfigByUser(userName, activityUrl);
+    console.log('奖品配置:', prizes);
+
+    if (!prizes || prizes.length === 0) {
+        throw new Error('活动尚未配置奖品');
+    }
+
+    // 计算总概率
+    const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+
+    // 生成随机数
+    const random = Math.random() * totalProbability;
+
+    let accumulatedProbability = 0;
+    let selectedPrize = null;
+
+    // 根据概率选择奖品
+    for (const prize of prizes) {
+        accumulatedProbability += prize.probability;
+        if (random <= accumulatedProbability && prize.quantity > 0) {
+            selectedPrize = prize;
+            break;
+        }
+    }
+
+    // 如果没有可用的奖品，则返回未中奖
+    if (!selectedPrize) {
+        selectedPrize = { prizeName: '很遗憾，您未中奖', probability: 0, quantity: 0 };
+    } else {
+        // 更新奖品数量
+        await userDao.updatePrizeQuantityForUser(userName, activityUrl, selectedPrize.prizeName);
+    }
+
+    // 标记用户已参与抽奖
+    await userDao.markUserParticipated(userName, activityUrl);
+
+    // 记录抽奖结果
+    await userDao.recordUserLotteryResult(userName, activityUrl, selectedPrize.prizeName);
+
+    return {
+        prize: selectedPrize.prizeName,
+        activityUrl: activityUrl,
+        activityName: activity.activityName
+    };
+};
+
 exports.getActivityStartTimeByUrl = async (activityUrl) => {
     const result = await userDao.getActivityStartTimeByUrl(activityUrl);
     return result;

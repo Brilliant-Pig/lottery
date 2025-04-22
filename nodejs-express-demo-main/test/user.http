@@ -59,3 +59,12 @@ GET http://127.0.0.1:33001/api/user/getWinningResults
 ### 获取活动启动时间戳
 GET http://127.0.0.1:33001/api/user/getActivityStartTimeByUrl
     ?activityUrl=1
+
+### 测试抽奖
+POST http://127.0.0.1:33001/api/user/drawLotteryByUser
+Content-Type: application/json
+
+{
+    "activityUrl": "1",
+    "userName": "admin"
+    }

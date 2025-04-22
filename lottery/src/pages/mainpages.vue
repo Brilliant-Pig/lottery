@@ -209,41 +209,6 @@ export default {
         { id: 'participated', title: '已参与', icon: 'icon-join' },
         { id: 'results', title: '抽奖结果', icon: 'icon-result' }
         ],
-        // 模拟数据
-/*         createdLottories: [
-        {
-            id: 1,
-            title: '周年庆大抽奖',
-            createTime: '2024-03-15',
-            status: 'ongoing',
-            participants: 142
-        }
-        ],
-        participatedLottories: [
-        {
-            id: 2,
-            title: '每日幸运抽奖',
-            joinTime: '2024-03-20',
-            status: 'ongoing',
-            win: false
-        }
-        ],
-        ongoingResults: [
-        {
-            id: 3,
-            title: '春日限定抽奖',
-            drawTime: '2024-03-25 20:00',
-            remainingTime: '2天3小时'
-        }
-        ],
-        historyResults: [
-        {
-            id: 4,
-            prizeName: '神秘大礼包',
-            winTime: '2024-02-10',
-            status: 'received'
-        }
-        ] */
     }
     },
     computed: {
@@ -280,7 +245,7 @@ export default {
         const statusMap = {
             ongoing: '进行中',
             ended: '已结束',
-            preparing: '准备中'
+            unstarted: '未开始',
         };
         return statusMap[status] || status || '未知状态';},
     viewDetail(id) {
@@ -339,20 +304,29 @@ formatDate(timestamp) {
         return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
     },
     
-    calculateRemainingTime(joinTime) {
-        if (!joinTime) return '未知时间';
-        const now = new Date();
-        const joinDate = new Date(joinTime);
-        const diff = joinDate - now;
-        
-        if (diff <= 0) return '已结束';
-        
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
-        return `${days}天${hours}小时${minutes}分钟`;
-    },
+    calculateRemainingTime(endTime) {
+    if (!endTime) return '未知时间';
+    
+    const now = new Date();
+    const endDate = new Date(endTime);
+    
+    // 如果结束时间早于当前时间
+    if (endDate <= now) return '已结束';
+    
+    // 计算剩余时间
+    const diff = endDate - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // 只显示有值的部分
+    let result = [];
+    if (days > 0) result.push(`${days}天`);
+    if (hours > 0) result.push(`${hours}小时`);
+    if (minutes > 0) result.push(`${minutes}分钟`);
+    
+    return result.length > 0 ? result.join('') : '即将结束';
+},
     async loadUserData() {
     try {
         const username = localStorage.getItem('username');
@@ -391,29 +365,29 @@ formatDate(timestamp) {
             }));
             
             // 处理已参与的抽奖
-            this.participatedLottories = (participatedRes.data?.data || [])
-                .map(item => ({
-                    id: item.id + '_participated' || item.username, 
-                    title: item.title || '未命名活动',
-                    joinTime: this.formatDateTime(item.joinTime || item.participation_time),
-                    status: item.status ,
-                }));
+            this.participatedLottories = (participatedRes.data?.data || []).map(item => ({
+            id: item.id + '_participated',
+            title: item.title || '未命名活动',
+            joinTime: this.formatDateTime(item.joinTime || item.participation_time),
+            endTime: item.endTime || item.end_time,
+            status: item.status || 'ongoing'
+            }));
             
             // 处理中奖结果
             this.historyResults = (resultsRes.data?.data || []).map(item => ({
                 id: item.username || Math.random().toString(36).substr(2, 9),
-                prizeName: item.prize_name || '神秘奖品',
-                winTime: this.formatDate(item.win_time)
+                prizeName: item.result || '神秘奖品',
+                winTime: this.formatDate(item.winTime)
             }));
             
             // 初始化进行中的抽奖
             this.ongoingResults = this.participatedLottories
-                .filter(item => item.status === 'ongoing')
-                .map(item => ({
-                    ...item,
-                    drawTime: this.formatDateTime(item.joinTime),
-                    remainingTime: this.calculateRemainingTime(item.joinTime)
-                }));
+            .filter(item => item.status === 'ongoing')
+            .map(item => ({
+                ...item,
+                drawTime: this.formatDateTime(item.endTime), // 使用结束时间作为开奖时间
+                remainingTime: this.calculateRemainingTime(item.endTime) // 使用结束时间计算
+            }));
             }
     } catch (error) {
         console.error('加载数据失败:', error);
@@ -638,5 +612,7 @@ margin:auto;
     }
     }
 }
-
+.result-list{
+    color: #ffffff;
+}
 </style>

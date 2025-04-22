@@ -7,7 +7,7 @@
                         :particleCount="1000"
                         :speed="0.05"
                         :particleBaseSize="80"
-                        :alphaParticles="true"
+                        :alphaParticles="false"
                     />
             </div>
         <!-- TinyVue布局容器 -->
