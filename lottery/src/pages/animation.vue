@@ -16,7 +16,7 @@
         <h1 class="result-title">{{ result }}</h1>
         <p class="result-info">用户: {{ userName }}</p>
         <p class="result-info">活动: {{ activityName }}</p>
-        <button @click="goToResultMan" class="result-btn">返回</button>
+        <button @click="goToResultCus" class="result-btn">返回</button>
     </div>
   </div>
 </template>
@@ -79,7 +79,7 @@ export default {
         this.result = '请从抽奖页面进入';
         this.showResult = true;
     }
-},
+  },
   methods: {
     initCanvas() {
       const element = this.$refs.blackhole
@@ -145,8 +145,8 @@ export default {
       });
     },
 
-    goToResultMan() {
-      this.router.push({ name: 'ResultMan' });
+    goToResultCus() {
+      this.router.push({ name: 'ResultCus' });
     },
 
     handleMouseOver() {

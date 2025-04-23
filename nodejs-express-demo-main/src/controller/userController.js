@@ -77,17 +77,6 @@ router.get('/getUserAvatar', async (req, res, next) => {
 });
 
 // 上传用户头像
-/* router.post('/uploadAvatar', async (req, res, next) => {
-    try {
-        // 注意：实际文件上传需要使用multer等中间件处理
-        // 这里简化处理，实际项目中应该处理文件上传
-        const { userName, avatarUrl } = req.body;
-        const result = await userService.uploadAvatar(userName, avatarUrl);
-        res.ResultVO(0, '头像上传成功', result);
-    } catch (err) {
-        res.ResultVO(1, '头像上传失败', err);
-    }
-}); */
 router.post('/uploadAvatar', upload.single('avatar'), async (req, res, next) => {
     try {
         if (!req.file) {
@@ -144,22 +133,31 @@ router.get('/getActivityStartTimeByUrl', async (req, res, next) => {
 // 添加基于用户名的抽奖接口
 router.post('/drawLotteryByUser', async (req, res, next) => {
     try {
-        console.log('收到抽奖请求:', req.body); // 添加日志
         const { activityUrl, userName } = req.body;
-
-        if (!req.body.userName || !req.body.activityUrl) {
+        if (!userName || !activityUrl) {
             return res.status(400).json({
                 code: 1,
                 message: '缺少必要参数',
-                required: ['userName', 'activityUrl'],
-                received: Object.keys(req.body)
+                details: {
+                    required: ['userName', 'activityUrl'],
+                    received: req.body
+                }
             });
         }
 
         const result = await userService.drawLotteryByUser(userName, activityUrl);
-        res.json({ code: 0, message: '抽奖成功', prize: result });
+        res.json({
+            code: 0,
+            message: '抽奖成功',
+            data: result
+        });
     } catch (err) {
-        console.error('抽奖控制器错误:', err);
+        console.error('控制器错误详情:', {
+            error: err.message,
+            stack: err.stack,
+            body: req.body
+        });
+
         res.status(500).json({
             code: 1,
             message: err.message || '抽奖失败'
