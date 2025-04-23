@@ -8,3 +8,14 @@ export default {
         };
     }
 };
+
+export const mutations = {
+    setLotteryResult(state, payload) {
+        state.lotteryResult = {
+            prize: payload.prize,
+            userName: payload.userName,
+            activityUrl: payload.activityUrl,
+            activityName: payload.activityName
+        };
+    }
+};
