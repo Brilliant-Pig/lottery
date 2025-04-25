@@ -99,6 +99,8 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router'; // 导入 useRouter
+
 export default {
     data() {
         return {
@@ -112,6 +114,12 @@ export default {
             importStatus: null,
         };
     },
+
+    setup() {
+        const router = useRouter();
+        return { router };
+    },
+
     methods: {
         ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
         handlePrizeImageUpload(event, index) { /* 图片上传逻辑 */ },
@@ -126,7 +134,19 @@ export default {
         uploadFromExcel() { /* Excel上传逻辑 */ },
         uploadFromCSV() { /* CSV上传逻辑 */ },
         async importData() { /* 数据导入逻辑 */ },
-        launchLottery() { /* 发布抽奖活动逻辑 */ }
+        launchLottery(){
+            if(!this.lotteryInfo.name){
+                alert('请填写抽奖名称');
+                return;
+            }
+            for(const prize of this.prizes){
+                if(!prize.name || !prize.quantity){
+                    alert('请填写奖品名称和奖品份数');
+                    return;
+                }
+            }
+            this.router.push({ name: 'TotalAnimation' });
+        }
     },
 };
 </script>
