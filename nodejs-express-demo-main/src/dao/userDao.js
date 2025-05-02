@@ -253,12 +253,9 @@ exports.getPrizeConfigByUser = async (userName, activityUrl) => {
         FROM 
             prizes
         WHERE 
-            username = ?
-            AND activity_name = (
-                SELECT activity_name FROM activities WHERE activity_url = ?
-            )
+            activity_url = ?
     `;
-    return await db.query(sql, [userName, activityUrl]);
+    return await db.query(sql, [activityUrl]);
 };
 
 // 记录抽奖结果（基于用户名）
