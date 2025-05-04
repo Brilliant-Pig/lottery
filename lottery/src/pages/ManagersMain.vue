@@ -17,16 +17,42 @@
         </section>
 
         <!-- 参与人员名单上传 -->
-        <section class="section-bg">
-            <div class="header-bg">
-                <h2>参与人员名单</h2>
-            </div>
-            <div class="main-bg">
-                <button @click="toggleUploadMethod" class="rounded-box">上传</button>
-                <div v-if="showUploadOptions" class="upload-options">
-                </div>
-            </div>
-        </section>
+    <section class="section-bg">
+        <div class="header-bg">
+        <h2>参与人员名单</h2>
+        </div>
+        <div class="main-bg">
+        <input 
+            type="file" 
+            ref="fileInput"
+            accept=".csv, .xlsx, .xls"
+            @change="handleFileUpload"
+            style="display: none"
+        >
+        <button @click="triggerFileInput" class="rounded-box">
+            {{ fileData ? '已选择文件: ' + fileData.name : '上传名单文件' }}
+        </button>
+        
+        <div v-if="fileData" class="file-preview">
+            <p>已选择文件: {{ fileData.name }}</p>
+            <button @click="parseFile" class="parse-btn">解析文件</button>
+        </div>
+        
+        <div v-if="headers.length > 0" class="column-selector">
+            <label>选择姓名列:</label>
+            <select v-model="selectedNameColumn">
+            <option v-for="header in headers" :key="header" :value="header">
+                {{ header }}
+            </option>
+            </select>
+            <button @click="confirmImport" class="confirm-btn">确认导入</button>
+        </div>
+        
+        <div v-if="importStatus" class="import-status">
+            {{ importStatus }}
+        </div>
+        </div>
+    </section>
 
         <!-- 奖项配置 -->
         <section class="section-bg">
@@ -99,6 +125,8 @@
 </template>
 
 <script>
+import * as XLSX from 'xlsx';
+import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router'; // 导入 useRouter
 
 export default {
@@ -111,7 +139,9 @@ export default {
             visibility: 'public',
             fileData: null,
             headers: [],
-            importStatus: null,
+            selectedNameColumn: '',
+            participantList: [],
+            importStatus: null
         };
     },
 
@@ -134,24 +164,161 @@ export default {
         uploadFromExcel() { /* Excel上传逻辑 */ },
         uploadFromCSV() { /* CSV上传逻辑 */ },
         async importData() { /* 数据导入逻辑 */ },
-        launchLottery(){
-            if(!this.lotteryInfo.name){
-                alert('请填写抽奖名称');
-                return;
-            }
-            for(const prize of this.prizes){
-                if(!prize.name || !prize.quantity){
-                    alert('请填写奖品名称和奖品份数');
-                    return;
-                }
-            }
-            this.router.push({ name: 'TotalAnimation' });
+        triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    
+    handleFileUpload(event) {
+      this.fileData = event.target.files[0];
+      this.headers = [];
+      this.selectedNameColumn = '';
+    },
+    
+    async parseFile() {
+  if (!this.fileData) {
+    ElMessage.error('请先选择文件');
+    return []; // 返回空数组而不是undefined
+  }
+  
+  try {
+    let data;
+    if (this.fileData.name.endsWith('.csv')) {
+      data = await this.parseCSV(this.fileData);
+    } else {
+      data = await this.parseExcel(this.fileData);
+    }
+    
+    if (data && data.length > 0) {
+      this.headers = Object.keys(data[0]);
+      this.importStatus = `成功解析 ${data.length} 条记录`;
+      return data; // 确保返回解析的数据
+    } else {
+      ElMessage.error('文件内容为空');
+      return [];
+    }
+  } catch (error) {
+    console.error('解析文件失败:', error);
+    ElMessage.error('解析文件失败: ' + error.message);
+    return []; // 出错时返回空数组
+  }
+},
+    
+    parseCSV(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target.result;
+          const lines = content.split('\n');
+          const headers = lines[0].split(',');
+          const result = lines.slice(1).map(line => {
+            const values = line.split(',');
+            return headers.reduce((obj, header, i) => {
+              obj[header.trim()] = values[i] ? values[i].trim() : '';
+              return obj;
+            }, {});
+          });
+          resolve(result);
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    },
+    
+    async parseExcel(file) {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      return XLSX.utils.sheet_to_json(firstSheet);
+    },
+    
+    async confirmImport() {
+  if (!this.selectedNameColumn) {
+    ElMessage.error('请选择姓名列');
+    return;
+  }
+  
+  try {
+    const data = await this.parseFile();
+    if (data && data.length > 0) {
+      this.participantList = data
+        .map(item => item[this.selectedNameColumn])
+        .filter(name => name); // 过滤掉空值
+      
+      if (this.participantList.length === 0) {
+        ElMessage.error('选择的姓名列中没有有效数据');
+        return;
+      }
+      
+      this.importStatus = `成功导入 ${this.participantList.length} 个参与者`;
+      ElMessage.success('参与者名单导入成功');
+    }
+  } catch (error) {
+    console.error('导入失败:', error);
+    ElMessage.error('导入失败: ' + error.message);
+  }
+},
+    launchLottery() {
+    if(!this.lotteryInfo.name){
+        ElMessage.error('请填写抽奖名称');
+        return;
+    }
+    if (!this.participantList || this.participantList.length === 0) {
+        ElMessage.error('请先导入参与者名单');
+        return;
+    }
+    
+    for(const prize of this.prizes){
+        if(!prize.name || !prize.quantity){
+        ElMessage.error('请填写奖品名称和奖品份数');
+        return;
         }
+    }
+    
+    // 保存抽奖数据到store
+    this.$store.commit('setLotteryData', {
+        lotteryInfo: this.lotteryInfo,
+        prizes: this.prizes,
+        participantList: this.participantList
+    });
+    
+    this.router.push({ name: 'TotalAnimation' });
+    }
     },
 };
 </script>
 
 <style scoped>
+.file-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.parse-btn, .confirm-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #3abd92;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.column-selector {
+  margin-top: 15px;
+}
+
+.column-selector select {
+  margin: 0 10px;
+  padding: 5px;
+}
+
+.import-status {
+  margin-top: 10px;
+  color: #666;
+  font-size: 0.9em;
+}
 .container {
     max-width: 800px;
     margin: 0 auto;
