@@ -71,6 +71,9 @@
                     <label>奖品份数*:</label>
                     <input type="number" v-model="prize.quantity" required />
                     <br />
+                    <label>奖品比重*:</label>
+                    <input type="number" v-model="prize.weight" required />
+                    <br />
                     <label>奖品图片:</label>
                     <div class="image-upload">
                         <input type="file" @change="handlePrizeImageUpload($event, index)" accept="image/*"
@@ -133,7 +136,9 @@ export default {
     data() {
         return {
             lotteryInfo: { name: '', description: '' },
-            prizes: [{ level: '一等奖', name: '', quantity: 1 }],
+            prizes: [
+                { level: '一等奖', name: '', quantity: 1, weight: 50 } // 默认比重为 50
+            ],
             showUploadOptions: false,
             timeSettings: { startTime: '', endTime: '' },
             visibility: 'public',
@@ -155,7 +160,7 @@ export default {
         handlePrizeImageUpload(event, index) { /* 图片上传逻辑 */ },
         addPrizeLevel() {
             const lastLevel = this.prizes.length;
-            this.prizes.push({ level: `${this.ordinal(lastLevel)}等奖`, name: '', quantity: 1 });
+            this.prizes.push({ level: `${this.ordinal(lastLevel)}等奖`, name: '', quantity: 1, weight: 50 });
         },
         removePrizeLevel(index) {
             this.prizes.splice(index, 1);
@@ -257,8 +262,8 @@ export default {
     ElMessage.error('导入失败: ' + error.message);
   }
 },
-    launchLottery() {
-    if(!this.lotteryInfo.name){
+launchLottery() {
+    if (!this.lotteryInfo.name) {
         ElMessage.error('请填写抽奖名称');
         return;
     }
@@ -266,23 +271,47 @@ export default {
         ElMessage.error('请先导入参与者名单');
         return;
     }
-    
-    for(const prize of this.prizes){
-        if(!prize.name || !prize.quantity){
-        ElMessage.error('请填写奖品名称和奖品份数');
-        return;
+
+    for (const prize of this.prizes) {
+        if (!prize.name || !prize.quantity || !prize.weight) {
+            ElMessage.error('请填写奖品名称、奖品份数和比重');
+            return;
         }
     }
-    
-    // 保存抽奖数据到store
-    this.$store.commit('setLotteryData', {
+
+    // 定义 payload 并传递给 Vuex Store
+    const payload = {
         lotteryInfo: this.lotteryInfo,
         prizes: this.prizes,
-        participantList: this.participantList
-    });
-    
+        participantList: this.participantList,
+    };
+
+    // 提交到 Vuex Store
+    this.$store.commit('setLotteryData', payload);
+
+    // 跳转到动画页面
     this.router.push({ name: 'TotalAnimation' });
+},
+executeLottery() {
+    const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    const winners = [];
+
+    for (const participant of this.participantList) {
+        const random = Math.random() * totalWeight;
+        let cumulativeWeight = 0;
+
+        for (const prize of this.prizes) {
+            cumulativeWeight += prize.weight;
+            if (random <= cumulativeWeight && prize.quantity > 0) {
+                winners.push({ participant, prize: prize.name });
+                prize.quantity--; // 减少奖品数量
+                break;
+            }
+        }
     }
+
+    return winners;
+}
     },
 };
 </script>

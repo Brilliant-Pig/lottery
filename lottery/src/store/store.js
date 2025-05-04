@@ -11,20 +11,27 @@ const userModule = {
   },
   mutations: {
     setLotteryResult(state, payload) {
+      if (!payload) {
+        console.error('setLotteryResult: payload 未定义');
+        return;
+      }
       state.lotteryResult = {
-        prize: payload.prize,
-        userName: payload.userName,
-        activityUrl: payload.activityUrl,
-        activityName: payload.activityName,
-        payload,
+        prize: payload.prize || null,
+        userName: payload.userName || null,
+        activityUrl: payload.activityUrl || null,
+        activityName: payload.activityName || null,
       };
     },
     setUsername(state, username) {
       state.username = username;
     },
-    setLotteryData(state, lotteryData) {
-      state.lotteryData = lotteryData;
-    }
+    setLotteryData(state, payload) {
+      if (!payload) {
+          console.error('setLotteryData: payload 未定义');
+          return;
+      }
+      state.lotteryData = payload; // 存储完整的抽奖数据
+  },
   },
 };
 

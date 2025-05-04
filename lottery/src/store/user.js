@@ -17,12 +17,16 @@ export const useUserStore = defineStore('user', {
       this.token = userData.token
     },
     setLotteryResult(payload) {
-      this.lotteryResult = {
-        prize: payload.prize,
-        userName: payload.userName,
-        activityUrl: payload.activityUrl,
-        activityName: payload.activityName
+      if (!payload) {
+        console.error('setLotteryResult: payload 未定义');
+        return;
       }
-    }
+      this.lotteryResult = {
+        prize: payload.prize || null,
+        userName: payload.userName || null,
+        activityUrl: payload.activityUrl || null,
+        activityName: payload.activityName || null,
+      };
+    },
   }
 })
