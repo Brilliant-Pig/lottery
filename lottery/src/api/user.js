@@ -27,11 +27,13 @@ const user = {
     getActivityRemainsByUrl(data){
         return request.get(`${moduleUrl}/getActivityRemainsByUrl`,data);
     },
-    //通过向后端发送id返还活动开展状态
+    //通过向后端发送url返还活动开展状态
     getActivityActiveByUrl(data){
         return request.get(`${moduleUrl}/getActivityActiveByUrl`,data);
     },
-
+    checkEligibility(data) {
+        return request.post(`${moduleUrl}/checkUserEligibility`, data);
+    },
     drawLotteryByUser(data) {
         console.log(data);
         

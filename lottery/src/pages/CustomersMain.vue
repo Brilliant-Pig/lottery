@@ -25,18 +25,19 @@
 </template>
 
 <script setup>
-import { useStore } from 'vuex';
 import Timer from '../components/Timer.vue';
 import PeopleRemainder from '../components/PeopleRemainder.vue';
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import user from '../api/user';
+import { useUserStore } from '../store/user'; // 修改为您的实际路径
 
+const userStore = useUserStore();
+const userName = userStore.username;
 const router = useRouter();
-const store = useStore();
 const input = ref('');
-const activityName = ref("暂时未选中活动哦~");
+const activityName = ref("暂时未填写活动url哦~");
 const isLoading = ref(false);
 let dataTimer = null;
 
@@ -73,37 +74,32 @@ const getActive = async () => {
 // 抽奖逻辑
 const goToRC = async () => {
     if (isLoading.value) return;
+    
+    if (!input.value.trim()) {
+        return ElMessage.error('请输入正确活动URL哦~');
+    }
+    // 明确检查登录状态
+    if (!userStore.token || !userStore.username) {
+        ElMessage.warning('请先登录');
+        return router.push('/LoginMain');
+    }
+
     isLoading.value = true;
     
     try {
-        const userName = store.state.user?.username;
-        if (!userName || !input.value) {
-            throw new Error(userName ? '请输入活动URL' : '请先登录');
-        }
-
         const response = await user.drawLotteryByUser({
             activityUrl: input.value,
-            userName,
-        }).catch(err => {
-            // 处理网络错误
-            if (!err.response) {
-                throw new Error('网络错误，请检查连接');
-            }
-            throw err;
+            userName: userStore.username // 使用 Pinia 中的用户名
         });
-        
-        if (!response?.prize) {
-            throw new Error('无效的抽奖结果');
+
+        if (response.code !== 0) {
+            throw new Error(response.message || '抽奖失败');
         }
-        
-        store.commit('setLotteryResult', response);
+
+        userStore.setLotteryResult(response.data); // 使用 Pinia 存储结果
         await router.push('/animation');
     } catch (error) {
-        let message = error.response?.data?.message || error.message;
-        if (error.response?.status === 500) {
-            message = '服务器处理抽奖时出错';
-        }
-        ElMessage.error(message);
+        ElMessage.error(error.message);
     } finally {
         isLoading.value = false;
     }
@@ -113,10 +109,41 @@ const goToEX = () => {
     router.push({ path: '/ManagersMain' });
 };
 
-// 监听输入变化
+// 监听输入变化(修改后的)
 watch(input, async (newVal) => {
-    console.log('当前输入URL:', newVal);
-    await getActive();
+    if (!newVal.trim()) {
+        activityName.value = "暂时未填写活动url哦~";
+        return;
+    }
+    
+    try {
+        // 使用正确的API方法名
+        const response = await user.getActivityActiveByUrl({
+            activityUrl: newVal.trim()
+        });
+        
+        console.log('活动状态响应:', response); // 调试日志
+        
+        if (response && response.activityStatus) {
+            activityName.value = response.activityName;
+            
+            // 检查活动状态
+            if (response.activityStatus !== 'ongoing') {
+                const statusMap = {
+                    'unstarted': '未开始',
+                    'ended': '已结束',
+                    'draft': '未发布'
+                };
+                ElMessage.warning(`活动当前状态: ${statusMap[response.activityStatus] || response.activityStatus}`);
+            }
+        } else {
+            activityName.value = `未找到活动: ${newVal}`;
+        }
+    } catch (error) {
+        console.error('活动检查失败:', error);
+        activityName.value = "获取活动信息出错";
+        ElMessage.error('活动信息获取失败');
+    }
 }, { immediate: true });
 
 // 生命周期钩子
