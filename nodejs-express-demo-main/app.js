@@ -23,6 +23,7 @@ const server_conf = require('config').get('serverConfig');
 // 路由规则
 const baseUrl = server_conf.baseUrl || '/api';
 app.use(`${baseUrl}/user`, require('./src/controller/userController'));
+app.use(`${baseUrl}/auth`, require('./src/controller/authController'));
 
 // 启动服务器
 const server = app.listen(server_conf.port || 33001, server_conf.host || '127.0.0.1', () => {

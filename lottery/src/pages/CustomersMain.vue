@@ -6,7 +6,7 @@
             </tiny-input>
         </div>
         <h1>{{ activityName }}</h1>
-        <p1>抽奖剩余时间：(北京时间)</p1>
+        <p1>抽奖剩余时间(北京时间)：</p1>
         <p2>参与人数：</p2>
         <div id="timer">
             <Timer :activityUrl="input"></Timer>
@@ -166,17 +166,16 @@ h1 {
     font-size: 125px;
 }
 
-.p1.p2 {
+p1 {
+    margin-left: 5%;
     font-size: 30px;
     color: white;
 }
 
-.p1 {
-    margin-left: 5%;
-}
-
-.p2 {
+p2 {
     margin-left: 40%;
+    font-size: 30px;
+    color: white;
 }
 
 .tiny-button {
