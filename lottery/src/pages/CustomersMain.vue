@@ -34,7 +34,8 @@ import user from '../api/user';
 import { useUserStore } from '../store/user'; // 修改为您的实际路径
 
 const userStore = useUserStore();
-const userName = userStore.username;
+const userName = ref(userStore.username || localStorage.getItem('username') || ''); // 直接获取用户名
+
 const router = useRouter();
 const input = ref('');
 const activityName = ref("暂时未填写活动url哦~");
@@ -74,32 +75,65 @@ const getActive = async () => {
 // 抽奖逻辑
 const goToRC = async () => {
     if (isLoading.value) return;
-    
-    if (!input.value.trim()) {
+
+    // 确保活动URL有效
+    const activityUrl = input.value.trim();
+    if (!activityUrl) {
         return ElMessage.error('请输入正确活动URL哦~');
     }
-    // 明确检查登录状态
-    if (!userStore.token || !userStore.username) {
-        ElMessage.warning('请先登录');
-        return router.push('/LoginMain');
+
+    // 确保用户名有效
+    const userName = userStore.username || localStorage.getItem('username');
+    if (!userName) {
+        return ElMessage.error('请先登录后再抽奖！');
     }
 
     isLoading.value = true;
-    
+
     try {
-        const response = await user.drawLotteryByUser({
-            activityUrl: input.value,
-            userName: userStore.username // 使用 Pinia 中的用户名
+        console.log('准备发送抽奖请求:', { 
+            activityUrl, 
+            userName 
         });
 
-        if (response.code !== 0) {
-            throw new Error(response.message || '抽奖失败');
+        // 调用抽奖接口
+        const response = await user.drawLotteryByUser({
+            activityUrl,
+            userName
+        });
+
+        console.log('抽奖接口响应:', response);
+
+        // 检查响应格式
+        if (!response) {
+            throw new Error('未收到有效响应');
         }
 
-        userStore.setLotteryResult(response.data); // 使用 Pinia 存储结果
-        await router.push('/animation');
+        // 处理成功响应
+        if (response.code === 0) {
+            // 存储抽奖结果
+            userStore.setLotteryResult({
+                prize: response.data.prize,
+                activityUrl: response.data.activityUrl,
+                activityName: response.data.activityName,
+                userName: userName
+            });
+            
+            // 跳转到结果页面
+            await router.push('/animation');
+        } 
+        // 处理业务错误
+        else {
+            throw new Error(response.message || '抽奖失败');
+        }
     } catch (error) {
-        ElMessage.error(error.message);
+        console.error('抽奖过程出错:', {
+            error: error.message,
+            activityUrl,
+            userName,
+            time: new Date().toISOString()
+        });
+        ElMessage.error(`抽奖失败: ${error.message}`);
     } finally {
         isLoading.value = false;
     }
@@ -109,7 +143,7 @@ const goToEX = () => {
     router.push({ path: '/ManagersMain' });
 };
 
-// 监听输入变化(修改后的)
+// 监听输入变化
 watch(input, async (newVal) => {
     if (!newVal.trim()) {
         activityName.value = "暂时未填写活动url哦~";
@@ -117,7 +151,6 @@ watch(input, async (newVal) => {
     }
     
     try {
-        // 使用正确的API方法名
         const response = await user.getActivityActiveByUrl({
             activityUrl: newVal.trim()
         });
