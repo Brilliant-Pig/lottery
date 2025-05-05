@@ -263,9 +263,9 @@
     setTimeout(() => {
         if (!this.isCollapsed ) {
             this.isCollapsed = true;
-            this.asideWidth = 25;
+            this.asideWidth = 35;
         }
-        }, 1000); // 延迟 100ms
+        }, 900); // 延迟 900ms
     },
     login() {
         const username = localStorage.getItem('username');
@@ -326,7 +326,6 @@
     .avatar-upload-btn:hover {
     background: #f5f5f5;
     }
-
     /* 头部容器样式 */
     .demo-container .tiny-container :deep(.tiny-container__header) {
         border-bottom: 1.4px solid #d5d5d5;
@@ -393,7 +392,9 @@
         transform: translateY(-50%) scale(1.1);
     }
     
-    
+    .aside-container {
+    transition: width 0.8s ease-in-out; /* 将过渡时间改为 0.5s */
+    }
     /* 收缩状态下的样式 */
     .aside-container.is-collapsed {
         overflow: hidden;
