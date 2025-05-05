@@ -22,15 +22,15 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/user';
+import api from '@/api'; // 导入API模块
 
 export default {
   name: 'BlackHole',
   setup() {
-    const store = useStore();
     const router = useRouter();
-    return { store, router };
+    return { router };
   },
   data() {
     return {
@@ -50,7 +50,7 @@ export default {
       animationFrameId: null,
       context: null,
       redirectTimer: null,
-      result: '',
+      result: '正在加载结果...', // 默认显示加载中
       userName: '',
       activityName: '',
       showResult: false
@@ -66,18 +66,33 @@ export default {
       clearTimeout(this.redirectTimer)
     }
   },
-  async created() {
-    // 从Vuex获取抽奖结果
-    const lotteryResult = this.store.state.lotteryResult;
+// 修改 created 钩子
+async created() {
+    const userStore = useUserStore();
     
-    if (lotteryResult) {
-        this.result = lotteryResult.prize;
-        this.userName = lotteryResult.userName;
-        this.activityName = lotteryResult.activityName;
-        this.showResult = true;
-    } else {
-        this.result = '请从抽奖页面进入';
-        this.showResult = true;
+    // 直接从Pinia获取抽奖结果
+    if (!userStore.lotteryResult) {
+      this.result = '无效的抽奖结果';
+      this.showResult = true;
+      return;
+    }
+
+    // 显示基本结果（不验证）
+    this.result = userStore.lotteryResult.prize;
+    this.userName = userStore.lotteryResult.userName;
+    this.activityName = userStore.lotteryResult.activityName;
+    this.showResult = true;
+    try {
+      const verification = await user.verifyLotteryResult({
+        activityUrl: userStore.lotteryResult.activityUrl,
+        userName: userStore.lotteryResult.userName
+      });
+      
+      if (!verification.valid) {
+        this.result = '抽奖结果验证失败';
+      }
+    } catch (error) {
+      console.error('验证失败:', error);
     }
   },
   methods: {
@@ -120,18 +135,28 @@ export default {
       return [nx, ny]
     },
 
-    handleClick() {
-      if (this.showResult) return;
-      
-      this.collapse = false
-      this.expanse = true
-      this.isOpen = true
-      
-      // 4秒后显示结果
-      this.redirectTimer = setTimeout(() => {
-        this.generateResult();
-      }, 4000)
-    },
+// 修改 handleClick 方法
+handleClick() {
+    if (this.showResult) return;
+    
+    // 触发黑洞收缩动画
+    this.collapse = true;
+    
+    // 延迟展开动画
+    setTimeout(() => {
+        this.expanse = true;
+        this.isOpen = true;
+        
+        // 3秒后显示结果（比动画时间短）
+        setTimeout(() => {
+            this.showResult = true;
+            // 自动5秒后返回（可选）
+            setTimeout(() => {
+                this.goToResultCus();
+            }, 5000);
+        }, 3000);
+    }, 1000);
+},
 
     generateResult() {
       const randomNum = Math.floor(Math.random() * this.prizeOptions.length);

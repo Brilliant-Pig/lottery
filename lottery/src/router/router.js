@@ -101,6 +101,15 @@ const routes = [
             freeAuth: true
         }
     },
+    {
+        path: '/TotalAnimation',
+        name: 'TotalAnimation',
+        component: () => import('../pages/TotalAnimation.vue'),
+        meta: { 
+            title: '管理员动画页面',
+            freeAuth: true
+        }
+    }
 ];
 
 const router = createRouter({

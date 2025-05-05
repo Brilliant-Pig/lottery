@@ -102,7 +102,7 @@
         <el-button 
             v-if="isLoggedIn" 
             @click="logout" 
-            style="margin-left: 1050px;margin-top: 18px; text-align: center; padding: auto; z-index: 2;">
+            style="margin-left: 80vw;margin-top: 18px; text-align: center; padding: auto; z-index: 2;color: aliceblue;">
             退出登录
         </el-button>
     </template>
@@ -207,12 +207,12 @@
                 this.circleUrl = avatarUrl; 
             }
             this.isLoggedIn = true; 
-            this.$router.push('/LotteryMain'); // 跳转到 LotteryMain
+            this.$router.push('/LotteryMain');
         } else {
             this.Loginportrait = '请点击登录'; 
             this.circleUrl = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'; // 重置为默认头像
             this.isLoggedIn = false; 
-            this.$router.push('/LoginMain'); // 跳转到登录页面
+            this.$router.push('/LoginMain');
         }
         const loadData = () => {
             this.Loginportrait = localStorage.getItem('username') || '请点击登录';
@@ -263,9 +263,9 @@
     setTimeout(() => {
         if (!this.isCollapsed ) {
             this.isCollapsed = true;
-            this.asideWidth = 15;
+            this.asideWidth = 25;
         }
-        }, 100); // 延迟 100ms
+        }, 1000); // 延迟 100ms
     },
     login() {
         const username = localStorage.getItem('username');
