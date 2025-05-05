@@ -122,18 +122,25 @@ exports.drawLotteryByUser = async (userName, activityUrl) => {
         await userDao.recordUserLotteryResult(userName, activityUrl, selectedPrize.prizeName);
 
         return {
-            prize: selectedPrize.prizeName,
-            activityUrl: activityUrl,
-            activityName: activity.activityName
+            code: 0,
+            message: '抽奖成功',
+            data: {
+                prize: selectedPrize.prizeName,
+                activityUrl,
+                activityName: activity.activityName
+            }
         };
     } catch (err) {
-        console.error('抽奖服务错误详情:', {
+        console.error('抽奖服务错误:', {
             error: err.message,
             stack: err.stack,
             userName,
             activityUrl
         });
-        throw new Error(`抽奖失败: ${err.message}`); // 确保错误信息明确
+        return {
+            code: 1,
+            message: err.message
+        };
     }
 };
 

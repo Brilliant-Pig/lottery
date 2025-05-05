@@ -13,24 +13,25 @@
 
     <!-- 抽奖结果展示 - 直接显示白色文字和按钮 -->
     <div v-if="showResult" class="result-container">
-        <h1 class="result-title">{{ result }}</h1>
-        <p class="result-info">用户: {{ userName }}</p>
-        <p class="result-info">活动: {{ activityName }}</p>
-        <button @click="goToResultCus" class="result-btn">返回</button>
+      <h1 class="result-title">{{ result }}</h1>
+      <p class="result-info">用户: {{ userName }}</p>
+      <p class="result-info">活动: {{ activityName }}</p>
+      <button @click="goToResultCus" class="result-btn">返回</button>
     </div>
   </div>
 </template>
 
 <script>
+import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user';
-import api from '@/api'; // 导入API模块
 
 export default {
   name: 'BlackHole',
   setup() {
+    const store = useStore();
     const router = useRouter();
-    return { router };
+    return { store, router };
   },
   data() {
     return {
@@ -57,13 +58,13 @@ export default {
     }
   },
   mounted() {
-    this.initCanvas()
-    this.init()
+    this.initCanvas();
+    this.init();
   },
   beforeUnmount() {
-    cancelAnimationFrame(this.animationFrameId)
-    if(this.redirectTimer) {
-      clearTimeout(this.redirectTimer)
+    cancelAnimationFrame(this.animationFrameId);
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
     }
   },
 // 修改 created 钩子
@@ -73,7 +74,6 @@ async created() {
     // 直接从Pinia获取抽奖结果
     if (!userStore.lotteryResult) {
       this.result = '无效的抽奖结果';
-      this.showResult = true;
       return;
     }
 
@@ -81,7 +81,7 @@ async created() {
     this.result = userStore.lotteryResult.prize;
     this.userName = userStore.lotteryResult.userName;
     this.activityName = userStore.lotteryResult.activityName;
-    this.showResult = true;
+    this.showResult = false;
     try {
       const verification = await user.verifyLotteryResult({
         activityUrl: userStore.lotteryResult.activityUrl,
@@ -97,20 +97,19 @@ async created() {
   },
   methods: {
     initCanvas() {
-      const element = this.$refs.blackhole
-      this.h = element.offsetHeight
-      this.w = element.offsetWidth
-      this.cw = this.w
-      this.ch = this.h
-      this.centery = this.ch / 2
-      this.centerx = this.cw / 2
-
-      const canvas = this.$refs.canvas
-      canvas.width = this.cw
-      canvas.height = this.ch
-      this.context = canvas.getContext("2d")
-      this.context.globalCompositeOperation = "multiply"
-      this.setDPI(canvas, 192)
+      const element = this.$refs.blackhole;
+      this.h = element.offsetHeight;
+      this.w = element.offsetWidth;
+      this.cw = this.w;
+      this.ch = this.h;
+      this.centery = this.ch / 2;
+      this.centerx = this.cw / 2;
+      const canvas = this.$refs.canvas;
+      canvas.width = this.cw;
+      canvas.height = this.ch;
+      this.context = canvas.getContext("2d");
+      this.context.globalCompositeOperation = "multiply";
+      this.setDPI(canvas, 192);
     },
 
     setDPI(canvas, dpi) {
@@ -118,7 +117,6 @@ async created() {
         canvas.style.width = canvas.width + 'px'
       if (!canvas.style.height)
         canvas.style.height = canvas.height + 'px'
-
       const scaleFactor = dpi / 96
       canvas.width = Math.ceil(canvas.width * scaleFactor)
       canvas.height = Math.ceil(canvas.height * scaleFactor)
@@ -153,8 +151,8 @@ handleClick() {
             // 自动5秒后返回（可选）
             setTimeout(() => {
                 this.goToResultCus();
-            }, 5000);
-        }, 3000);
+            }, 8000);
+        }, 4000);
     }, 1000);
 },
 
@@ -163,7 +161,7 @@ handleClick() {
       this.result = this.prizeOptions[randomNum];
       this.showResult = true;
 
-      // 提交到Vuex store
+      // 提交到 Vuex store
       this.store.commit('addLotteryHistory', {
         time: new Date().toLocaleString(),
         award: this.result,
@@ -177,19 +175,16 @@ handleClick() {
     handleMouseOver() {
       if (!this.expanse && !this.showResult) this.collapse = true
     },
-
     handleMouseOut() {
       if (!this.expanse && !this.showResult) this.collapse = false
     },
-
     createStar() {
       const rands = []
       rands.push(Math.random() * (this.maxorbit/2) + 1)
       rands.push(Math.random() * (this.maxorbit/2) + this.maxorbit)
-
       const orbital = (rands.reduce((p, c) => p + c, 0) / rands.length
     )
-      const star = {
+    const star = {
         orbital,
         x: this.centerx,
         y: this.centery + orbital,
@@ -207,14 +202,12 @@ handleClick() {
       if(star.collapseBonus < 0) {
         star.collapseBonus = 0
       }
-
       star.color = `rgba(255,255,255,${1 - (orbital / 255)})`
       star.hoverPos = this.centery + (this.maxorbit/2) + star.collapseBonus
       star.expansePos = this.centery + (star.id%100)*-10 + (Math.floor(Math.random() * 20) + 1)
       star.prevR = star.startRotation
       star.prevX = star.x
       star.prevY = star.y
-
       return star
     },
 
@@ -243,7 +236,6 @@ handleClick() {
           star.y -= Math.floor(star.expansePos - star.y) / -140
         }
       }
-
       this.context.save()
       this.context.fillStyle = star.color
       this.context.strokeStyle = star.color
@@ -256,7 +248,6 @@ handleClick() {
       this.context.lineTo(star.x, star.y)
       this.context.stroke()
       this.context.restore()
-
       star.prevR = star.rotation
       star.prevX = star.x
       star.prevY = star.y
@@ -265,27 +256,24 @@ handleClick() {
     loop() {
       const now = new Date().getTime()
       this.currentTime = (now - this.startTime) / 50
-
       this.context.fillStyle = 'rgba(25,25,25,0.2)'
       this.context.fillRect(0, 0, this.cw, this.ch)
-
       for(let i = 0; i < this.stars.length; i++) {
         this.drawStar(this.stars[i])
       }
-
       this.animationFrameId = requestAnimationFrame(this.loop)
     },
 
     init() {
-      this.startTime = new Date().getTime()
-      this.context.fillStyle = 'rgba(25,25,25,1)'
-      this.context.fillRect(0, 0, this.cw, this.ch)
-      
-      for(let i = 0; i < 2500; i++) {
-        this.stars.push(this.createStar())
+      this.startTime = new Date().getTime();
+      this.context.fillStyle = 'rgba(25,25,25,1)';
+      this.context.fillRect(0, 0, this.cw, this.ch);
+
+      for (let i = 0; i < 2500; i++) {
+        this.stars.push(this.createStar());
       }
-      
-      this.loop()
+
+      this.loop();
     }
   }
 }
