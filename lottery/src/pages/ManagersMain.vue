@@ -279,11 +279,10 @@ launchLottery() {
         }
     }
 
-    // 定义 payload 并传递给 Vuex Store
     const payload = {
-        lotteryInfo: this.lotteryInfo,
-        prizes: this.prizes,
-        participantList: this.participantList,
+    lotteryInfo: JSON.parse(JSON.stringify(this.lotteryInfo)),
+    prizes: JSON.parse(JSON.stringify(this.prizes)),
+    participantList: JSON.parse(JSON.stringify(this.participantList))
     };
 
     // 提交到 Vuex Store
@@ -291,6 +290,13 @@ launchLottery() {
 
     // 跳转到动画页面
     this.router.push({ name: 'TotalAnimation' });
+    setTimeout(() => {
+    this.router.push({ 
+        name: 'TotalAnimation',
+        // 同时通过路由参数传递数据（备用方案）
+        params: { lotteryData: payload }
+        });
+    }, 100);
 },
 executeLottery() {
     const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);

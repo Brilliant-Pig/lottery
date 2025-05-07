@@ -26,12 +26,13 @@ const userModule = {
       state.username = username;
     },
     setLotteryData(state, payload) {
-      if (!payload) {
-          console.error('setLotteryData: payload 未定义');
-          return;
-      }
-      state.lotteryData = payload; // 存储完整的抽奖数据
-  },
+      state.lotteryData = {
+        lotteryInfo: payload.lotteryInfo,
+        prizes: payload.prizes,
+        participantList: payload.participantList
+      };
+      console.log('数据已存储:', state.lotteryData); // 调试用
+    }
   },
 };
 
