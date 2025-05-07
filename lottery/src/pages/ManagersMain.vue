@@ -18,101 +18,61 @@
             </div>
         </section>
 
-        <!-- 参与人员名单上传 -->
-        <section class="section-bg" style="color: white;">
-            <div class="header-bg">
-                <h2 style="color: white;">参与人员名单</h2>
+<!-- 修改后的参与人员名单部分 -->
+<section class="section-bg" style="color: white;">
+    <div class="header-bg">
+        <h2 style="color: white;">参与人员名单</h2>
+    </div>
+    <div class="main-bg" style="color: white;">
+        <!-- 新增的总人数设置 -->
+        <div class="total-participants-setting">
+            <label style="color: white;">参与人员总数: </label>
+            <input type="number" v-model="totalParticipants" min="1" class="rounded-input"
+                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5); width: 80px;" />
+            <button @click="applyTotalParticipants" class="small-btn apply-btn"
+                style="color: black; border-color: white; margin-left: 10px;">
+                应用
+            </button>
+            <span style="margin-left: 10px; font-size: 0.9em;">
+                当前人数: {{ manualParticipants.length }}
+            </span>
+        </div>
+        
+        <div class="participant-options">
+            <div class="manual-input">
+                <h3 style="color: white;">手动输入</h3>
+                <div v-for="(participant, index) in manualParticipants" :key="'manual-' + index"
+                    class="participant-row">
+                    <input type="text" v-model="participant.nickname" placeholder="昵称" class="rounded-input"
+                        style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
+                    <input type="text" v-model="participant.otherField" placeholder="其他信息" class="rounded-input"
+                        style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
+                    <button @click="removeManualParticipant(index)" class="small-btn delete-btn"
+                        style="color: white; border-color: white;">
+                        删除
+                    </button>
+                </div>
+                <button @click="addManualParticipant" class="add-btn"
+                    style="color: white; border-color: white;">
+                    添加人员
+                </button>
             </div>
-            <div class="main-bg" style="color: white;">
-                <div class="participant-options">
-                    <div class="manual-input">
-                        <h3 style="color: white;">手动输入</h3>
-                        <div v-for="(participant, index) in manualParticipants" :key="'manual-' + index"
-                            class="participant-row">
-                            <input type="text" v-model="participant.nickname" placeholder="昵称" class="rounded-input"
-                                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                            <input type="text" v-model="participant.otherField" placeholder="其他信息" class="rounded-input"
-                                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                            <button @click="removeManualParticipant(index)" class="small-btn delete-btn"
-                                style="color: white; border-color: white;">
-                                删除
-                            </button>
-                        </div>
-                        <button @click="addManualParticipant" class="add-btn"
-                            style="color: white; border-color: white;">
-                            添加人员
-                        </button>
-                    </div>
 
-                    <div class="existing-list-option">
-                        <h3 style="color: white;">已有名单</h3>
-                        <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
-                            style="color: white; border-color: white;">
-                            我有名单
-                        </button>
-                        <div v-if="selectedList" class="selected-list-info" style="color: white; margin-top: 10px;">
-                            已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
-                        </div>
-                    </div>
+            <div class="existing-list-option">
+                <h3 style="color: white;">已有名单</h3>
+                <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
+                    style="color: white; border-color: white;">
+                    我有名单
+                </button>
+                <div v-if="selectedList" class="selected-list-info" style="color: white; margin-top: 10px;">
+                    已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
                 </div>
             </div>
-            <SavedListsDialog ref="savedListsDialog" :loading="loadingLists" :lists="savedLists"
-                @confirm="handleListConfirmed" />
-        </section>
-
-        <!-- 奖项配置 -->
-        <section class="section-bg" style="color: white;">
-            <div class="header-bg">
-                <h2 style="color: white;">奖项配置</h2>
-            </div>
-            <div class="main-bg" style="color: white;">
-                <div v-for="(prize, index) in prizes" :key="index" class="prize-container">
-                    <div class="prize-item">
-                        <h3 style="color: white;">{{ prize.level }}</h3>
-                        <div class="prize-row">
-                            <div class="prize-field">
-                                <label style="color: white;">奖品等级:</label>
-                                <input type="text" v-model="prize.level" disabled class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品名称*:</label>
-                                <input type="text" v-model="prize.name" required class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品份数*:</label>
-                                <input type="number" v-model="prize.quantity" required class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品图片:</label>
-                                <div class="image-upload-container">
-                                    <div class="image-upload rounded-input" @click="triggerFileInput(index)"
-                                        style="border-color: rgba(255,255,255,0.5);">
-                                        <span v-if="!prize.image" class="upload-icon" style="color: white;">+</span>
-                                        <img v-else :src="prize.image" class="prize-image" />
-                                        <input type="file" ref="fileInput"
-                                            @change="handlePrizeImageUpload($event, index)" accept="image/*"
-                                            class="upload-btn" style="display: none;" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="btn-group">
-                            <button @click="removePrizeLevel(index)" class="delete-btn smaller-text shadow-effect"
-                                style="color: white; border-color: white;">
-                                删除
-                            </button>
-                            <button @click="addPrizeLevel" class="add-btn smaller-text shadow-effect"
-                                style="color: white; border-color: white;">
-                                添加
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
+    </div>
+    <SavedListsDialog ref="savedListsDialog" :loading="loadingLists" :lists="savedLists"
+        @confirm="handleListConfirmed" />
+</section>
 
         <div class="row-sections">
             <!-- 权限设置 -->
@@ -237,20 +197,58 @@ export default {
             this.manualParticipants.splice(index, 1);
         },
 
-        async openSavedListsDialog() {
-            this.loadingLists = true;
+        async handlePrizeImageUpload(event, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('请上传有效的图片格式 (PNG, JPG, JPEG, GIF)');
+                return;
+            }
+
+            // 检查文件大小 (限制为5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('图片大小不能超过5MB');
+                return;
+            }
+
             try {
-                const response = await axios.get('/api/saved-participant-lists');
-                this.savedLists = response.data;
-                this.$refs.savedListsDialog.open();
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                // 添加Content-Type头
+                const config = {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                        'Accept': 'application/json'
+                    }
+                };
+
+                const response = await axios.post('/api/upload-prize-image', formData, config);
+
+                if (response.data && response.data.imageUrl) {
+                    this.prizes[index].image = response.data.imageUrl;
+                } else {
+                    throw new Error('无效的服务器响应');
+                }
             } catch (error) {
-                console.error('获取名单失败:', error);
-                alert('无法加载名单列表');
-            } finally {
-                this.loadingLists = false;
+                console.error('图片上传失败:', error);
+                let errorMessage = '图片上传失败，请重试';
+                if (error.response) {
+                    if (error.response.status === 413) {
+                        errorMessage = '文件太大，请上传小于5MB的图片';
+                    } else if (error.response.data && error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                    }
+                }
+                alert(errorMessage);
+                // 重置文件输入
+                event.target.value = '';
             }
         },
-
         async handleListConfirmed(selectedList) {
             try {
                 const response = await axios.get(`/api/saved-participant-lists/${selectedList.id}`);
