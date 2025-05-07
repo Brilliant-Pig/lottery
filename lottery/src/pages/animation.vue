@@ -145,14 +145,14 @@ handleClick() {
         this.expanse = true;
         this.isOpen = true;
         
-        // 3秒后显示结果（比动画时间短）
+        // 4秒后显示结果（比动画时间短）
         setTimeout(() => {
             this.showResult = true;
-            // 自动5秒后返回（可选）
+            // 自动9秒后返回（可选）
             setTimeout(() => {
                 this.goToResultCus();
-            }, 8000);
-        }, 4000);
+            }, 9000);
+        }, 5000);
     }, 1000);
 },
 
