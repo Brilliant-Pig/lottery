@@ -56,27 +56,7 @@
         </div>
         </div>
     </section>
-            <div class="existing-list-option">
-                <h3 style="color: white;">已有名单</h3>
-                <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
-                    style="color: white; border-color: white;">
-                    我有名单
-                </button>
-                <div v-if="selectedList" class="selected-list-info" style="color: white; margin-top: 10px;">
-                    已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
-                </div>
-            </div>
     </div>
-<section class="existing-list-option">
-    <h3 style="color: white;">已有名单</h3>
-    <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
-        style="color: white; border-color: white;">
-        我有名单
-    </button>
-    <div v-if="selectedList" class="selected-list-info" style="color: white; margin-top: 10px;">
-        已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
-    </div>
-</section>
 <SavedListsDialog ref="savedListsDialog" :loading="loadingLists" :lists="savedLists"
     @confirm="handleListConfirmed" />
         <div class="row-sections">
