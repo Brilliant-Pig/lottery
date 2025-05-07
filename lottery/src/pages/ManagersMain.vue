@@ -1,6 +1,7 @@
 <template>
-    <div class="container">
-        <p style="font-size: 300%; text-align: center; color: white;">创建抽奖</p>
+    <div>
+        <div class="container">
+            <p style="font-size: 300%; text-align: center; color: white;">创建抽奖</p>
 
         <!-- 抽奖基本信息 -->
         <section class="section-bg" style="color: white;">
@@ -65,12 +66,19 @@
                     已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
                 </div>
             </div>
-        </div>
     </div>
-    <SavedListsDialog ref="savedListsDialog" :loading="loadingLists" :lists="savedLists"
-        @confirm="handleListConfirmed" />
+<section class="existing-list-option">
+    <h3 style="color: white;">已有名单</h3>
+    <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
+        style="color: white; border-color: white;">
+        我有名单
+    </button>
+    <div v-if="selectedList" class="selected-list-info" style="color: white; margin-top: 10px;">
+        已选择名单: {{ selectedList.name }} (共 {{ selectedList.count }} 人)
+    </div>
 </section>
-
+<SavedListsDialog ref="savedListsDialog" :loading="loadingLists" :lists="savedLists"
+    @confirm="handleListConfirmed" />
         <div class="row-sections">
             <!-- 权限设置 -->
             <section class="section-bg">
@@ -86,7 +94,6 @@
                             <button @click="setParticipantVisibility('admin')"
                                 :class="{ active: participantVisibility === 'admin', 'rounded-box': true }">仅管理员</button>
                         </div>
-            <div class="main-bg">
                 <div v-for="(prize, index) in prizes" :key="index" class="prize-item rounded-input">
                     <h3>{{ ordinal(index) }}等奖</h3>
                     <label>奖品等级:</label>
@@ -106,9 +113,9 @@
                         <input type="file" @change="handlePrizeImageUpload($event, index)" accept="image/*"
                             class="upload-btn" />
                         <span class="upload-icon">+</span>
-
                     </div>
-
+                </div>
+            </div>
                     <div class="permission-section">
                         <h3>抽奖结果查看权限</h3>
                         <div class="permission-options">
@@ -139,7 +146,6 @@
 
         <!-- 修改后的生成按钮 -->
         <div class="button-container">
-            <button class="generate-btn rounded-box" @click="launchLottery">生成抽奖</button>
         </div>
     </div>
 </template>
@@ -303,7 +309,7 @@ export default {
         setResultVisibility(visibility) {
             this.resultVisibility = visibility;
         },
-    }
+    },
 
         toggleUploadMethod() { this.showUploadOptions = !this.showUploadOptions; },
         uploadFromExcel() { /* Excel上传逻辑 */ },
@@ -419,11 +425,10 @@ launchLottery() {
         }
     }
 
-    // 定义 payload 并传递给 Vuex Store
     const payload = {
-        lotteryInfo: this.lotteryInfo,
-        prizes: this.prizes,
-        participantList: this.participantList,
+    lotteryInfo: JSON.parse(JSON.stringify(this.lotteryInfo)),
+    prizes: JSON.parse(JSON.stringify(this.prizes)),
+    participantList: JSON.parse(JSON.stringify(this.participantList))
     };
 
     // 提交到 Vuex Store
@@ -431,6 +436,13 @@ launchLottery() {
 
     // 跳转到动画页面
     this.router.push({ name: 'TotalAnimation' });
+    setTimeout(() => {
+    this.router.push({ 
+        name: 'TotalAnimation',
+        // 同时通过路由参数传递数据（备用方案）
+        params: { lotteryData: payload }
+        });
+    }, 100);
 },
 executeLottery() {
     const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
@@ -452,9 +464,7 @@ executeLottery() {
 
     return winners;
 }
-    },
-
-};
+    };
 </script>
 
 <style scoped>

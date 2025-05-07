@@ -72,17 +72,28 @@ export default {
         }
     },
     created() {
-        if (this.$route.params.lotteryData) {
-            const { lotteryInfo, prizes, participantList } = this.$route.params.lotteryData;
-            this.lotteryInfo = lotteryInfo;
-            this.prizes = prizes;
-            this.participantList = participantList;
-
-            this.prizes.sort((a, b) => {
-                const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
-                return levelMap[a.level] - levelMap[b.level];
-            });
+        // 优先从 Vuex 获取数据
+        const lotteryData = this.store.state.lotteryData || this.$route.params.lotteryData;
+        
+        if (!lotteryData) {
+            console.error('未找到抽奖数据');
+            return this.router.back();
         }
+
+        this.lotteryInfo = lotteryData.lotteryInfo || {};
+        this.prizes = lotteryData.prizes || [];
+        this.participantList = lotteryData.participantList || [];
+
+        // 按奖项等级排序
+        this.prizes.sort((a, b) => {
+            const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
+            return levelMap[a.level] - levelMap[b.level];
+        });
+
+        console.log('初始化数据:', {
+            prizes: this.prizes,
+            participants: this.participantList
+        });
     },
     mounted() {
         this.initCanvas();
@@ -168,37 +179,44 @@ export default {
                 }, 1000);
             }, 1000);
         },
-        generateResult() {
-            if (this.currentStage >= this.prizes.length) {
-                this.goToResultMan();
-                return;
-            }
+    generateResult() {
+    if (this.currentStage >= this.prizes.length) {
+      this.goToResultMan();
+      return;
+    }
 
-            const prize = this.prizes[this.currentStage];
-            this.currentPrize = prize;
-            
-            this.winners[prize.level] = [];
-            const availableParticipants = [...this.participantList];
-            const drawCount = Math.min(prize.quantity, availableParticipants.length);
-            
-            for (let i = 0; i < drawCount; i++) {
-                const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-                this.winners[prize.level].push(availableParticipants[randomIndex]);
-                availableParticipants.splice(randomIndex, 1);
-            }
-            
-            this.currentWinners = [...this.winners[prize.level]];
-            this.showResult = true;
-            
-            if (this.currentStage < this.prizes.length - 1) {
-                this.currentButtonText = `继续开${this.prizes[this.currentStage + 1].level}`;
-            } else {
-                this.currentButtonText = '查看全部结果';
-            }
-            
-            this.showContinueButton = true;
-            this.isContinueFading = false;
-        },
+    const prize = this.prizes[this.currentStage];
+    this.currentPrize = prize;
+    
+    // 初始化该奖项的中奖者数组
+    this.winners[prize.level] = [];
+    
+    // 复制参与者名单以避免修改原数组
+    const availableParticipants = [...this.participantList];
+    
+    // 抽奖逻辑 - 确保不会重复中奖
+    const drawCount = Math.min(prize.quantity, availableParticipants.length);
+    for (let i = 0; i < drawCount; i++) {
+      const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+      const winner = availableParticipants[randomIndex];
+      
+      this.winners[prize.level].push(winner);
+      availableParticipants.splice(randomIndex, 1); // 移除已中奖者
+    }
+
+    // 更新当前显示的中奖者
+    this.currentWinners = [...this.winners[prize.level]];
+    this.showResult = true;
+    
+    // 更新按钮文本
+    if (this.currentStage < this.prizes.length - 1) {
+      this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+    } else {
+      this.currentButtonText = '查看全部结果';
+    }
+    
+    this.showContinueButton = true;
+  },
         nextPrize() {
             clearTimeout(this.continueTimer);
             clearTimeout(this.fadeTimer);
