@@ -8,8 +8,10 @@ import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import { TinyContainer, TinyLayout } from '@opentiny/vue';
 import { ElMessage } from 'element-plus';
+import { createPinia } from 'pinia';
 
 const app = createApp(App);
+app.use(createPinia())
 app.use(router);
 app.use(store);
 app.use(ElementPlus);

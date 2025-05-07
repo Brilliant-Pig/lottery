@@ -6,7 +6,7 @@
             </tiny-input>
         </div>
         <h1>{{ activityName }}</h1>
-        <p1>抽奖剩余时间：(北京时间)</p1>
+        <p1>抽奖剩余时间(北京时间)：</p1>
         <p2>参与人数：</p2>
         <div id="timer">
             <Timer :activityUrl="input"></Timer>
@@ -25,18 +25,20 @@
 </template>
 
 <script setup>
-import { useStore } from 'vuex';
 import Timer from '../components/Timer.vue';
 import PeopleRemainder from '../components/PeopleRemainder.vue';
 import { useRouter } from 'vue-router';
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import user from '../api/user';
+import { useUserStore } from '../store/user'; // 修改为您的实际路径
+
+const userStore = useUserStore();
+const userName = ref(userStore.username || localStorage.getItem('username') || ''); // 直接获取用户名
 
 const router = useRouter();
-const store = useStore();
 const input = ref('');
-const activityName = ref("暂时未选中活动哦~");
+const activityName = ref("暂时未填写活动url哦~");
 const isLoading = ref(false);
 let dataTimer = null;
 
@@ -73,37 +75,65 @@ const getActive = async () => {
 // 抽奖逻辑
 const goToRC = async () => {
     if (isLoading.value) return;
+
+    // 确保活动URL有效
+    const activityUrl = input.value.trim();
+    if (!activityUrl) {
+        return ElMessage.error('请输入正确活动URL哦~');
+    }
+
+    // 确保用户名有效
+    const userName = userStore.username || localStorage.getItem('username');
+    if (!userName) {
+        return ElMessage.error('请先登录后再抽奖！');
+    }
+
     isLoading.value = true;
-    
+
     try {
-        const userName = store.state.user?.username;
-        if (!userName || !input.value) {
-            throw new Error(userName ? '请输入活动URL' : '请先登录');
+        console.log('准备发送抽奖请求:', { 
+            activityUrl, 
+            userName 
+        });
+
+        // 调用抽奖接口
+        const response = await user.drawLotteryByUser({
+            activityUrl,
+            userName
+        });
+
+        console.log('抽奖接口响应:', response);
+
+        // 检查响应格式
+        if (!response) {
+            throw new Error('未收到有效响应');
         }
 
-        const response = await user.drawLotteryByUser({
-            activityUrl: input.value,
-            userName,
-        }).catch(err => {
-            // 处理网络错误
-            if (!err.response) {
-                throw new Error('网络错误，请检查连接');
-            }
-            throw err;
-        });
-        
-        if (!response?.prize) {
-            throw new Error('无效的抽奖结果');
+        // 处理成功响应
+        if (response.code === 0) {
+            // 存储抽奖结果
+            userStore.setLotteryResult({
+                prize: response.data.prize,
+                activityUrl: response.data.activityUrl,
+                activityName: response.data.activityName,
+                userName: userName
+            });
+            
+            // 跳转到结果页面
+            await router.push('/animation');
+        } 
+        // 处理业务错误
+        else {
+            throw new Error(response.message || '抽奖失败');
         }
-        
-        store.commit('setLotteryResult', response);
-        await router.push('/animation');
     } catch (error) {
-        let message = error.response?.data?.message || error.message;
-        if (error.response?.status === 500) {
-            message = '服务器处理抽奖时出错';
-        }
-        ElMessage.error(message);
+        console.error('抽奖过程出错:', {
+            error: error.message,
+            activityUrl,
+            userName,
+            time: new Date().toISOString()
+        });
+        ElMessage.error(`抽奖失败: ${error.message}`);
     } finally {
         isLoading.value = false;
     }
@@ -115,8 +145,38 @@ const goToEX = () => {
 
 // 监听输入变化
 watch(input, async (newVal) => {
-    console.log('当前输入URL:', newVal);
-    await getActive();
+    if (!newVal.trim()) {
+        activityName.value = "暂时未填写活动url哦~";
+        return;
+    }
+    
+    try {
+        const response = await user.getActivityActiveByUrl({
+            activityUrl: newVal.trim()
+        });
+        
+        console.log('活动状态响应:', response); // 调试日志
+        
+        if (response && response.activityStatus) {
+            activityName.value = response.activityName;
+            
+            // 检查活动状态
+            if (response.activityStatus !== 'ongoing') {
+                const statusMap = {
+                    'unstarted': '未开始',
+                    'ended': '已结束',
+                    'draft': '未发布'
+                };
+                ElMessage.warning(`活动当前状态: ${statusMap[response.activityStatus] || response.activityStatus}`);
+            }
+        } else {
+            activityName.value = `未找到活动: ${newVal}`;
+        }
+    } catch (error) {
+        console.error('活动检查失败:', error);
+        activityName.value = "获取活动信息出错";
+        ElMessage.error('活动信息获取失败');
+    }
 }, { immediate: true });
 
 // 生命周期钩子
@@ -166,17 +226,16 @@ h1 {
     font-size: 125px;
 }
 
-.p1.p2 {
+p1 {
+    margin-left: 5%;
     font-size: 30px;
     color: white;
 }
 
-.p1 {
-    margin-left: 5%;
-}
-
-.p2 {
+p2 {
     margin-left: 40%;
+    font-size: 30px;
+    color: white;
 }
 
 .tiny-button {

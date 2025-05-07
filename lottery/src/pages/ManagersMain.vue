@@ -18,46 +18,43 @@
             </div>
         </section>
 
-<!-- 修改后的参与人员名单部分 -->
-<section class="section-bg" style="color: white;">
-    <div class="header-bg">
-        <h2 style="color: white;">参与人员名单</h2>
-    </div>
-    <div class="main-bg" style="color: white;">
-        <!-- 新增的总人数设置 -->
-        <div class="total-participants-setting">
-            <label style="color: white;">参与人员总数: </label>
-            <input type="number" v-model="totalParticipants" min="1" class="rounded-input"
-                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5); width: 80px;" />
-            <button @click="applyTotalParticipants" class="small-btn apply-btn"
-                style="color: black; border-color: white; margin-left: 10px;">
-                应用
-            </button>
-            <span style="margin-left: 10px; font-size: 0.9em;">
-                当前人数: {{ manualParticipants.length }}
-            </span>
+        <!-- 参与人员名单上传 -->
+    <section class="section-bg">
+        <div class="header-bg">
+        <h2>参与人员名单</h2>
+        </div>
+        <div class="main-bg">
+        <input 
+            type="file" 
+            ref="fileInput"
+            accept=".csv, .xlsx, .xls"
+            @change="handleFileUpload"
+            style="display: none"
+        >
+        <button @click="triggerFileInput" class="rounded-box">
+            {{ fileData ? '已选择文件: ' + fileData.name : '上传名单文件' }}
+        </button>
+        
+        <div v-if="fileData" class="file-preview">
+            <p>已选择文件: {{ fileData.name }}</p>
+            <button @click="parseFile" class="parse-btn">解析文件</button>
         </div>
         
-        <div class="participant-options">
-            <div class="manual-input">
-                <h3 style="color: white;">手动输入</h3>
-                <div v-for="(participant, index) in manualParticipants" :key="'manual-' + index"
-                    class="participant-row">
-                    <input type="text" v-model="participant.nickname" placeholder="昵称" class="rounded-input"
-                        style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                    <input type="text" v-model="participant.otherField" placeholder="其他信息" class="rounded-input"
-                        style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                    <button @click="removeManualParticipant(index)" class="small-btn delete-btn"
-                        style="color: white; border-color: white;">
-                        删除
-                    </button>
-                </div>
-                <button @click="addManualParticipant" class="add-btn"
-                    style="color: white; border-color: white;">
-                    添加人员
-                </button>
-            </div>
-
+        <div v-if="headers.length > 0" class="column-selector">
+            <label>选择姓名列:</label>
+            <select v-model="selectedNameColumn">
+            <option v-for="header in headers" :key="header" :value="header">
+                {{ header }}
+            </option>
+            </select>
+            <button @click="confirmImport" class="confirm-btn">确认导入</button>
+        </div>
+        
+        <div v-if="importStatus" class="import-status">
+            {{ importStatus }}
+        </div>
+        </div>
+    </section>
             <div class="existing-list-option">
                 <h3 style="color: white;">已有名单</h3>
                 <button @click="openSavedListsDialog" class="existing-list-btn rounded-box"
@@ -89,6 +86,27 @@
                             <button @click="setParticipantVisibility('admin')"
                                 :class="{ active: participantVisibility === 'admin', 'rounded-box': true }">仅管理员</button>
                         </div>
+            <div class="main-bg">
+                <div v-for="(prize, index) in prizes" :key="index" class="prize-item rounded-input">
+                    <h3>{{ ordinal(index) }}等奖</h3>
+                    <label>奖品等级:</label>
+                    <input type="text" v-model="prize.level" disabled />
+                    <br />
+                    <label>奖品名称*:</label>
+                    <input type="text" v-model="prize.name" required />
+                    <br />
+                    <label>奖品份数*:</label>
+                    <input type="number" v-model="prize.quantity" required />
+                    <br />
+                    <label>奖品比重*:</label>
+                    <input type="number" v-model="prize.weight" required />
+                    <br />
+                    <label>奖品图片:</label>
+                    <div class="image-upload">
+                        <input type="file" @change="handlePrizeImageUpload($event, index)" accept="image/*"
+                            class="upload-btn" />
+                        <span class="upload-icon">+</span>
+
                     </div>
 
                     <div class="permission-section">
@@ -129,6 +147,9 @@
 <script>
 import axios from 'axios';
 import SavedListsDialog from '@/components/SavedListsDialog.vue';
+import * as XLSX from 'xlsx';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router'; // 导入 useRouter
 
 export default {
     components: {
@@ -137,16 +158,26 @@ export default {
     data() {
         return {
             lotteryInfo: { name: '', description: '' },
-            prizes: [{ level: '一等奖', name: '', quantity: 1, image: null }],
             manualParticipants: [{ nickname: '', otherField: '' }],
             participantVisibility: 'public',
             resultVisibility: 'public',
-            timeSettings: { startTime: '', endTime: '' },
             uploadStatus: null,
             fileType: null,
             savedLists: [],
             selectedList: null,
-            loadingLists: false
+            loadingLists: false,
+            prizes: [
+                { level: '一等奖', name: '', quantity: 1, weight: 50, image: null } // 默认比重为 50
+            ],
+            showUploadOptions: false,
+            timeSettings: { startTime: '', endTime: '' },
+            visibility: 'public',
+            fileData: null,
+            headers: [],
+            selectedNameColumn: '',
+            participantList: [],
+            importStatus: null
+
         };
     },
     methods: {
@@ -181,13 +212,16 @@ export default {
                 level: `${this.ordinal(lastLevel)}等奖`,
                 name: '',
                 quantity: 1,
+                weight: 50,
                 image: null
             });
+
         },
 
         removePrizeLevel(index) {
             this.prizes.splice(index, 1);
         },
+
 
         addManualParticipant() {
             this.manualParticipants.push({ nickname: '', otherField: '' });
@@ -269,39 +303,192 @@ export default {
         setResultVisibility(visibility) {
             this.resultVisibility = visibility;
         },
+    }
 
-        launchLottery() {
-            if (!this.lotteryInfo.name) {
-                alert('请填写抽奖名称');
-                return;
-            }
+        toggleUploadMethod() { this.showUploadOptions = !this.showUploadOptions; },
+        uploadFromExcel() { /* Excel上传逻辑 */ },
+        uploadFromCSV() { /* CSV上传逻辑 */ },
+        async importData() { /* 数据导入逻辑 */ },
+        triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    
+    handleFileUpload(event) {
+      this.fileData = event.target.files[0];
+      this.headers = [];
+      this.selectedNameColumn = '';
+    },
+    
+    async parseFile() {
+  if (!this.fileData) {
+    ElMessage.error('请先选择文件');
+    return []; // 返回空数组而不是undefined
+  }
+  
+  try {
+    let data;
+    if (this.fileData.name.endsWith('.csv')) {
+      data = await this.parseCSV(this.fileData);
+    } else {
+      data = await this.parseExcel(this.fileData);
+    }
+    
+    if (data && data.length > 0) {
+      this.headers = Object.keys(data[0]);
+      this.importStatus = `成功解析 ${data.length} 条记录`;
+      return data; // 确保返回解析的数据
+    } else {
+      ElMessage.error('文件内容为空');
+      return [];
+    }
+  } catch (error) {
+    console.error('解析文件失败:', error);
+    ElMessage.error('解析文件失败: ' + error.message);
+    return []; // 出错时返回空数组
+  }
+},
+    
+    parseCSV(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target.result;
+          const lines = content.split('\n');
+          const headers = lines[0].split(',');
+          const result = lines.slice(1).map(line => {
+            const values = line.split(',');
+            return headers.reduce((obj, header, i) => {
+              obj[header.trim()] = values[i] ? values[i].trim() : '';
+              return obj;
+            }, {});
+          });
+          resolve(result);
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    },
+    
+    async parseExcel(file) {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      return XLSX.utils.sheet_to_json(firstSheet);
+    },
+    
+    async confirmImport() {
+  if (!this.selectedNameColumn) {
+    ElMessage.error('请选择姓名列');
+    return;
+  }
+  
+  try {
+    const data = await this.parseFile();
+    if (data && data.length > 0) {
+      this.participantList = data
+        .map(item => item[this.selectedNameColumn])
+        .filter(name => name); // 过滤掉空值
+      
+      if (this.participantList.length === 0) {
+        ElMessage.error('选择的姓名列中没有有效数据');
+        return;
+      }
+      
+      this.importStatus = `成功导入 ${this.participantList.length} 个参与者`;
+      ElMessage.success('参与者名单导入成功');
+    }
+  } catch (error) {
+    console.error('导入失败:', error);
+    ElMessage.error('导入失败: ' + error.message);
+  }
+},
+launchLottery() {
+    if (!this.lotteryInfo.name) {
+        ElMessage.error('请填写抽奖名称');
+        return;
+    }
+    if (!this.participantList || this.participantList.length === 0) {
+        ElMessage.error('请先导入参与者名单');
+        return;
+    }
 
-            for (const prize of this.prizes) {
-                if (!prize.name || !prize.quantity) {
-                    alert('请填写完整的奖品信息');
-                    return;
-                }
-            }
-
-            const formData = {
-                lotteryInfo: this.lotteryInfo,
-                prizes: this.prizes,
-                participants: this.manualParticipants,
-                permissions: {
-                    participantVisibility: this.participantVisibility,
-                    resultVisibility: this.resultVisibility
-                },
-                timeSettings: this.timeSettings
-            };
-
-            console.log('提交数据:', formData);
-            alert('抽奖活动创建成功！');
+    for (const prize of this.prizes) {
+        if (!prize.name || !prize.quantity || !prize.weight) {
+            ElMessage.error('请填写奖品名称、奖品份数和比重');
+            return;
         }
     }
+
+    // 定义 payload 并传递给 Vuex Store
+    const payload = {
+        lotteryInfo: this.lotteryInfo,
+        prizes: this.prizes,
+        participantList: this.participantList,
+    };
+
+    // 提交到 Vuex Store
+    this.$store.commit('setLotteryData', payload);
+
+    // 跳转到动画页面
+    this.router.push({ name: 'TotalAnimation' });
+},
+executeLottery() {
+    const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    const winners = [];
+
+    for (const participant of this.participantList) {
+        const random = Math.random() * totalWeight;
+        let cumulativeWeight = 0;
+
+        for (const prize of this.prizes) {
+            cumulativeWeight += prize.weight;
+            if (random <= cumulativeWeight && prize.quantity > 0) {
+                winners.push({ participant, prize: prize.name });
+                prize.quantity--; // 减少奖品数量
+                break;
+            }
+        }
+    }
+
+    return winners;
+}
+    },
+
 };
 </script>
 
 <style scoped>
+.file-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.parse-btn, .confirm-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #3abd92;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.column-selector {
+  margin-top: 15px;
+}
+
+.column-selector select {
+  margin: 0 10px;
+  padding: 5px;
+}
+
+.import-status {
+  margin-top: 10px;
+  color: #666;
+  font-size: 0.9em;
+}
 .container {
     max-width: 800px;
     margin: 0 auto;

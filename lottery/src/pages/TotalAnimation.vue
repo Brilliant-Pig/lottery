@@ -17,27 +17,9 @@
                     </div>
                     <div v-if="!currentWinners.length" class="no-winner">暂无中奖者</div>
                 </div>
-                <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">继续</button>
-            </div>
-        </div>
-
-        <!-- 最终结果显示 -->
-        <div v-if="showFinalResult" class="final-result-container">
-            <div class="result-box">
-                <h1 class="result-title">{{ lotteryInfo.name || '抽奖结果' }}</h1>
-                <div class="scrollable-content">
-                    <div v-for="(prize, index) in prizes" :key="index" class="prize-result">
-                        <h2>{{ prize.level }} : {{ prize.name }} ({{ prize.quantity }}份)</h2>
-                        <div v-if="winners[prize.level]?.length" class="winner-list">
-                            <div v-for="(winner, i) in winners[prize.level]" :key="i" class="winner-item">
-                                <span class="winner-rank">{{ i + 1 }}.</span>
-                                <span class="winner-name">{{ winner }}</span>
-                            </div>
-                        </div>
-                        <div v-else class="no-winner">暂无中奖者</div>
-                    </div>
-                </div>
-                <button @click="goToResultMan" class="result-btn">返回</button>
+                <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">
+                    {{ currentStage < prizes.length - 1 ? '继续' : '查看全部结果' }}
+                </button>
             </div>
         </div>
     </div>
@@ -81,8 +63,6 @@ export default {
             currentStage: -1,
             currentPrize: {},
             currentWinners: [],
-            showFinalResult: false,
-            finalResultTimer: null,
             currentButtonText: 'ENTER',
             showContinueButton: false,
             isContinueFading: false,
@@ -122,7 +102,6 @@ export default {
         clearTimeout(this.redirectTimer);
         clearTimeout(this.continueTimer);
         clearTimeout(this.fadeTimer);
-        clearTimeout(this.finalResultTimer);
     },
     methods: {
         initCanvas() {
@@ -191,7 +170,7 @@ export default {
         },
         generateResult() {
             if (this.currentStage >= this.prizes.length) {
-                this.showFinalResult();
+                this.goToResultMan();
                 return;
             }
 
@@ -217,7 +196,6 @@ export default {
                 this.currentButtonText = '查看全部结果';
             }
             
-            // 直接显示继续按钮，不移除
             this.showContinueButton = true;
             this.isContinueFading = false;
         },
@@ -230,7 +208,7 @@ export default {
             this.currentStage++;
             
             if (this.currentStage >= this.prizes.length) {
-                this.showFinalResult();
+                this.goToResultMan();
                 return;
             }
             
@@ -239,22 +217,13 @@ export default {
             this.expanse = false;
             this.isOpen = false;
         },
-        showFinalResult() {
-            this.showResult = false;
-            this.showFinalResult = true;
-            
+        goToResultMan() {
             this.store.commit('saveLotteryResult', {
                 lotteryInfo: this.lotteryInfo,
                 prizes: this.prizes,
                 winners: this.winners,
             });
             
-            this.finalResultTimer = setTimeout(() => {
-                this.goToResultMan();
-            }, 10000);
-        },
-        goToResultMan() {
-            clearTimeout(this.finalResultTimer);
             this.router.push({ name: 'ResultMan' });
         },
         handleMouseOver() {
@@ -468,22 +437,6 @@ canvas {
     to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-.final-result-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(90vw, 700px);
-    height: min(80vh, 600px);
-    z-index: 10;
-    animation: scaleIn 0.5s ease-out;
-}
-
-@keyframes scaleIn {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
 .result-box {
     display: flex;
     flex-direction: column;
@@ -504,35 +457,6 @@ canvas {
     flex-shrink: 0;
     color: #4dc3d7;
     text-shadow: 0 0 10px rgba(77, 195, 215, 0.7);
-}
-
-.scrollable-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 8px;
-    margin: 10px 0;
-}
-
-.scrollable-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 3px;
-}
-
-.prize-result {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.prize-result h2 {
-    font-size: 20px;
-    color: rgb(77, 195, 215);
-    margin-bottom: 10px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .winner-list {
@@ -563,27 +487,6 @@ canvas {
     color: rgba(255, 255, 255, 0.7);
     font-style: italic;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.result-btn {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-    position: relative;
-    font-weight: bold;
-    padding: 10px 30px;
-    border-radius: 25px;
-    margin-top: 15px;
-    align-self: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    flex-shrink: 0;
-    font-size: 16px;
-}
-
-.result-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
 }
 
 .continue-btn {
