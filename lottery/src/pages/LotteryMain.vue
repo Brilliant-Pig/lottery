@@ -584,6 +584,7 @@ table {
         border: 1px solid #eee;
         border-radius: 8px;
         transition: transform 0.3s;
+        color: #ffffffed;
         .quickstart-steps {
     .step-card {
         display: flex;
@@ -790,5 +791,8 @@ table {
     box-shadow:  2px 3px rgba(0,0,0,0.1);
     border-radius: 8px;
     margin: 2rem 0;
+}
+.auth-section{
+    color: #ffffffba;
 }
     </style>

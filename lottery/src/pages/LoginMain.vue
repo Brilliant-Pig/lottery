@@ -34,35 +34,46 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+
 export default {
-data() {
+    data() {
     return {
-    username: "",
-    password: "",
-    errorMessage: "",
+        username: "",
+        password: "",
+        errorMessage: "",
     };
-},
-methods: {
-    handleLogin() {
-    if (!this.username || !this.password) {
-        this.errorMessage = "用户名和密码不能为空！";
-        return;
-    }
-    setTimeout(() => {
-        if (this.username === "admin" && this.password === "123456") {
-        this.errorMessage = "";
-        alert("登录成功！");
-        localStorage.setItem('username', this.username);
-        window.location.href = '/LotteryMain';
-        } else {
-        this.errorMessage = "用户名或密码错误！";
+    },
+    methods: {
+        ...mapActions(['login']), // 映射 Vuex action
+    
+        async handleLogin() {
+            if (!this.username || !this.password) {
+            this.errorMessage = "用户名和密码不能为空！";
+            return;
         }
-    }, 500);
-    },
-    },
-    goToRegister() {
-      this.$router.push("/Register"); // 跳转到注册页面
-    },
+
+        try {
+        // 调用 Vuex 的 login action
+            await this.login({
+                username: this.username,
+                password: this.password
+            });
+        
+        // 登录成功后的操作
+        this.errorMessage = "";
+        this.$router.push('/LotteryMain'); // 使用路由跳转替代 window.location
+        
+        } catch (error) {
+            this.errorMessage = "用户名或密码错误！";
+            console.error('登录失败:', error);
+        }
+        },
+    
+        goToRegister() {
+            this.$router.push("/Register");
+        }
+    }
 };
 </script>
 

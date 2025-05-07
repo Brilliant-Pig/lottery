@@ -68,3 +68,16 @@ Content-Type: application/json
     "activityUrl": "1",
     "userName": "admin"
     }
+
+### 测试登录
+POST http://127.0.0.1:33001/api/auth/login
+Content-Type: application/json
+
+{
+    "userName": "admin",
+    "passWord": "123456"
+    }
+
+###
+GET http://127.0.0.1:33001/api/auth/login
+    ?userName=admin

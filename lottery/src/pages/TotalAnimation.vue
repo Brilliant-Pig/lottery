@@ -28,13 +28,15 @@
 <script>
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
+import { ElMessage } from 'element-plus'; 
 
 export default {
     name: 'BlackHole',
     setup() {
         const store = useStore();
         const router = useRouter();
-        return { store, router };
+        return { store, router, ElMessage };
     },
     data() {
         return {
@@ -68,33 +70,24 @@ export default {
             isContinueFading: false,
             continueTimer: null,
             fadeTimer: null,
-            isAnimating: false
+            isAnimating: false,
         }
     },
     created() {
-        if (this.$route.params.lotteryData) {
-            const { lotteryInfo, prizes, participantList } = this.$route.params.lotteryData;
-            this.lotteryInfo = lotteryInfo;
-            this.prizes = prizes;
-            this.participantList = participantList;
+        const lotteryData = this.$store.state.lotteryData;
+        if (lotteryData) {
+            this.lotteryInfo = lotteryData.lotteryInfo;
+            this.prizes = lotteryData.prizes;
+            this.participantList = lotteryData.participantList;
 
+            // 按奖品等级排序
             this.prizes.sort((a, b) => {
                 const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
                 return levelMap[a.level] - levelMap[b.level];
             });
-        }
-    },
-    mounted() {
-        this.initCanvas();
-        this.init();
-        
-        if (process.env.NODE_ENV === 'development' && this.prizes.length === 0) {
-            this.prizes = [
-                { level: '一等奖', name: 'iPhone 15', quantity: 1 },
-                { level: '二等奖', name: 'AirPods Pro', quantity: 3 },
-                { level: '三等奖', name: '充电宝', quantity: 5 }
-            ];
-            this.participantList = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十'];
+        } else {
+            ElMessage.error('抽奖数据加载失败，请重新创建抽奖');
+            this.currentButtonText = '数据错误';
         }
     },
     beforeUnmount() {
@@ -140,16 +133,46 @@ export default {
             const ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
             return [nx, ny];
         },
-        handleClick() {
-            if (this.showResult || this.isAnimating) return;
+        async handleClick() {
+    if (this.showResult || this.isAnimating) return;
 
-            if(this.currentStage === -1) {
-                this.currentStage = 0;
-                this.startLotteryAnimation();
-            } else if(this.currentStage < this.prizes.length) {
-                this.startLotteryAnimation();
-            }
-        },
+    try {
+        if(this.currentStage === -1) {
+        this.currentStage = 0;
+        
+      // Change this line to match your actual store structure
+        const lotteryData = this.$store.state.lotteryData || this.$store.state.user?.lotteryData;
+        
+        if (!lotteryData) {
+            throw new Error('抽奖数据不存在，请重新创建抽奖');
+        }
+        
+        if (!lotteryData.lotteryInfo.url) {
+            this.startLotteryAnimation();
+            return;
+        }
+        
+        const response = await axios.post('http://127.0.0.1:33001/api/user/drawLotteryByUser', {
+            activityUrl: lotteryData.lotteryInfo.url,
+            userName: this.$store.state.user.username
+        });
+        
+        if(response.data.code === 0) {
+            this.processLotteryResult(response.data.data);
+            this.startLotteryAnimation();
+        } else {
+            throw new Error(response.data.message || '抽奖失败');
+        }
+        } else {
+        this.startLotteryAnimation();
+        }
+    } catch (error) {
+        console.error('抽奖错误:', error);
+        ElMessage.error(error.message || '抽奖失败');
+        this.currentButtonText = '点击重试';
+        this.isAnimating = false;
+    }
+    },
         startLotteryAnimation() {
             this.isAnimating = true;
             this.collapse = false;
@@ -168,37 +191,79 @@ export default {
                 }, 1000);
             }, 1000);
         },
-        generateResult() {
-            if (this.currentStage >= this.prizes.length) {
-                this.goToResultMan();
-                return;
+        async fetchWinnersFromDB(activityUrl) {
+        try {
+            const response = await fetch(`/api/getWinnersByActivity?activityUrl=${encodeURIComponent(activityUrl)}`);
+            if (!response.ok) throw new Error('获取中奖者失败');
+            
+            const data = await response.json();
+            if (data.code === 0) {
+            // 将数据库中的中奖者信息映射到我们的数据结构
+            this.winners = data.data.reduce((acc, winner) => {
+                if (!acc[winner.prizeLevel]) {
+                acc[winner.prizeLevel] = [];
+                }
+                acc[winner.prizeLevel].push(winner.userName);
+                return acc;
+            }, {});
             }
-
-            const prize = this.prizes[this.currentStage];
-            this.currentPrize = prize;
-            
-            this.winners[prize.level] = [];
-            const availableParticipants = [...this.participantList];
-            const drawCount = Math.min(prize.quantity, availableParticipants.length);
-            
-            for (let i = 0; i < drawCount; i++) {
-                const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-                this.winners[prize.level].push(availableParticipants[randomIndex]);
-                availableParticipants.splice(randomIndex, 1);
-            }
-            
-            this.currentWinners = [...this.winners[prize.level]];
-            this.showResult = true;
-            
-            if (this.currentStage < this.prizes.length - 1) {
-                this.currentButtonText = `继续开${this.prizes[this.currentStage + 1].level}`;
-            } else {
-                this.currentButtonText = '查看全部结果';
-            }
-            
-            this.showContinueButton = true;
-            this.isContinueFading = false;
+        } catch (error) {
+            console.error('获取中奖者信息失败:', error);
+            // 使用默认空数据
+            this.winners = {};
+        }
         },
+        generateResult() {
+    if (this.currentStage >= this.prizes.length) {
+        this.showFinalResults();
+        return;
+    }
+
+    const prize = this.prizes[this.currentStage];
+    this.currentPrize = prize;
+
+    // 初始化获奖者列表
+    if (!this.winners[prize.level]) {
+        this.winners[prize.level] = [];
+    }
+
+    // 从上传的名单中随机抽取
+    const availableParticipants = [...this.participantList];
+    const drawCount = Math.min(prize.quantity, availableParticipants.length);
+
+    for (let i = 0; i < drawCount; i++) {
+        const totalWeight = this.prizes.reduce((sum, p) => sum + p.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selectedPrize = null;
+
+        for (const p of this.prizes) {
+            if (random < p.weight) {
+                selectedPrize = p;
+                break;
+            }
+            random -= p.weight;
+        }
+
+        if (selectedPrize && selectedPrize.quantity > 0) {
+            const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+            this.winners[selectedPrize.level].push(availableParticipants[randomIndex]);
+            availableParticipants.splice(randomIndex, 1);
+            selectedPrize.quantity--; // 减少奖品数量
+        }
+    }
+
+    this.currentWinners = [...this.winners[prize.level]];
+    this.showResult = true;
+
+    // 更新按钮文本
+    if (this.currentStage < this.prizes.length - 1) {
+        this.currentButtonText = `继续开${this.prizes[this.currentStage + 1].level}`;
+    } else {
+        this.currentButtonText = '查看全部结果';
+    }
+
+    this.showContinueButton = true;
+},
         nextPrize() {
             clearTimeout(this.continueTimer);
             clearTimeout(this.fadeTimer);
@@ -208,7 +273,7 @@ export default {
             this.currentStage++;
             
             if (this.currentStage >= this.prizes.length) {
-                this.goToResultMan();
+                this.showFinalResults(); 
                 return;
             }
             
@@ -217,13 +282,18 @@ export default {
             this.expanse = false;
             this.isOpen = false;
         },
+        showFinalResults() {
+            this.showResult = false;
+            this.showFinalResult = true;
+
+            this.$store.commit('setWinners', this.winners);
+
+            this.finalResultTimer = setTimeout(() => {
+                this.goToResultMan();
+            }, 10000);
+        },
         goToResultMan() {
-            this.store.commit('saveLotteryResult', {
-                lotteryInfo: this.lotteryInfo,
-                prizes: this.prizes,
-                winners: this.winners,
-            });
-            
+            clearTimeout(this.finalResultTimer);
             this.router.push({ name: 'ResultMan' });
         },
         handleMouseOver() {
