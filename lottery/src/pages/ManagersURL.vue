@@ -229,6 +229,9 @@ export default {
               }
           }
           
+          // 生成唯一的抽奖码
+          const uniqueCode = 'L' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8).toUpperCase();
+
           // 准备提交数据
           const formData = {
               lotteryInfo: this.lotteryInfo,
@@ -236,13 +239,17 @@ export default {
               participants: this.manualParticipants,
               permissions: {
                   participantVisibility: this.participantVisibility,
-                  resultVisibility: this.resultVisibility
+                  resultVisibility: this.resultVisibility,
               },
-              timeSettings: this.timeSettings
+              timeSettings: this.timeSettings,
+              lotteryCode: uniqueCode, // 添加抽奖码
           };
-          
+
           console.log('提交数据:', formData);
-          alert('抽奖活动创建成功！');
+
+          // 显示成功提示并显示抽奖码
+          alert(`抽奖活动创建成功！\n抽奖码: ${uniqueCode}`);
+
           // 实际应用中这里应该调用API提交数据
           // axios.post('/api/create-lottery', formData).then(...)
       }
@@ -483,3 +490,4 @@ export default {
 }
 
 </style>
+```vue
