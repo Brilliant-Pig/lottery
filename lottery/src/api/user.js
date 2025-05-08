@@ -43,6 +43,10 @@ const user = {
             }
         });
     },
+    // 添加记录用户参与活动的方法
+    recordParticipation(data) {
+        return request.post(`${moduleUrl}/recordParticipation`, data);
+    },
 
     //通过向后端发送id返还活动开始时间
     getActivityStartTimeByUrl(data){
