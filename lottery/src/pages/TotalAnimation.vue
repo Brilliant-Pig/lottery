@@ -18,7 +18,7 @@
                     <div v-if="!currentWinners.length" class="no-winner">暂无中奖者</div>
                 </div>
                 <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">
-                    {{ currentStage < prizes.length - 1 ? '继续' : '查看全部结果' }}
+                    {{ currentStage < prizes.length - 1 ? '继续' : '导出全部结果(xlxs)' }}
                 </button>
             </div>
         </div>
@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import * as XLSX from 'xlsx';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
@@ -212,11 +213,35 @@ export default {
     if (this.currentStage < this.prizes.length - 1) {
       this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
     } else {
-      this.currentButtonText = '查看全部结果';
+      this.currentButtonText = '已抽完';
     }
     
     this.showContinueButton = true;
-  },
+    },
+/*     exportResults() {
+        // 准备数据
+        const data = [];
+        for (const [level, winners] of Object.entries(this.winners)) {
+        // 根据奖项等级找到对应的奖品
+        const prize = this.prizes.find(p => p.level === level);
+            winners.forEach((winner, index) => {
+                data.push({
+                    奖项: level,
+                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                    中奖者: winner,
+                });
+            });
+        }
+
+        // 创建工作簿和工作表
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+
+        // 导出文件
+        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    }, */
         nextPrize() {
             clearTimeout(this.continueTimer);
             clearTimeout(this.fadeTimer);
@@ -241,8 +266,28 @@ export default {
                 prizes: this.prizes,
                 winners: this.winners,
             });
-            
-            this.router.push({ name: 'ResultMan' });
+        // 准备数据
+        const data = [];
+        for (const [level, winners] of Object.entries(this.winners)) {
+        // 根据奖项等级找到对应的奖品
+        const prize = this.prizes.find(p => p.level === level);
+            winners.forEach((winner, index) => {
+                data.push({
+                    奖项: level,
+                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                    中奖者: winner,
+                });
+            });
+        }
+
+        // 创建工作簿和工作表
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+
+        // 导出文件
+        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
         },
         handleMouseOver() {
             if (!this.expanse && !this.showResult && !this.isAnimating) this.collapse = true;
