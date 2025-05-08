@@ -97,6 +97,11 @@
                                     style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
                             </div>
                             <div class="prize-field">
+                                <label style="color: white;">奖品权重*:</label>
+                                <input type="number" v-model="prize.weight" required class="rounded-input"
+                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
+                            </div>
+                            <div class="prize-field">
                                 <label style="color: white;">奖品份数*:</label>
                                 <input type="number" v-model="prize.quantity" required class="rounded-input"
                                     style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
@@ -108,9 +113,14 @@
                                         style="border-color: rgba(255,255,255,0.5);">
                                         <span v-if="!prize.image" class="upload-icon" style="color: white;">+</span>
                                         <img v-else :src="prize.image" class="prize-image" />
-                                        <input type="file" ref="fileInput"
-                                            @change="handlePrizeImageUpload($event, index)" accept="image/*"
-                                            class="upload-btn" style="display: none;" />
+                                        <input 
+                                            type="file" 
+                                            :ref="'prizeFileInput' + index" 
+                                            @change="handlePrizeImageUpload($event, index)" 
+                                            accept="image/*" 
+                                            class="upload-btn" 
+                                            style="display: none"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -183,7 +193,6 @@
 </template>
 
 <script>
-import SavedListsDialog from '@/components/SavedListsDialog.vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ElMessage } from 'element-plus';
@@ -192,7 +201,9 @@ export default {
     data() {
         return {
             lotteryInfo: { name: '', description: '' },
-            prizes: [{ level: '一等奖', name: '', quantity: 1 }],
+            prizes: [
+                { level: '一等奖', name: '', quantity: 1, weight: 50 }
+            ],
             showUploadOptions: false,
             timeSettings: { startTime: '', endTime: '' },
             visibility: 'public',
@@ -218,8 +229,11 @@ export default {
     },
     methods: {
         ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
-        triggerFileInput(index) {
-            this.$refs.fileInput[index].click();
+        triggerParticipantFileInput() {
+            this.$refs.participantFileInput.click();
+        },
+        triggerPrizeFileInput(index) {
+            this.$refs[`prizeFileInput${index}`].click();
         },
         async handlePrizeImageUpload(event, index) {
             const file = event.target.files[0];
@@ -250,6 +264,63 @@ export default {
         },
         removePrizeLevel(index) {
             this.prizes.splice(index, 1);
+        },
+        generateResult() {
+            if (this.currentStage >= this.prizes.length) {
+                this.goToResultMan();
+                return;
+            }
+
+            // 计算总权重
+            const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
+
+            // 根据权重随机选择奖品
+            let randomWeight = Math.random() * totalWeight;
+            let selectedPrize = null;
+
+            for (const prize of this.prizes) {
+                randomWeight -= prize.weight;
+                if (randomWeight <= 0) {
+                    selectedPrize = prize;
+                    break;
+                }
+            }
+
+            if (!selectedPrize) {
+                console.error('未能根据权重选择奖品');
+                return;
+            }
+
+            this.currentPrize = selectedPrize;
+
+            // 初始化该奖项的中奖者数组
+            this.winners[selectedPrize.level] = [];
+
+            // 复制参与者名单以避免修改原数组
+            const availableParticipants = [...this.participantList];
+
+            // 抽奖逻辑 - 确保不会重复中奖
+            const drawCount = Math.min(selectedPrize.quantity, availableParticipants.length);
+            for (let i = 0; i < drawCount; i++) {
+                const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+                const winner = availableParticipants[randomIndex];
+
+                this.winners[selectedPrize.level].push(winner);
+                availableParticipants.splice(randomIndex, 1); // 移除已中奖者
+            }
+
+            // 更新当前显示的中奖者
+            this.currentWinners = [...this.winners[selectedPrize.level]];
+            this.showResult = true;
+
+            // 更新按钮文本
+            if (this.currentStage < this.prizes.length - 1) {
+                this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+            } else {
+                this.currentButtonText = '查看全部结果';
+            }
+
+            this.showContinueButton = true;
         },
         addManualParticipant() {
             this.manualParticipants.push({ nickname: '', otherField: '' });
