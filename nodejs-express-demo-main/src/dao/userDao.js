@@ -239,6 +239,7 @@ exports.markUserParticipated = async (userName, activityUrl) => {
             AND activity_name = (
                 SELECT activity_name FROM activities WHERE activity_url = ?
             )
+            AND has_participated = 0
     `;
     return await db.query(sql, [userName, activityUrl]);
 };
@@ -292,4 +293,50 @@ exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) =>
         )
     `;
     return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
+};
+exports.insertParticipation = async (userName, activityUrl) => {
+    // 首先获取活动信息以确保活动存在
+    const activity = await db.query(
+        `
+        SELECT 
+            activity_name, 
+            status, 
+            end_time 
+        FROM 
+            activities 
+        WHERE 
+            activity_url = ?
+    `,
+        [activityUrl]
+    );
+
+    if (!activity || activity.length === 0) {
+        throw new Error('活动不存在');
+    }
+
+    const activityInfo = activity[0];
+
+    // 使用 SQLite 的 INSERT OR REPLACE 语法
+    const sql = `
+        INSERT INTO participations 
+        (activity_name, activity_url, username, has_participated, status, end_time, participation_time)
+        VALUES (?, ?, ?, 0, ?, ?, CURRENT_TIMESTAMP)
+    `;
+
+    const params = [activityInfo.activity_name, activityUrl, userName, activityInfo.status, activityInfo.end_time];
+
+    console.log('执行SQL:', sql, params);
+
+    try {
+        const result = await db.query(sql, params);
+        console.log('SQL执行结果:', result);
+        return result;
+    } catch (err) {
+        console.error('SQL执行错误:', {
+            error: err,
+            sql: sql,
+            params: params
+        });
+        throw err;
+    }
 };

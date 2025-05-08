@@ -164,3 +164,37 @@ router.post('/drawLotteryByUser', async (req, res, next) => {
         });
     }
 });
+// 添加记录用户参与活动的接口
+router.post('/recordParticipation', async (req, res, next) => {
+    try {
+        const { activityUrl, userName } = req.body;
+
+        // 参数验证
+        if (!userName || !activityUrl) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少必要参数',
+                details: {
+                    required: ['userName', 'activityUrl'],
+                    received: req.body
+                }
+            });
+        }
+
+        // 调用服务层方法
+        const result = await userService.recordParticipation(userName, activityUrl);
+
+        // 返回成功响应
+        res.json({
+            code: 0,
+            message: '参与记录成功',
+            data: result
+        });
+    } catch (err) {
+        console.error('记录参与失败:', err);
+        res.status(500).json({
+            code: 1,
+            message: err.message || '记录参与失败'
+        });
+    }
+});
