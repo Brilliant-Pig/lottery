@@ -39,6 +39,11 @@
                               <input type="number" v-model="prize.quantity" required class="rounded-input" />
                           </div>
                           <div class="prize-field">
+                            <label style="color: white;">奖品权重*:</label>
+                            <input type="number" v-model="prize.weight" required class="rounded-input"
+                                style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
+                        </div>
+                          <div class="prize-field">
                               <label>奖品图片:</label>
                               <div class="image-upload-container">
                                   <div class="image-upload rounded-input" @click="triggerFileInput(index)">
@@ -118,8 +123,9 @@ export default {
   data() {
       return {
           lotteryInfo: { name: '', description: '' },
-          prizes: [{ level: '一等奖', name: '', quantity: 1, image: null }],
-          manualParticipants: [{ nickname: '', otherField: '' }],
+          prizes: [
+              { level: '一等奖', name: '', quantity: 1, weight: 50 }
+          ],          manualParticipants: [{ nickname: '', otherField: '' }],
           participantVisibility: 'public',
           resultVisibility: 'public',
           timeSettings: { startTime: '', endTime: '' },
@@ -214,7 +220,63 @@ export default {
       setResultVisibility(visibility) {
           this.resultVisibility = visibility;
       },
-      
+      generateResult() {
+        if (this.currentStage >= this.prizes.length) {
+            this.goToResultMan();
+            return;
+        }
+
+        // 计算总权重
+        const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
+
+        // 根据权重随机选择奖品
+        let randomWeight = Math.random() * totalWeight;
+        let selectedPrize = null;
+
+        for (const prize of this.prizes) {
+            randomWeight -= prize.weight;
+            if (randomWeight <= 0) {
+                selectedPrize = prize;
+                break;
+            }
+        }
+
+        if (!selectedPrize) {
+            console.error('未能根据权重选择奖品');
+            return;
+        }
+
+        this.currentPrize = selectedPrize;
+
+        // 初始化该奖项的中奖者数组
+        this.winners[selectedPrize.level] = [];
+
+        // 复制参与者名单以避免修改原数组
+        const availableParticipants = [...this.participantList];
+
+        // 抽奖逻辑 - 确保不会重复中奖
+        const drawCount = Math.min(selectedPrize.quantity, availableParticipants.length);
+        for (let i = 0; i < drawCount; i++) {
+            const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+            const winner = availableParticipants[randomIndex];
+
+            this.winners[selectedPrize.level].push(winner);
+            availableParticipants.splice(randomIndex, 1); // 移除已中奖者
+        }
+
+        // 更新当前显示的中奖者
+        this.currentWinners = [...this.winners[selectedPrize.level]];
+        this.showResult = true;
+
+        // 更新按钮文本
+        if (this.currentStage < this.prizes.length - 1) {
+            this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+        } else {
+            this.currentButtonText = '查看全部结果';
+        }
+
+        this.showContinueButton = true;
+    },
       launchLottery() {
           // 验证数据
           if (!this.lotteryInfo.name) {
