@@ -322,8 +322,6 @@
             :key="index"
             :is="section.component"
             v-bind="section.props"/>
-    
-            <!-- 其他模块... -->
         </div>
         </div>
     </template>
@@ -403,7 +401,7 @@
             warnings: [
         '文件模式最多支持5000人参与',
         '时间修改需在活动开始前1小时完成',
-        '每个手机号/邮箱仅可参与1次',
+        '每个账号仅可参与1次',
         '推荐使用Chrome/Edge最新版浏览器'
         ],
             architectureImg: '../assets/architecture.png',  
@@ -416,7 +414,7 @@
             ],
             deployArch: [
             {component: 'Web服务器', spec: '4核8G/100G SSD', solution: 'Nginx集群+Keepalived'},
-            {component: '数据库', spec: '8核16G/500G SSD', solution: 'MySQL主从复制'},
+            {component: '数据库', spec: '8核16G/500G SSD', solution: 'SQLite主从复制'},
             {component: '缓存服务', spec: '4核8G/50G SSD', solution: 'Redis哨兵模式'},
             {component: '消息队列', spec: '4核8G/100G HDD', solution: 'RabbitMQ镜像队列'}
             ],

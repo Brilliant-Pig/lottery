@@ -274,6 +274,7 @@ export default {
             winners.forEach((winner, index) => {
                 data.push({
                     奖项: level,
+                    名称: index + 1,
                     奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
                     中奖者: winner,
                 });
