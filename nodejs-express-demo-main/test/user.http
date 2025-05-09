@@ -82,6 +82,7 @@ Content-Type: application/json
 GET http://127.0.0.1:33001/api/auth/login
     ?userName=admin
 
+
 ###
 POST http://127.0.0.1:33001/api/auth/checkUsername
 Content-Type: application/json
@@ -89,3 +90,13 @@ Content-Type: application/json
 {
     "userName": "admin"
     }
+
+### 记录用户参与活动
+POST http://127.0.0.1:33001/api/user/recordParticipation
+Content-Type: application/json
+
+{
+    "activityUrl": "2",
+    "userName": "zhuzhu"
+}
+

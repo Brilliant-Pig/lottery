@@ -76,13 +76,11 @@ const getActive = async () => {
 const goToRC = async () => {
     if (isLoading.value) return;
 
-    // 确保活动URL有效
     const activityUrl = input.value.trim();
     if (!activityUrl) {
         return ElMessage.error('请输入正确活动URL哦~');
     }
 
-    // 确保用户名有效
     const userName = userStore.username || localStorage.getItem('username');
     if (!userName) {
         return ElMessage.error('请先登录后再抽奖！');
@@ -91,48 +89,37 @@ const goToRC = async () => {
     isLoading.value = true;
 
     try {
-        console.log('准备发送抽奖请求:', { 
-            activityUrl, 
-            userName 
-        });
-
-        // 调用抽奖接口
-        const response = await user.drawLotteryByUser({
+        // 1. 记录用户参与
+        const participationResponse = await user.recordParticipation({
             activityUrl,
             userName
         });
 
-        console.log('抽奖接口响应:', response);
-
-        // 检查响应格式
-        if (!response) {
-            throw new Error('未收到有效响应');
+        if (participationResponse.code !== 0) {
+            throw new Error(participationResponse.message);
         }
 
-        // 处理成功响应
-        if (response.code === 0) {
-            // 存储抽奖结果
-            userStore.setLotteryResult({
-                prize: response.data.prize,
-                activityUrl: response.data.activityUrl,
-                activityName: response.data.activityName,
-                userName: userName
-            });
-            
-            // 跳转到结果页面
-            await router.push('/animation');
-        } 
-        // 处理业务错误
-        else {
-            throw new Error(response.message || '抽奖失败');
-        }
-    } catch (error) {
-        console.error('抽奖过程出错:', {
-            error: error.message,
+        // 2. 执行抽奖
+        const lotteryResponse = await user.drawLotteryByUser({
             activityUrl,
-            userName,
-            time: new Date().toISOString()
+            userName
         });
+
+        if (!lotteryResponse || lotteryResponse.code !== 0) {
+            throw new Error(lotteryResponse?.message || '抽奖失败');
+        }
+
+        // 存储结果并跳转
+        userStore.setLotteryResult({
+            prize: lotteryResponse.data.prize,
+            activityUrl: lotteryResponse.data.activityUrl,
+            activityName: lotteryResponse.data.activityName,
+            userName: userName
+        });
+        
+        await router.push('/animation');
+    } catch (error) {
+        console.error('抽奖过程出错:', error);
         ElMessage.error(`抽奖失败: ${error.message}`);
     } finally {
         isLoading.value = false;

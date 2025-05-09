@@ -19,5 +19,4 @@ app.config.globalProperties.$message = ElMessage;
 app.component('TinyContainer', TinyContainer);
 app.component('TinyLayout', TinyLayout);
 
-
 app.mount('#app');

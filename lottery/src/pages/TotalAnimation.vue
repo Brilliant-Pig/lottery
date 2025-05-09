@@ -17,44 +17,25 @@
                     </div>
                     <div v-if="!currentWinners.length" class="no-winner">暂无中奖者</div>
                 </div>
-                <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">继续</button>
-            </div>
-        </div>
-
-        <!-- 最终结果显示 -->
-        <div v-if="showFinalResult" class="final-result-container">
-            <div class="result-box">
-                <h1 class="result-title">{{ lotteryInfo.name || '抽奖结果' }}</h1>
-                <div class="scrollable-content">
-                    <div v-for="(prize, index) in prizes" :key="index" class="prize-result">
-                        <h2>{{ prize.level }} : {{ prize.name }} ({{ prize.quantity }}份)</h2>
-                        <div v-if="winners[prize.level]?.length" class="winner-list">
-                            <div v-for="(winner, i) in winners[prize.level]" :key="i" class="winner-item">
-                                <span class="winner-rank">{{ i + 1 }}.</span>
-                                <span class="winner-name">{{ winner }}</span>
-                            </div>
-                        </div>
-                        <div v-else class="no-winner">暂无中奖者</div>
-                    </div>
-                </div>
-                <button @click="goToResultMan" class="result-btn">返回</button>
+                <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">
+                    {{ currentStage < prizes.length - 1 ? '继续' : '导出全部结果(xlxs)' }}
+                </button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import * as XLSX from 'xlsx';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { ElMessage } from 'element-plus'; 
 
 export default {
     name: 'BlackHole',
     setup() {
         const store = useStore();
         const router = useRouter();
-        return { store, router, ElMessage };
+        return { store, router };
     },
     data() {
         return {
@@ -83,31 +64,49 @@ export default {
             currentStage: -1,
             currentPrize: {},
             currentWinners: [],
-            showFinalResult: false,
-            finalResultTimer: null,
             currentButtonText: 'ENTER',
             showContinueButton: false,
             isContinueFading: false,
             continueTimer: null,
             fadeTimer: null,
-            isAnimating: false,
+            isAnimating: false
         }
     },
     created() {
-        const lotteryData = this.$store.state.lotteryData;
-        if (lotteryData) {
-            this.lotteryInfo = lotteryData.lotteryInfo;
-            this.prizes = lotteryData.prizes;
-            this.participantList = lotteryData.participantList;
+        // 优先从 Vuex 获取数据
+        const lotteryData = this.store.state.lotteryData || this.$route.params.lotteryData;
+        
+        if (!lotteryData) {
+            console.error('未找到抽奖数据');
+            return this.router.back();
+        }
 
-            // 按奖品等级排序
-            this.prizes.sort((a, b) => {
-                const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
-                return levelMap[a.level] - levelMap[b.level];
-            });
-        } else {
-            ElMessage.error('抽奖数据加载失败，请重新创建抽奖');
-            this.currentButtonText = '数据错误';
+        this.lotteryInfo = lotteryData.lotteryInfo || {};
+        this.prizes = lotteryData.prizes || [];
+        this.participantList = lotteryData.participantList || [];
+
+        // 按奖项等级排序
+        this.prizes.sort((a, b) => {
+            const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
+            return levelMap[a.level] - levelMap[b.level];
+        });
+
+        console.log('初始化数据:', {
+            prizes: this.prizes,
+            participants: this.participantList
+        });
+    },
+    mounted() {
+        this.initCanvas();
+        this.init();
+        
+        if (process.env.NODE_ENV === 'development' && this.prizes.length === 0) {
+            this.prizes = [
+                { level: '一等奖', name: 'iPhone 15', quantity: 1 },
+                { level: '二等奖', name: 'AirPods Pro', quantity: 3 },
+                { level: '三等奖', name: '充电宝', quantity: 5 }
+            ];
+            this.participantList = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十'];
         }
     },
     beforeUnmount() {
@@ -115,7 +114,6 @@ export default {
         clearTimeout(this.redirectTimer);
         clearTimeout(this.continueTimer);
         clearTimeout(this.fadeTimer);
-        clearTimeout(this.finalResultTimer);
     },
     methods: {
         initCanvas() {
@@ -154,46 +152,16 @@ export default {
             const ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
             return [nx, ny];
         },
-        async handleClick() {
-    if (this.showResult || this.isAnimating) return;
+        handleClick() {
+            if (this.showResult || this.isAnimating) return;
 
-    try {
-        if(this.currentStage === -1) {
-        this.currentStage = 0;
-        
-      // Change this line to match your actual store structure
-        const lotteryData = this.$store.state.lotteryData || this.$store.state.user?.lotteryData;
-        
-        if (!lotteryData) {
-            throw new Error('抽奖数据不存在，请重新创建抽奖');
-        }
-        
-        if (!lotteryData.lotteryInfo.url) {
-            this.startLotteryAnimation();
-            return;
-        }
-        
-        const response = await axios.post('http://127.0.0.1:33001/api/user/drawLotteryByUser', {
-            activityUrl: lotteryData.lotteryInfo.url,
-            userName: this.$store.state.user.username
-        });
-        
-        if(response.data.code === 0) {
-            this.processLotteryResult(response.data.data);
-            this.startLotteryAnimation();
-        } else {
-            throw new Error(response.data.message || '抽奖失败');
-        }
-        } else {
-        this.startLotteryAnimation();
-        }
-    } catch (error) {
-        console.error('抽奖错误:', error);
-        ElMessage.error(error.message || '抽奖失败');
-        this.currentButtonText = '点击重试';
-        this.isAnimating = false;
-    }
-    },
+            if(this.currentStage === -1) {
+                this.currentStage = 0;
+                this.startLotteryAnimation();
+            } else if(this.currentStage < this.prizes.length) {
+                this.startLotteryAnimation();
+            }
+        },
         startLotteryAnimation() {
             this.isAnimating = true;
             this.collapse = false;
@@ -212,79 +180,68 @@ export default {
                 }, 1000);
             }, 1000);
         },
-        async fetchWinnersFromDB(activityUrl) {
-        try {
-            const response = await fetch(`/api/getWinnersByActivity?activityUrl=${encodeURIComponent(activityUrl)}`);
-            if (!response.ok) throw new Error('获取中奖者失败');
-            
-            const data = await response.json();
-            if (data.code === 0) {
-            // 将数据库中的中奖者信息映射到我们的数据结构
-            this.winners = data.data.reduce((acc, winner) => {
-                if (!acc[winner.prizeLevel]) {
-                acc[winner.prizeLevel] = [];
-                }
-                acc[winner.prizeLevel].push(winner.userName);
-                return acc;
-            }, {});
-            }
-        } catch (error) {
-            console.error('获取中奖者信息失败:', error);
-            // 使用默认空数据
-            this.winners = {};
-        }
-        },
-        generateResult() {
+    generateResult() {
     if (this.currentStage >= this.prizes.length) {
-        this.showFinalResults();
-        return;
+      this.goToResultMan();
+      return;
     }
 
     const prize = this.prizes[this.currentStage];
     this.currentPrize = prize;
-
-    // 初始化获奖者列表
-    if (!this.winners[prize.level]) {
-        this.winners[prize.level] = [];
-    }
-
-    // 从上传的名单中随机抽取
+    
+    // 初始化该奖项的中奖者数组
+    this.winners[prize.level] = [];
+    
+    // 复制参与者名单以避免修改原数组
     const availableParticipants = [...this.participantList];
+    
+    // 抽奖逻辑 - 确保不会重复中奖
     const drawCount = Math.min(prize.quantity, availableParticipants.length);
-
     for (let i = 0; i < drawCount; i++) {
-        const totalWeight = this.prizes.reduce((sum, p) => sum + p.weight, 0);
-        let random = Math.random() * totalWeight;
-        let selectedPrize = null;
-
-        for (const p of this.prizes) {
-            if (random < p.weight) {
-                selectedPrize = p;
-                break;
-            }
-            random -= p.weight;
-        }
-
-        if (selectedPrize && selectedPrize.quantity > 0) {
-            const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-            this.winners[selectedPrize.level].push(availableParticipants[randomIndex]);
-            availableParticipants.splice(randomIndex, 1);
-            selectedPrize.quantity--; // 减少奖品数量
-        }
+      const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+      const winner = availableParticipants[randomIndex];
+      
+      this.winners[prize.level].push(winner);
+      availableParticipants.splice(randomIndex, 1); // 移除已中奖者
     }
 
+    // 更新当前显示的中奖者
     this.currentWinners = [...this.winners[prize.level]];
     this.showResult = true;
-
+    
     // 更新按钮文本
     if (this.currentStage < this.prizes.length - 1) {
-        this.currentButtonText = `继续开${this.prizes[this.currentStage + 1].level}`;
+      this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
     } else {
-        this.currentButtonText = '查看全部结果';
+      this.currentButtonText = '已抽完';
     }
-
+    
     this.showContinueButton = true;
-},
+    },
+/*     exportResults() {
+        // 准备数据
+        const data = [];
+        for (const [level, winners] of Object.entries(this.winners)) {
+        // 根据奖项等级找到对应的奖品
+        const prize = this.prizes.find(p => p.level === level);
+            winners.forEach((winner, index) => {
+                data.push({
+                    奖项: level,
+                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                    中奖者: winner,
+                });
+            });
+        }
+
+        // 创建工作簿和工作表
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+
+        // 导出文件
+        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    }, */
         nextPrize() {
             clearTimeout(this.continueTimer);
             clearTimeout(this.fadeTimer);
@@ -294,7 +251,7 @@ export default {
             this.currentStage++;
             
             if (this.currentStage >= this.prizes.length) {
-                this.showFinalResults(); 
+                this.goToResultMan();
                 return;
             }
             
@@ -303,19 +260,35 @@ export default {
             this.expanse = false;
             this.isOpen = false;
         },
-        showFinalResults() {
-            this.showResult = false;
-            this.showFinalResult = true;
-
-            this.$store.commit('setWinners', this.winners);
-
-            this.finalResultTimer = setTimeout(() => {
-                this.goToResultMan();
-            }, 10000);
-        },
         goToResultMan() {
-            clearTimeout(this.finalResultTimer);
-            this.router.push({ name: 'ResultMan' });
+            this.store.commit('saveLotteryResult', {
+                lotteryInfo: this.lotteryInfo,
+                prizes: this.prizes,
+                winners: this.winners,
+            });
+        // 准备数据
+        const data = [];
+        for (const [level, winners] of Object.entries(this.winners)) {
+        // 根据奖项等级找到对应的奖品
+        const prize = this.prizes.find(p => p.level === level);
+            winners.forEach((winner, index) => {
+                data.push({
+                    奖项: level,
+                    名称: index + 1,
+                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                    中奖者: winner,
+                });
+            });
+        }
+
+        // 创建工作簿和工作表
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+
+        // 导出文件
+        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
         },
         handleMouseOver() {
             if (!this.expanse && !this.showResult && !this.isAnimating) this.collapse = true;
@@ -528,22 +501,6 @@ canvas {
     to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-.final-result-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(90vw, 700px);
-    height: min(80vh, 600px);
-    z-index: 10;
-    animation: scaleIn 0.5s ease-out;
-}
-
-@keyframes scaleIn {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
 .result-box {
     display: flex;
     flex-direction: column;
@@ -564,35 +521,6 @@ canvas {
     flex-shrink: 0;
     color: #4dc3d7;
     text-shadow: 0 0 10px rgba(77, 195, 215, 0.7);
-}
-
-.scrollable-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 8px;
-    margin: 10px 0;
-}
-
-.scrollable-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 3px;
-}
-
-.prize-result {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.prize-result h2 {
-    font-size: 20px;
-    color: rgb(77, 195, 215);
-    margin-bottom: 10px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .winner-list {
@@ -623,27 +551,6 @@ canvas {
     color: rgba(255, 255, 255, 0.7);
     font-style: italic;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.result-btn {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-    position: relative;
-    font-weight: bold;
-    padding: 10px 30px;
-    border-radius: 25px;
-    margin-top: 15px;
-    align-self: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    flex-shrink: 0;
-    font-size: 16px;
-}
-
-.result-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
 }
 
 .continue-btn {

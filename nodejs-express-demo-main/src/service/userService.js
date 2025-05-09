@@ -148,3 +148,26 @@ exports.getActivityStartTimeByUrl = async (activityUrl) => {
     const result = await userDao.getActivityStartTimeByUrl(activityUrl);
     return result;
 };
+exports.recordParticipation = async (userName, activityUrl) => {
+    try {
+        // 首先检查活动是否存在
+        const activity = await userDao.getActivityActiveByUrl(activityUrl);
+        if (!activity) {
+            throw new Error('活动不存在');
+        }
+
+        // 记录用户参与
+        const result = await userDao.insertParticipation(userName, activityUrl);
+        return {
+            code: 0,
+            message: '参与记录成功',
+            data: result
+        };
+    } catch (err) {
+        console.error('记录参与失败:', err);
+        return {
+            code: 1,
+            message: err.message
+        };
+    }
+};
