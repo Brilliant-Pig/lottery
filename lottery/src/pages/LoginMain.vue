@@ -4,7 +4,7 @@
     <h1>用户登录</h1>
     <form @submit.prevent="handleLogin">
     <div class="input-group">
-        <label for="username">用户名：</label>
+        <label for="username" style="color: #ccc;">用户名：</label>
         <input
         type="text"
         id="username"
@@ -14,7 +14,7 @@
     />
     </div>
     <div class="input-group">
-        <label for="password">密码：</label>
+        <label for="password" style="color: #ccc;">密码：</label>
         <input
         type="password"
         id="password"
@@ -62,7 +62,8 @@ export default {
         
         // 登录成功后的操作
         this.errorMessage = "";
-        this.$router.push('/LotteryMain'); // 使用路由跳转替代 window.location
+        this.$router.push('/LotteryMain'); 
+        window.location.reload();// 使用路由跳转替代 window.location
         
         } catch (error) {
             this.errorMessage = "用户名或密码错误！";
@@ -90,6 +91,7 @@ border: none;
 h1 {
 text-align: center;
 margin-bottom: 60px;
+color:#007bff;
 }
 
 .input-group {
@@ -133,7 +135,7 @@ text-align: center;
 }
 
 .register-link a {
-color: #007bff;
+color: #28a745;
 text-decoration: none;
 font-weight: bold;
 }

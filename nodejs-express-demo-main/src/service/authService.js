@@ -5,15 +5,43 @@ const jwt_conf = require('config').get('jwtConfig');
 
 const authDao = require('../dao/authDao');
 
+// 检查用户名是否可用
+exports.checkUsername = async (userName) => {
+    try {
+        const user = await authDao.checkUsername(userName);
+        return !user || user.length === 0; // 返回true表示用户名可用
+    } catch (error) {
+        console.error('检查用户名失败:', error);
+        throw new Error('检查用户名失败');
+    }
+};
+
 // 用户注册
 exports.register = async (userName, password) => {
-    // 加密密码
-    console.log(userName, password);
-    const salt = await bcrypt.genSalt(10); //盐值
-    const passwordHash = await bcrypt.hash(password, salt);
-    // 保存用户信息
-    const result = await authDao.register(userName, passwordHash);
-    return result;
+    try {
+        // 1. 检查用户名是否已存在
+        const available = await this.checkUsername(userName);
+        if (!available) {
+            throw new Error('用户名已存在');
+        }
+
+        // 2. 加密密码
+        const salt = await bcrypt.genSalt(10); //盐值
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        // 3. 保存用户信息
+        const result = await authDao.register(userName, passwordHash);
+
+        // 4. 生成并返回token
+        const token = jwt.sign({ userName }, jwt_conf.secret, { expiresIn: jwt_conf.expiresIn });
+        return token;
+    } catch (error) {
+        console.error('注册失败:', error);
+        if (error.message.includes('唯一约束') || error.message.includes('已存在')) {
+            throw new Error('用户名已存在');
+        }
+        throw new Error('注册失败');
+    }
 };
 
 // 用户登录

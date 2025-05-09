@@ -99,17 +99,19 @@
         </div>
         <!-- 头像区域显示 -->
         <el-row class="demo-avatar demo-basic" @click="login">
-        <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
-        <div class="demo-basic--circle">
-            <div class="block">
-                <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-200px;"/>          
+        <div class="avatar-container">
+            <div class="demo-basic--circle">
+            <div class="avatar-wrapper">
+                <el-avatar :size="60" :src="circleUrl"/>    
+                </div>    
             </div>
+        <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
             </div>
         </el-row>
         <el-button 
             v-if="isLoggedIn" 
             @click="logout" 
-            style="margin-left: 80vw;margin-top: 18px; text-align: center; padding: auto; z-index: 2;color: aliceblue;">
+            style="margin-left: 90vw; margin-top: 20px;padding-left: 2.9%; z-index: 2;color: #fc5185;">
             退出登录
         </el-button>
     </template>
@@ -693,14 +695,36 @@
         text-shadow: 0 0 8px currentColor; /* 文字发光 */
     }
     
-    .demo-basic {
-        text-align: center;
-    }
-    .demo-basic .sub-title {
-        margin-bottom: 10px;
-        font-size: 14px;
-        color: var(--el-text-color-secondary);
-        margin-left: 100px;
+    /* 外层容器 */
+.demo-basic {
+  margin-top: 10px;
+  margin-left: 15px;
+}
+
+/* Flex 容器，确保头像和文字水平排列 */
+.avatar-container {
+  display: flex;
+  align-items: flex-start;  /* 垂直居中 */
+  gap: 15px;  /* 头像和文字之间的固定间距 */
+}
+
+/* 头像固定宽度，防止被挤压 */
+.avatar-wrapper {
+  flex-shrink: 0;  /* 禁止头像被压缩 */
+}
+
+    /* 登录文字样式 */
+    .sub-title {
+        font-size: 17px;
+        font-weight: bold;
+        color: #a6e3e9;
+        white-space: nowrap;  /* 防止文字换行 */
+        overflow: hidden;
+        max-width: 200px;  /* 限制最大宽度 */
+        margin: 0;
+        margin-top: -100px;
+        line-height: 1;
+        text-overflow: ellipsis;
     }
     
     .fade-slide-enter-active,
