@@ -81,3 +81,11 @@ Content-Type: application/json
 ###
 GET http://127.0.0.1:33001/api/auth/login
     ?userName=admin
+
+###
+POST http://127.0.0.1:33001/api/auth/checkUsername
+Content-Type: application/json
+
+{
+    "userName": "admin"
+    }

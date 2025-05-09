@@ -3,7 +3,6 @@ const { uuidv7 } = require('uuidv7');
 
 // 用户注册
 exports.register = async (userName, passwordHash) => {
-    const id = uuidv7();
     const sql = `
         INSERT INTO users 
             (userName,passwordHash,create_time)
@@ -11,8 +10,15 @@ exports.register = async (userName, passwordHash) => {
             (?,?,datetime('now'))
     `;
     const sqlParams = [userName, passwordHash];
-    const result = await db.query(sql, sqlParams);
-    return result;
+    try {
+        const result = await db.query(sql, sqlParams);
+        return result;
+    } catch (error) {
+        if (error.code === 'SQLITE_CONSTRAINT' && error.message.includes('userName')) {
+            throw new Error('USERNAME_EXISTS');
+        }
+        throw error;
+    }
 };
 
 // 用户登录
@@ -21,6 +27,21 @@ exports.login = async (userName) => {
     SELECT 
         username AS userName, 
         passwordHash AS passWordHash
+    FROM 
+        users
+    WHERE 
+        userName = ?
+    `;
+    const sqlParams = [userName];
+    const result = await db.query(sql, sqlParams);
+    return result;
+};
+
+// 检查用户名是否存在
+exports.checkUsername = async (userName) => {
+    const sql = `
+    SELECT 
+        userName
     FROM 
         users
     WHERE 
