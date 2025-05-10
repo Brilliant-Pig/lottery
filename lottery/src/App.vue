@@ -27,8 +27,8 @@
             <div :class="['aside-container', { 'is-collapsed': isCollapsed }]">
             <!-- 收缩/展开按钮 -->
             <button class="collapse-button" @click="toggleAside">
-                <span v-if="isCollapsed"><i class="el-icon-caret-right" style="color: white; font-size: larger; right: -12px;top: 50%;"></i></span>
-                <span v-else><i class="el-icon-caret-left" style="color: white; font-size: larger; right: -12px ; top: 50%; "></i></span>
+                <span v-if="isCollapsed"><i class="el-icon-caret-right" style="color: white; font-size: 26px; right: -12px;top: 50%; z-index: 3;"></i></span>
+                <span v-else><i class="el-icon-caret-left" style="color: white; font-size: 26px; right: -12px ; top: 50%; "></i></span>
             </button>
             <!-- 侧边栏插槽 -->
             <div class="aside-logo">
@@ -395,6 +395,7 @@
         width: 24px;
         height: 24px;
         background: none;
+        border: none;
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         display: flex;
@@ -404,9 +405,12 @@
     }
     
     .collapse-button:hover {
-        background:none;
+        background: rgba(255, 255, 255, 0.1); /* 可选：添加悬停背景效果 */
         transform: translateY(-50%) scale(1.1);
     }
+.collapse-button:focus {
+    outline: none; /* 移除点击后的默认聚焦边框 */
+}
     
 .aside-container {
     width: 195px; /* 默认展开状态下的宽度 */
@@ -455,9 +459,10 @@
     
     /* 主内容区样式 */
     .demo-container .tiny-container :deep(.tiny-container__main) {
-        border: 2px solid #ffffff;
+        border: 2px solid #ffffff4c;
         color: #4f4f4f;
         height: auto;
+        width: auto;
         z-index: 1;
     }
     
