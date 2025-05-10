@@ -24,10 +24,13 @@
             </template>
     
             <template #aside>
-            <div :class="['aside-container', { 'is-collapsed': isCollapsed }]"
-            @mouseenter="handleAsideEnter"
-            @mouseleave="handleAsideLeave">
-                <!-- 侧边栏插槽 -->
+            <div :class="['aside-container', { 'is-collapsed': isCollapsed }]">
+            <!-- 收缩/展开按钮 -->
+            <button class="collapse-button" @click="toggleAside">
+                <span v-if="isCollapsed"><i class="el-icon-caret-right" style="color: white; font-size: larger; right: -12px;top: 50%;"></i></span>
+                <span v-else><i class="el-icon-caret-left" style="color: white; font-size: larger; right: -12px ; top: 50%; "></i></span>
+            </button>
+            <!-- 侧边栏插槽 -->
             <div class="aside-logo">
                 <img src="./assets/logo.png" alt="Logo" class="logo-img" />
             </div>
@@ -79,30 +82,36 @@
         </el-scrollbar> 
         </div> 
     </template>
-            <tiny-layout id="mainP" >
-            <!-- 路由视图调整 -->
-            <router-view v-slot="{ Component }">
-                <transition name="fade-slide" mode="out-in">
-                <component :is="Component" />
-                </transition>
-            </router-view>
-            </tiny-layout>
+<tiny-layout
+    id="mainP"
+    :class="{ 'is-collapsed': isCollapsed }"
+    :style="{ width: isCollapsed ? 'calc(100%)' : 'calc(100%)' }"
+>
+    <!-- 路由视图 -->
+    <router-view v-slot="{ Component }">
+        <transition name="fade-slide" mode="out-in">
+            <component :is="Component" />
+        </transition>
+    </router-view>
+</tiny-layout>
     
             </tiny-container>
         </div>
         <!-- 头像区域显示 -->
         <el-row class="demo-avatar demo-basic" @click="login">
-        <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
-        <div class="demo-basic--circle">
-            <div class="block">
-                <el-avatar :size="60" :src="circleUrl" style="margin-top: 7px;margin-left:-200px;"/>          
+        <div class="avatar-container">
+            <div class="demo-basic--circle">
+            <div class="avatar-wrapper">
+                <el-avatar :size="60" :src="circleUrl"/>    
+                </div>    
             </div>
+        <div class="sub-title" style="margin-top: 10px" >{{ Loginportrait }}</div>
             </div>
         </el-row>
         <el-button 
             v-if="isLoggedIn" 
             @click="logout" 
-            style="margin-left: 80vw;margin-top: 18px; text-align: center; padding: auto; z-index: 2;color: aliceblue;">
+            style="margin-left: 90vw; margin-top: 20px;padding-left: 2.9%; z-index: 2;color: #fc5185;">
             退出登录
         </el-button>
     </template>
@@ -137,7 +146,7 @@
                 pattern: 'default',
                 asideWidth: 195,
                 headerHeight: 80,
-                circleUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+                circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
                 customItems: [
                     { 
                         text: '使用说明', 
@@ -235,6 +244,13 @@
         emitter.off('avatar-updated');
     },
         methods: {
+        toggleAside() {
+            this.isCollapsed = !this.isCollapsed;
+            this.asideWidth = this.isCollapsed ? 50 : 195; // 动态调整侧边栏宽度
+        },
+        handleClick(path) {
+            this.$router.push(path);
+        },
             loadUserData() {
             this.Loginportrait = localStorage.getItem('username') || '请点击登录';
             const avatar = localStorage.getItem('avatarUrl') || DEFAULT_AVATAR;
@@ -371,14 +387,14 @@
     /* 伸缩按钮样式 */
     .collapse-button {
         position: absolute;
-        right: -12px;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
         z-index: 2000;
         cursor: pointer;
         width: 24px;
         height: 24px;
-        background: #ffffff;
+        background: none;
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         display: flex;
@@ -388,17 +404,19 @@
     }
     
     .collapse-button:hover {
-        background: #f5f7fa;
+        background:none;
         transform: translateY(-50%) scale(1.1);
     }
     
-    .aside-container {
-    transition: width 0.8s ease-in-out; /* 将过渡时间改为 0.5s */
-    }
-    /* 收缩状态下的样式 */
-    .aside-container.is-collapsed {
-        overflow: hidden;
-    }
+.aside-container {
+    width: 195px; /* 默认展开状态下的宽度 */
+    transition: width 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.aside-container.is-collapsed {
+    width: 50px; /* 收缩状态下的宽度 */
+}
 
     .aside-container.is-collapsed .el-scrollbar,
     .aside-container.is-collapsed .fullscreen-background,
@@ -425,7 +443,7 @@
     cursor: pointer;
     width: 24px;
     height: 24px;
-    background: #ffffff;
+    background: none;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -677,14 +695,36 @@
         text-shadow: 0 0 8px currentColor; /* 文字发光 */
     }
     
-    .demo-basic {
-        text-align: center;
-    }
-    .demo-basic .sub-title {
-        margin-bottom: 10px;
-        font-size: 14px;
-        color: var(--el-text-color-secondary);
-        margin-left: 100px;
+    /* 外层容器 */
+.demo-basic {
+  margin-top: 10px;
+  margin-left: 15px;
+}
+
+/* Flex 容器，确保头像和文字水平排列 */
+.avatar-container {
+  display: flex;
+  align-items: flex-start;  /* 垂直居中 */
+  gap: 15px;  /* 头像和文字之间的固定间距 */
+}
+
+/* 头像固定宽度，防止被挤压 */
+.avatar-wrapper {
+  flex-shrink: 0;  /* 禁止头像被压缩 */
+}
+
+    /* 登录文字样式 */
+    .sub-title {
+        font-size: 17px;
+        font-weight: bold;
+        color: #a6e3e9;
+        white-space: nowrap;  /* 防止文字换行 */
+        overflow: hidden;
+        max-width: 200px;  /* 限制最大宽度 */
+        margin: 0;
+        margin-top: -100px;
+        line-height: 1;
+        text-overflow: ellipsis;
     }
     
     .fade-slide-enter-active,
@@ -702,10 +742,17 @@
         transform: translateX(-30px);   /* 左移离开 */
     }
     
-    #mainP { 
-        height: auto;
-        width: auto;
-    }
+/* 主内容区域样式 */    
+#mainP {
+    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; /* 添加平滑过渡效果 */
+    margin-left: 0; /* 默认展开状态下没有左边距 */
+    width: calc(100% - 195px); /* 默认展开状态下的宽度 */
+}
+
+#mainP.is-collapsed {
+    margin-left: 0; /* 收缩状态下也没有左边距 */
+    width: calc(100% - 50px); /* 收缩状态下的宽度 */
+}
     .login-tip {
     font-size: 14px;
     margin-top: 8px;

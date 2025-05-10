@@ -9,9 +9,14 @@
             type="text"
             id="username"
             v-model="username"
-            placeholder="请输入用户名"
+            placeholder="请输入用户名（不得少于3个字符）"
             required
         />
+        <div class="validation-message">
+            <span v-if="isChecking">检查中...</span>
+            <span v-if="usernameAvailable" class="success">✓ 用户名可用</span>
+            <span v-if="usernameExists" class="error">✗ 用户名已存在</span>
+        </div>
         </div>
         <div class="input-group">
         <label for="password">密码：</label>
@@ -33,7 +38,12 @@
             required
         />
         </div>
-        <button type="submit" class="register-btn">注册</button>
+        <button type="submit" 
+        class="register-btn" 
+        :disabled="shouldDisableRegisterButton"
+        >
+            注册
+        </button>
     </form>
     <!-- 返回登录链接 -->
     <div class="login-link">
@@ -51,13 +61,76 @@ export default {
       username: "",
       password: "",
       confirmPassword: "",
-      errorMessage: "" // 保留原有数据项
+      isChecking: false,
+      usernameAvailable: false,
+      usernameExists: false,
+      debounceTimer: null,
+      errorMessage: ""
     };
   },
+  computed: {
+    // 新增计算属性，判断是否应该禁用注册按钮
+    shouldDisableRegisterButton() {
+      return (
+        !this.username || 
+        !this.password || 
+        !this.confirmPassword || 
+        this.password !== this.confirmPassword ||
+        this.usernameExists ||
+        this.isChecking
+      );
+    }
+  },
+  watch: {
+    // 添加对username的监听
+    username(newVal) {
+      if (newVal) {
+        this.checkUsernameAvailability();
+      }
+    }
+  },
+
   methods: {
     ...mapActions(['register']), // 映射 Vuex 的 register action
 
+    checkUsernameAvailability() {
+      clearTimeout(this.debounceTimer);
+      
+      if (this.username.length < 3) {
+        this.usernameAvailable = false;
+        this.usernameExists = false;
+        return;
+      }
+      
+      this.isChecking = true;
+      this.debounceTimer = setTimeout(async () => {
+        try {
+            const response = await fetch('api/auth/checkUsername', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userName: this.username })
+            });
+        
+            const result = await response.json();
+        
+         // 根据后端返回的 code 和 data.available 更新状态
+            this.usernameAvailable = result.code === 0;
+            this.usernameExists = !this.usernameAvailable;
+        } catch (error) {
+          console.error("检查用户名失败:", error);
+        } finally {
+          this.isChecking = false;
+        }
+      }, 500);
+    },
+
     async handleRegister() {
+        // 添加用户名可用性检查
+      if (this.usernameExists) {
+        alert("用户名已存在，请更换其他用户名");
+        return;
+      }
+
       // 1. 基础验证（保持原有验证逻辑）
       if (!this.username || !this.password || !this.confirmPassword) {
         alert("所有字段都必须填写！"); // 保持 alert 提示
@@ -77,7 +150,7 @@ export default {
 
         // 3. 注册成功处理（保持原有跳转逻辑）
         alert("注册成功！");
-        this.$router.push("/"); 
+        this.$router.push("/LoginMain"); 
 
       } catch (error) {
         // 4. 错误处理（复用 errorMessage 显示后端错误）
@@ -108,7 +181,7 @@ export default {
 h1 {
     text-align: center;
     margin-bottom: 60px;
-    color: #555;
+    color: #28a745;
 }
 
 .input-group {
@@ -120,7 +193,7 @@ label {
     display: block;
     margin-bottom: 10px;
     font-weight: bold;
-    color: #555;
+    color: #ccc;
 }
 
 input {
@@ -161,5 +234,23 @@ input {
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+.validation-message {
+  height: 20px;
+  margin-top: 5px;
+  font-size: 14px;
+}
+.success {
+  color: #28a745;
+}
+.error {
+  color: #dc3545;
+}
+
+.register-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 </style>

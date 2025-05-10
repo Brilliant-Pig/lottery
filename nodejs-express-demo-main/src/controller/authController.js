@@ -29,12 +29,28 @@ router.post('/login', async (req, res, next) => {
  * @response {string} token 登录凭证
  */
 router.post('/register', async (req, res, next) => {
-    const { userName, passWord } = req.body;
-    const token = await authService.register(userName, passWord);
-    if (token) {
-        res.ResultVO(0, '注册成功', token);
-    } else {
-        res.ResultVO(1, '注册失败');
+    try {
+        const { userName, passWord } = req.body;
+
+        // 先检查用户名是否可用
+        const available = await authService.checkUsername(userName);
+        if (!available) {
+            return res.ResultVO(1, '用户名已存在');
+        }
+        //可用，进行注册
+        const token = await authService.register(userName, passWord);
+        if (token) {
+            res.ResultVO(0, '注册成功', token);
+        } else {
+            res.ResultVO(1, '注册失败');
+        }
+    } catch (error) {
+        console.error('注册失败:', error);
+        if (error.message.includes('唯一约束')) {
+            res.ResultVO(1, '用户名已存在');
+        } else {
+            res.ResultVO(1, error.message || '注册失败');
+        }
     }
 });
 
@@ -54,5 +70,20 @@ router.post('/tokenVerify', async (req, res, next) => {
         res.ResultVO(0, '凭证有效', payload);
     } else {
         res.ResultVO(1, '凭证无效');
+    }
+});
+
+router.post('/checkUsername', async (req, res, next) => {
+    try {
+        const { userName } = req.body;
+        // 检查用户名是否可用
+        const available = await authService.checkUsername(userName);
+        if (!available) {
+            return res.ResultVO(1, '用户名已存在');
+        } else if (available) {
+            return res.ResultVO(0, '用户名可用');
+        }
+    } catch (error) {
+        console.error('发生错误', error);
     }
 });

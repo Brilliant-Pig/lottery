@@ -2,7 +2,7 @@
 <template>
     <div id="whole">
         <div id="null">
-            <tiny-input v-model="input" placeholder="请输入活动专属Url  跳转至相应活动抽奖" clearable>
+            <tiny-input v-model="input" placeholder="请输入活动码  跳转至相应活动抽奖" clearable>
             </tiny-input>
         </div>
         <h1>{{ activityName }}</h1>
@@ -196,7 +196,11 @@ h1 {
     margin-top: 5px;
     margin-bottom: 80px;
     text-align: center;
-    color: rgb(107, 252, 216);
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 #timer {
@@ -216,13 +220,21 @@ h1 {
 p1 {
     margin-left: 5%;
     font-size: 30px;
-    color: white;
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 p2 {
     margin-left: 40%;
     font-size: 30px;
-    color: white;
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .tiny-button {
