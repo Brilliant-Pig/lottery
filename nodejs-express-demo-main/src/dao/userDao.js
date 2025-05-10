@@ -294,6 +294,19 @@ exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) =>
     `;
     return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
 };
+exports.checkParticipationExists = async (userName, activityUrl) => {
+    const sql = `
+        SELECT 
+            COUNT(*) AS count
+        FROM 
+            participations
+        WHERE 
+            username = ? 
+            AND activity_url = ?
+    `;
+    const result = await db.query(sql, [userName, activityUrl]);
+    return result[0].count > 0; // 返回布尔值，表示是否已存在
+};
 exports.insertParticipation = async (userName, activityUrl) => {
     // 首先获取活动信息以确保活动存在
     const activity = await db.query(
