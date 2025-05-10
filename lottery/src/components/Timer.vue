@@ -70,11 +70,13 @@ export default {
                 const responseST = await user.getActivityStartTimeByUrl({
                     activityUrl: this.activityUrl
                 })
+                if (!response || response.code !== 0 || !response.data || response.data.length === 0){
+                    this.endTime = null;
+                    this.isExpired = true;
+                }
                 this.endTime = response[0].activityEndTime//用apiUrl的地址抓取
                 this.stratTime = responseST[0].startTime//抓取开始时间来确定活动状况
-                console.log(responseST);
-                
-            } catch (error){//错误判断
+            } catch (error){
                 console.error('获取数据失败了:',error);
             }
         }
