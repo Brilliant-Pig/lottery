@@ -186,13 +186,13 @@
                                 text: '创建的抽奖',
                                 type: 'danger',
                                 icon: 'Document',
-                                path: '/ResultCus'
+                                path: '/ResultMan'
                             },
                             {
                                 text: '参与的抽奖',
                                 type: 'danger',
                                 icon: 'PieChart',
-                                path: '/ResultMan'
+                                path: '/ResultCus'
                             }
                         ]  
                     },

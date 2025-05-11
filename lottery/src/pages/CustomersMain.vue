@@ -120,7 +120,7 @@ const goToRC = async () => {
         await router.push('/animation');
     } catch (error) {
         console.error('抽奖过程出错:', error);
-        ElMessage.error(`抽奖失败: 你已经参与抽奖`);
+        ElMessage.error(`抽奖失败: 你已经参与抽奖${error.message}`);
     } finally {
         isLoading.value = false;
     }
