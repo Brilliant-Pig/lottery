@@ -12,6 +12,7 @@
     "@opentiny/vue": "^3.21.3",
     "axios": "^1.8.4",
     "element-plus": "^2.9.10",
+    "fabric": "^6.6.5",
     "mitt": "^3.0.1",
     "ogl": "^1.0.11",
     "papaparse": "^5.5.2",
