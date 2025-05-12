@@ -9,6 +9,7 @@ import 'element-plus/dist/index.css';
 import { TinyContainer, TinyLayout } from '@opentiny/vue';
 import { ElMessage } from 'element-plus';
 import { createPinia } from 'pinia';
+import emitter from './event-bus'
 
 const app = createApp(App);
 // 存储原始 body 高度
@@ -23,6 +24,7 @@ app.use(router);
 app.use(store);
 app.use(ElementPlus);
 app.config.globalProperties.$message = ElMessage;
+app.config.globalProperties.$emitter = emitter
 app.component('TinyContainer', TinyContainer);
 app.component('TinyLayout', TinyLayout);
 

@@ -1,9 +1,14 @@
 // 定义 Node Express 服务器
 const express = require('express');
 const app = express();
+const path = require('path');
 
 // 设置允许跨域访问
 const cors = require('cors');
+const avatarsDir = path.join(__dirname, 'uploads', 'avatars');
+
+app.use('/avatars', express.static(avatarsDir));
+
 app.use(
     cors({
         origin: '*',

@@ -100,6 +100,11 @@ Content-Type: application/json
     "userName": "zhuzhu"
 }
 
+###
+GET http://127.0.0.1:33001/api/user/getUserAvatar
+    ?userName=oops
+
 ### 获取用户历史抽奖记录
 GET http://127.0.0.1:33001/api/user/getUserLotteryHistory
     ?userName=admin
+    

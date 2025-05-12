@@ -52,19 +52,39 @@ export default createStore({
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            userName: username, 
+            passWord: password })
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || '登录失败');
+            // 2. 处理HTTP错误状态码（如401,500等）
+            if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `登录失败，状态码：${response.status}`);
+            }
 
-        commit('setToken', data.token);
-        commit('setUser', username);
-        return true;
-      } catch (error) {
-        console.error('登录错误:', error);
-        throw error;
-      }
-    },
+            // 3. 解析业务数据
+            const { code, message, data: token } = await response.json();
+
+            // 4. 处理业务逻辑错误
+            if (code !== 0) { // 根据示例响应，code 0表示成功
+            throw new Error(message || '登录凭证错误');
+            }
+
+            // 5. 提交认证信息
+            commit('setToken', token);
+            commit('setUser', username);
+            return true;
+
+        } catch (error) {
+            console.error('登录过程出错:', error);
+            
+            // 清理可能的残留状态
+            commit('clearToken');
+            
+            // 重新抛出错误让组件可以捕获
+            throw new Error(error.message || '登录过程发生未知错误');
+        }
+        },
 
     async register({ commit }, { username, password }) {
       const response = await fetch('/api/auth/register', {
