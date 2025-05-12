@@ -163,6 +163,11 @@
         <span>联系客服</span>
         </div>
     </footer>
+    <router-view v-slot="{ Component }">
+        <keep-alive>
+            <component :is="Component" />
+        </keep-alive>
+        </router-view>
     </div>
 </template>
 
@@ -188,6 +193,10 @@ export default {
     avatarUrl() {
         return this.sharedAvatar.url;
     }
+
+    activated() {
+        this.loadUserData(); // 每次进入页面时刷新数据
+
     },
     created(){
         const username = localStorage.getItem('username');
@@ -265,6 +274,7 @@ export default {
         return statusMap[status] || status || '未知状态';},
     viewDetail(id) {
         console.log('查看详情:', id)
+        this.$router.push('/ResultMan')
     }, 
     switchMainTab(tab) {
         // 处理底部导航切换逻辑

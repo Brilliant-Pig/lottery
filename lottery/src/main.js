@@ -12,6 +12,13 @@ import { createPinia } from 'pinia';
 import emitter from './event-bus'
 
 const app = createApp(App);
+// 存储原始 body 高度
+const originalBodyHeight = document.body.style.height;
+
+// 在每次路由跳转后还原 body 高度
+router.afterEach(() => {
+    document.body.style.height = originalBodyHeight;
+});
 app.use(createPinia())
 app.use(router);
 app.use(store);

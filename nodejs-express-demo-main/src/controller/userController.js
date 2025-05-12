@@ -223,3 +223,23 @@ router.post('/recordParticipation', async (req, res, next) => {
         });
     }
 });
+// 获取用户历史抽奖记录
+router.get('/getUserLotteryHistory', async (req, res, next) => {
+    try {
+        const { userName } = req.query;
+        if (!userName) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少userName参数'
+            });
+        }
+        const result = await userService.getUserLotteryHistory(userName);
+        res.json(result);
+    } catch (err) {
+        console.error('获取历史记录失败:', err);
+        res.status(500).json({
+            code: 1,
+            message: '获取历史记录失败'
+        });
+    }
+});

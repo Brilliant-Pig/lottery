@@ -178,3 +178,20 @@ exports.recordParticipation = async (userName, activityUrl) => {
         throw err; // 其他错误继续抛出
     }
 };
+// 获取用户历史抽奖记录
+exports.getUserLotteryHistory = async (userName) => {
+    try {
+        const history = await userDao.getUserLotteryHistory(userName);
+        return {
+            code: 0,
+            message: '获取历史记录成功',
+            data: history
+        };
+    } catch (err) {
+        console.error('获取历史记录失败:', err);
+        return {
+            code: 1,
+            message: '获取历史记录失败'
+        };
+    }
+};

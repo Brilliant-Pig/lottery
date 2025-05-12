@@ -111,7 +111,7 @@
         <el-button 
             v-if="isLoggedIn" 
             @click="logout" 
-            style="margin-left: 90vw; margin-top: 20px;padding-left: 2.9%; z-index: 2;color: #fc5185;">
+            style="margin-left: 85vw; margin-top: 20px;padding-left: 2.9%; z-index: 2;color: #fc5185;">
             退出登录
         </el-button>
     </template>
@@ -193,13 +193,13 @@
                                 text: '创建的抽奖',
                                 type: 'danger',
                                 icon: 'Document',
-                                path: '/ResultCus'
+                                path: '/ResultMan'
                             },
                             {
                                 text: '参与的抽奖',
                                 type: 'danger',
                                 icon: 'PieChart',
-                                path: '/ResultMan'
+                                path: '/ResultCus'
                             }
                         ]  
                     },
