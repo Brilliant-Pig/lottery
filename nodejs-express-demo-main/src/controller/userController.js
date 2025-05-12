@@ -3,17 +3,11 @@ const multer = require('multer');
 const path = require('path');
 const router = require('express').Router();
 module.exports = router;
-const fs = require('fs');
-const userService = require('../service/userService');
 
-const uploadDir = path.join(__dirname, '../../uploads/avatars');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-    console.log(`已创建上传目录: ${uploadDir}`);
-}
+const userService = require('../service/userService');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadDir); // 使用绝对路径
+        cb(null, 'uploads/avatars/'); // 保存路径
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -86,34 +80,15 @@ router.get('/getUserAvatar', async (req, res, next) => {
 router.post('/uploadAvatar', upload.single('avatar'), async (req, res, next) => {
     try {
         if (!req.file) {
-            return res.status(400).json({
-                code: 1,
-                message: '请选择要上传的文件'
-            });
+            return res.ResultVO(1, '请选择要上传的文件');
         }
-
         const userName = req.body.userName;
-        if (!userName) {
-            return res.status(400).json({
-                code: 1,
-                message: '缺少userName参数'
-            });
-        }
+        const avatarUrl = `/avatars/${req.file.filename}`; // 生成访问URL
 
-        const avatarUrl = `/avatars/${req.file.filename}`;
-        await userService.uploadAvatar(userName, avatarUrl);
-
-        res.json({
-            code: 0,
-            message: '头像上传成功',
-            data: { avatarUrl }
-        });
+        const result = await userService.uploadAvatar(userName, avatarUrl);
+        res.ResultVO(0, '头像上传成功', { avatarUrl });
     } catch (err) {
-        console.error('头像上传错误:', err);
-        res.status(500).json({
-            code: 1,
-            message: err.message || '头像上传失败'
-        });
+        res.ResultVO(1, err.message || '头像上传失败', err);
     }
 });
 

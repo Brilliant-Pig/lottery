@@ -3,7 +3,8 @@
     <!-- 顶部导航 -->
     <header class="header">
         <div class="logo-section">
-            <span class="time">{{ currentTime }}</span>
+<!--           <img src="@/assets/logo.png" alt="魔法抽奖系统" class="logo">
+-->          <span class="time">{{ currentTime }}</span>
         </div>
     </header>
 
@@ -28,7 +29,7 @@
         >
         <button 
             class="avatar-upload-btn" 
-            @click="triggerFileInput"
+            @click="handleAvatarUploadClick"
             style="margin-left: 72px; position: relative"
         >
             修改头像
@@ -151,6 +152,7 @@
                 <p>中奖时间：{{ item.winTime }}</p>
             </div>
             <div class="action">
+                <button class="receive-btn">领取奖品</button>
             </div>
             </div>
         </div>
@@ -174,29 +176,11 @@
 <script>
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
-import emitter from '../event-bus';
 const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
 
 export default {
-    inject: {
-    sharedAvatar: {
-    default: () => ({
-        url: DEFAULT_AVATAR,
-        update: (url) => {
-        console.warn('使用默认头像处理器');
-        localStorage.setItem('avatarUrl', url);
-        }
-    })
-    }
-    },
-    computed: {
-    avatarUrl() {
-        return this.sharedAvatar.url;
-    }
-
     activated() {
         this.loadUserData(); // 每次进入页面时刷新数据
-
     },
     created(){
         const username = localStorage.getItem('username');
@@ -279,9 +263,9 @@ export default {
     switchMainTab(tab) {
         // 处理底部导航切换逻辑
         if (tab === 'service') {
-        window.open("https://www.gdmuisat.top")
-        } else if (tab === '') {
-        this.$router.push('/')
+        window.location.href = 'tel:400-123-4567'
+        } else if (tab === 'feedback') {
+        this.$router.push('/feedback')
         }
     },
 
@@ -422,145 +406,78 @@ formatDate(timestamp) {
         this.ongoingResults = [];
     }
 },
-    // 获取用户头像
-    async fetchUserAvatar() {
-        try {
-            const username = localStorage.getItem('username');
-            if (!username) return;
-            
-            const response = await fetch(
-                `http://127.0.0.1:33001/api/user/getUserAvatar?userName=${encodeURIComponent(username)}`
-            );
-            const data = await response.json();
-            
-            if (data.code === 0 && data.data) {
-                // 假设返回的data.data就是完整的头像URL
-                let avatarUrl = data.data;
-                
-                // 如果返回的是相对路径，补全为绝对路径
-                if (avatarUrl.startsWith('/')) {
-                    avatarUrl = `http://127.0.0.1:33001${avatarUrl}`;
-                }
-                
-                this.avatarUrl = avatarUrl;
-                localStorage.setItem('avatarUrl', avatarUrl);
-            }
-        } catch (error) {
-            console.error('获取头像失败:', error);
-        }
-    },
 
-    // 处理头像上传
-    async handleAvatarChange(event) {
-        if (!localStorage.getItem('username')) {
-            ElMessage.error('请先登录');
-            return;
-        }
-
-        const file = event.target.files[0];
-        if (!file) return;
-
-        // 验证文件类型和大小
-        if (!file.type.startsWith('image/')) {
-            ElMessage.error('请选择图片文件');
-            return;
-        }
-
-        if (file.size > 2 * 1024 * 1024) {
-            ElMessage.error('图片大小不能超过2MB');
-            return;
-        }
-
-        try {
-            // 1. 本地预览
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imageUrl = e.target.result;
-            };
-            reader.readAsDataURL(file);
-
-            // 2. 上传到服务器
-            const formData = new FormData();
-            formData.append('avatar', file);
-            formData.append('userName', localStorage.getItem('username'));
-
-            const response = await fetch('http://127.0.0.1:33001/api/user/uploadAvatar', {
-                method: 'POST',
-                body: formData
-            });
-
-                    // 检查响应状态
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-            // 尝试解析JSON
-            let data;
-            try {
-                data = await response.json();
-            } catch (e) {
-                throw new Error('服务器返回了无效的JSON响应');
-            }
-
-            if (data.code === 0) {
-                localStorage.removeItem('avatarBase64');
-                localStorage.removeItem('avatarUrl');
-                localStorage.removeItem('circleUrl');
-
-                const fullUrl = `http://127.0.0.1:33001${data.data.avatarUrl}?t=${Date.now()}`;
-                // 更新三处存储
-                localStorage.setItem('avatarUrl', fullUrl);
-                this.avatarUrl = fullUrl;  // 更新本地data
-                // 触发两种更新机制
-                this.sharedAvatar.update(fullUrl);  // provide/inject方式
-                emitter.emit('avatar-updated', fullUrl);  // 事件总线方式
-                ElMessage.success('头像更新成功');
-            } else {
-                throw new Error(data.message || '头像上传失败');
-            }
-        } catch (error) {
-            console.error('上传失败:', error);
-            ElMessage.error(error.message || '头像上传失败');
-        }
-    },
-
-    // 初始化头像
-    initAvatar() {
-        const username = localStorage.getItem('username');
-        if (username) {
-            this.portrait = username;
-            
-            // 检查是否有临时存储的头像(上传后尚未刷新)
-            const tempAvatar = localStorage.getItem('avatarTempUrl');
-            if (tempAvatar) {
-                this.avatarUrl = tempAvatar;
-                return;
-            }
-            
-            // 检查是否有存储的头像URL
-            const savedAvatar = localStorage.getItem('avatarUrl');
-            if (savedAvatar) {
-                this.avatarUrl = savedAvatar;
-                return;
-            }
-            
-            // 都没有则从服务器获取
-            this.fetchUserAvatar();
-        }
-    },
-    triggerFileInput() {
+async handleAvatarChange(event) {
     if (!localStorage.getItem('username')) {
-      ElMessage.error('请先登录');
-      return;
+    ElMessage.error('请先登录');
+    return;
     }
-    this.$refs.fileInput.click(); // 触发隐藏的file input
-  },
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+  // 验证文件类型和大小
+    if (!file.type.startsWith('image/')) {
+    ElMessage.error('请选择图片文件');
+    return;
+    }
+
+  if (file.size > 2 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过2MB');
+    return;
+    }
+
+    try {
+    // 先本地预览
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // 本地预览（直接显示图片）
+        this.avatarUrl = e.target.result;
+        localStorage.setItem('avatarUrl', this.avatarUrl);
+        ElMessage.success('头像符合条件');
+    };
+    reader.onerror = () => {
+        ElMessage.error('图片读取失败');
+    };
+    reader.readAsDataURL(file); // 读取文件为 Data URL
+
+    // 再上传到服务器
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('userName', localStorage.getItem('username'));
+
+    const response = await axios.post(
+        'http://127.0.0.1:33001/api/user/uploadAvatar',
+        formData,
+        {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        }
+    );
+
+    if (response.data.code === 0) {
+        // 更新数据库中的头像 URL
+        const serverAvatarUrl = `http://127.0.0.1:33001${response.data.data.avatarUrl}`;
+        localStorage.setItem('serverAvatarUrl', serverAvatarUrl); // 可选：存储服务器返回的 URL
+        ElMessage.success('上传成功');
+        window.location.reload(true);
+    } else {
+        ElMessage.error(response.data.message || '头像上传失败');
+    }
+    } catch (error) {
+    console.error('上传失败:', error);
+    ElMessage.error(error.response?.data?.message || '头像上传失败');
+    }
 },
-created() {
-    this.initAvatar();
-    this.loadUserData();
-    this.updateTime();
+handleAvatarUploadClick() {
+if (!localStorage.getItem('username')) {
+    ElMessage.error('请先登录');
+    return;
 }
+this.$refs.fileInput.click();
+}
+    }
 }
 </script>
 
