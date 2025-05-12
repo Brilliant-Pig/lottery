@@ -151,9 +151,6 @@
                 <h4>{{ item.prizeName }}</h4>
                 <p>中奖时间：{{ item.winTime }}</p>
             </div>
-            <div class="action">
-                <button class="receive-btn">领取奖品</button>
-            </div>
             </div>
         </div>
         </div>
