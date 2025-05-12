@@ -172,7 +172,7 @@ export default {
           setTimeout(() => {
             this.goToResultCus();
           }, 9000);
-        }, 5000);
+        }, 4500);
       }, 1000);
     },
 
