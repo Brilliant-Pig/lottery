@@ -18,6 +18,3 @@ declare module 'vue' {
     TinyLayout: typeof import('@opentiny/vue')['Layout']
   }
 }
-pentiny/vue')['Layout']
-  }
-}

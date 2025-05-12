@@ -16,166 +16,184 @@
                     style="color: white;"></textarea>            </div>
         </section>
 
-        <!-- 参与人员名单上传 -->
-    <section class="section-bg">
-        <div class="header-bg">
-            <h2 style="color: white;">参与人员名单</h2>
+<!-- 参与人员名单上传部分 -->
+<section class="section-bg">
+  <div class="header-bg">
+    <h2 style="color: white;">参与人员名单</h2>
+  </div>
+  <div class="main-bg" style="color: white;">
+    <!-- 文件上传部分 -->
+    <input 
+      type="file" 
+      ref="fileInput"
+      accept=".csv, .xlsx, .xls"
+      @change="handleFileUpload"
+      style="display: none"
+    >
+    <button @click="triggerFileInput" class="main-action-btn">
+      {{ fileData ? '已选择文件: ' + fileData.name : '上传名单文件' }}
+    </button>
+
+    <div v-if="fileData" class="file-preview">
+      <p>已选择文件: {{ fileData.name }}</p>
+      <div class="button-group">
+        <button @click="parseFile" class="parse-btn">解析文件</button>
+        <button @click="resetFile" class="cancel-btn">重新选择</button>
+      </div>
+    </div>
+
+    <div v-if="headers.length > 0" class="column-selector">
+      <label style="color: white;">选择姓名列:</label>
+      <select v-model="selectedNameColumn">
+        <option v-for="header in headers" :key="header" :value="header">
+          {{ header }}
+        </option>
+      </select>
+      <div class="button-group">
+        <button @click="confirmImport" class="confirm-btn">确认导入</button>
+        <button @click="resetFile" class="cancel-btn">撤回</button>
+      </div>
+    </div>
+
+    <!-- 手动输入部分 -->
+    <div class="manual-input-section" style="margin-top: 20px;">
+      <button @click="toggleManualInput" class="main-action-btn">
+        手动输入 {{ showManualInput ? '▲' : '▼' }}
+      </button>
+      
+      <div v-if="showManualInput" class="manual-input-content" style="margin-top: 15px;">
+        <div v-for="(participant, index) in manualParticipants" :key="'manual-' + index"
+            class="participant-row" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+          <input type="text" v-model="participant.nickname" placeholder="昵称" class="rounded-input"
+              style="color: white; background: transparent; border-color: rgba(255,255,255,0.5); padding: 6px 12px;" />
+          <input type="text" v-model="participant.otherField" placeholder="其他信息" class="rounded-input"
+              style="color: white; background: transparent; border-color: rgba(255,255,255,0.5); padding: 6px 12px;" />
+          <button @click="removeManualParticipant(index)" 
+              style="background-color: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+            删除
+          </button>
         </div>
-        <div class="main-bg">
-        <input 
-            type="file" 
-            ref="fileInput"
-            accept=".csv, .xlsx, .xls"
-            @change="handleFileUpload"
-            style="display: none"
-        >
-        <button @click="triggerFileInput" class="rounded-box">
-            {{ fileData ? '已选择文件: ' + fileData.name : '上传名单文件' }}
+        <button @click="addManualParticipant" 
+            style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">
+          添加人员
         </button>
+      </div>
+    </div>
 
-        <div v-if="fileData" class="file-preview">
-            <p>已选择文件: {{ fileData.name }}</p>
-            <button @click="parseFile" class="parse-btn">解析文件</button>
-        </div>
+    <div v-if="importStatus" class="import-status">
+      {{ importStatus }}
+    </div>
+  </div>
+</section>
 
-        <div v-if="headers.length > 0" class="column-selector">
-            <label>选择姓名列:</label>
-            <select v-model="selectedNameColumn">
-            <option v-for="header in headers" :key="header" :value="header">
-                {{ header }}
-            </option>
-            </select>
-            <button @click="confirmImport" class="confirm-btn">确认导入</button>
-        </div>
-
-        <div v-if="importStatus" class="import-status">
-            {{ importStatus }}
-        </div>
-        </div>
-            <div class="main-bg" style="color: white;">
-                <div class="participant-options">
-                    <div class="manual-input">
-                        <h3 style="color: white;">手动输入</h3>
-                        <div v-for="(participant, index) in manualParticipants" :key="'manual-' + index"
-                            class="participant-row">
-                            <input type="text" v-model="participant.nickname" placeholder="昵称" class="rounded-input"
-                                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                            <input type="text" v-model="participant.otherField" placeholder="其他信息" class="rounded-input"
-                                style="color: white; background: transparent; border-color: rgba(255,255,255,0.5);" />
-                            <button @click="removeManualParticipant(index)" class="small-btn delete-btn"
-                                style="color: white; border-color: white;">
-                                删除
-                            </button>
-                        </div>
-                        <button @click="addManualParticipant" class="add-btn"
-                            style="color: white; border-color: white;">
-                            添加人员
-                        </button>
+<!-- 奖项配置 -->
+<section class="section-bg" style="color: white;">
+    <div class="header-bg">
+        <h2 style="color: white;">奖项配置</h2>
+    </div>
+    <div class="main-bg" style="color: white;">
+        <div v-for="(prize, index) in prizes" :key="index" class="prize-container">
+            <div class="prize-item" style="display: flex; gap: 20px; align-items: flex-start;">
+                <!-- 左侧表单字段 -->
+                <div class="form-fields" style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="prize-field">
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品等级:</label>
+                        <input type="text" v-model="prize.level" class="rounded-input"
+                            style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
+                    </div>
+                    <div class="prize-field">
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品名称*:</label>
+                        <input type="text" v-model="prize.name" required class="rounded-input"
+                            style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
+                    </div>
+                    <div class="prize-field">
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品权重*:</label>
+                        <input type="number" v-model="prize.weight" required class="rounded-input"
+                            style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
+                    </div>
+                    <div class="prize-field">
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品份数*:</label>
+                        <input type="number" v-model="prize.quantity" required class="rounded-input"
+                            style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
                     </div>
                 </div>
-            </div>
-    </section>
-
-        <!-- 奖项配置 -->
-        <section class="section-bg" style="color: white;">
-            <div class="header-bg">
-                <h2 style="color: white;">奖项配置</h2>
-            </div>
-            <div class="main-bg" style="color: white;">
-                <div v-for="(prize, index) in prizes" :key="index" class="prize-container">
-                    <div class="prize-item">
-                        <h3 style="color: white;">{{ prize.level }}</h3>
-                        <div class="prize-row">
-                            <div class="prize-field">
-                                <label style="color: white;">奖品等级:</label>
-                                <input type="text" v-model="prize.level" disabled class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品名称*:</label>
-                                <input type="text" v-model="prize.name" required class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品权重*:</label>
-                                <input type="number" v-model="prize.weight" required class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品份数*:</label>
-                                <input type="number" v-model="prize.quantity" required class="rounded-input"
-                                    style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5);" />
-                            </div>
-                            <div class="prize-field">
-                                <label style="color: white;">奖品图片:</label>
-                                <div class="image-upload-container">
-                                    <div class="image-upload rounded-input" @click="triggerFileInput(index)"
-                                        style="border-color: rgba(255,255,255,0.5);">
-                                        <span v-if="!prize.image" class="upload-icon" style="color: white;">+</span>
-                                        <img v-else :src="prize.image" class="prize-image" />
-                                        <input 
-                                            type="file" 
-                                            :ref="'prizeFileInput' + index" 
-                                            @change="handlePrizeImageUpload($event, index)" 
-                                            accept="image/*" 
-                                            class="upload-btn" 
-                                            style="display: none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="btn-group">
-                            <button @click="removePrizeLevel(index)" class="delete-btn smaller-text shadow-effect"
-                                style="color: white; border-color: white;">
-                                删除
-                            </button>
-                            <button @click="addPrizeLevel" class="add-btn smaller-text shadow-effect"
-                                style="color: white; border-color: white;">
-                                添加
-                            </button>
+                
+                <!-- 右侧图片上传 -->
+                <div class="image-upload-section" style="width: 150px;">
+                    <label style="color: white; display: block; margin-bottom: 5px;">奖品图片:</label>
+                    <div class="image-upload-container">
+                        <div class="image-upload rounded-input" @click="triggerFileInput(index)"
+                            style="border-color: rgba(255,255,255,0.5); width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+                            <span v-if="!prize.image" class="upload-icon" style="color: white; font-size: 24px;">+</span>
+                            <img v-else :src="prize.image" class="prize-image" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                            <input 
+                                type="file" 
+                                :ref="'prizeFileInput' + index" 
+                                @change="handlePrizeImageUpload($event, index)" 
+                                accept="image/*" 
+                                class="upload-btn" 
+                                style="display: none"
+                            />
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+            
+            <!-- 按钮组 -->
+            <div class="btn-group" style="margin-top: 15px;">
+                <button @click="removePrizeLevel(index)" class="delete-btn smaller-text shadow-effect"
+                    style="background-color: #ff4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 10px;" 
+                    :disabled="prizes.length <= 1">
+                    删除
+                </button>
+                <!-- 只在最后一个奖品显示添加按钮 -->
+                <button v-if="index === prizes.length - 1" @click="addPrizeLevel" class="add-btn smaller-text shadow-effect"
+                    style="background-color: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
         <!-- 权限设置 -->
         <div class="row-sections">
             <!-- 权限设置 -->
             <section class="section-bg">
                 <div class="header-bg">
-                    <h2>权限设置</h2>
+                    <h2 style="color: white;">权限设置</h2>
                 </div>
                 <div class="main-bg">
                     <div class="permission-section">
                         <h3>抽奖名单查看权限</h3>
                         <div class="permission-options">
                             <button @click="setParticipantVisibility('public')"
-                                :class="{ active: participantVisibility === 'public', 'rounded-box': true }">公开</button>
+                                :class="{ active: participantVisibility === 'public', 'rounded-box': true }" style="color: black;">公开</button>
                             <button @click="setParticipantVisibility('admin')"
-                                :class="{ active: participantVisibility === 'admin', 'rounded-box': true }">仅管理员</button>
+                                :class="{ active: participantVisibility === 'admin', 'rounded-box': true }"  style="color: black;">仅管理员</button>
                         </div>
                     </div>
-
-                    <div class="permission-section">
-                        <h3>抽奖结果查看权限</h3>
-                        <div class="permission-options">
-                            <button @click="setResultVisibility('public')"
-                                :class="{ active: resultVisibility === 'public', 'rounded-box': true }">公开</button>
-                            <button @click="setResultVisibility('admin')"
-                                :class="{ active: resultVisibility === 'admin', 'rounded-box': true }">仅管理员</button>
-                        </div>
-                    </div>
+<div class="permission-section">
+    <h3>抽奖结果查看权限</h3>
+    <div class="permission-options">
+        <button @click="setResultVisibility('public')"
+            :class="{ active: resultVisibility === 'public', 'rounded-box': true }"
+            style="color: black;">公开</button>
+        <button @click="setResultVisibility('admin')"
+            :class="{ active: resultVisibility === 'admin', 'rounded-box': true }"
+            style="color: black;">仅管理员</button>
+    </div>
+</div>
                 </div>
             </section>
 
             <!-- 时间设置 -->
             <section class="section-bg">
                 <div class="header-bg">
-                    <h2>时间设置</h2>
+                    <h2 style="color: white;">时间设置</h2>
                 </div>
                 <div class="main-bg">
-                    <label for="startTime">开始时间:</label>
+                    <label for="startTime" style="color: white;">开始时间:</label>
                     <input type="datetime-local" id="startTime" v-model="timeSettings.startTime"
                         class="rounded-input" />
                     <br /><br />
@@ -200,10 +218,17 @@ import { useRouter } from 'vue-router'; // 导入 useRouter
 export default {
     data() {
         return {
+            showManualInput: false,
             lotteryInfo: { name: '', description: '' },
             prizes: [
-                { level: '一等奖', name: '', quantity: 1, weight: 50 }
-            ],
+           {
+                level: '', // 留空让用户自己填写
+                name: '',
+                weight: 1,
+                quantity: 1,
+                image: null
+            }
+        ],
             showUploadOptions: false,
             timeSettings: { startTime: '', endTime: '' },
             visibility: 'public',
@@ -228,6 +253,18 @@ export default {
         return { router };
     },
     methods: {
+        toggleManualInput() {
+        this.showManualInput = !this.showManualInput;
+    },
+        // 重置文件选择
+    resetFile() {
+      this.fileData = null;
+      this.headers = [];
+      this.selectedNameColumn = '';
+      this.importStatus = '';
+      this.$refs.fileInput.value = ''; // 清除文件输入的值
+    },
+    
         ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
         triggerParticipantFileInput() {
             this.$refs.participantFileInput.click();
@@ -586,6 +623,11 @@ export default {
     border-radius: 5px;
     font-size: 0.8em;
     margin-right: 5px;
+    padding: 5px 10px !important;    /* 较小的内边距 */
+    border-radius: 4px !important;
+    margin-top: 12px !important;
+    font-size: 12px !important;
+    min-width: 8px !important;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 .add-btn {
@@ -746,5 +788,111 @@ export default {
     padding: 5px;
     background-color: rgba(81, 201, 161, 0.2);
     border-radius: 4px;
+}
+
+.delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: gray !important;
+}
+
+
+/*.cancel-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #ff4d4d;
+  color: white !important;
+  border: none !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-size: 12px !important;
+  min-width: 8px !important;
+  cursor: pointer !important;
+}
+
+/* 调整文件预览样式 */
+.file-preview {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: white;
+}
+
+.main-action-btn:hover {
+  background-color: #f0f0f0;
+}
+
+
+/* 主操作按钮样式 - 确保上传和手动输入按钮一致 */
+.main-action-btn {
+  background-color: white;
+  color: #333;
+  border: 1px solid white;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 120px;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.main-action-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+  background-color: #ff4444 !important;
+  color: white !important;
+  border: none !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-size: 12px !important;
+  min-width: 8px !important;
+  cursor: pointer !important;
+}
+
+.add-btn {
+  background-color: #4a9b4b !important;
+  color: white !important;
+  border: none !important;
+  padding: 5px 10px !important;    /* 较小的内边距 */
+  border-radius: 4px !important;
+  margin-top: 12px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  min-width: 8px !important;
+  transition: background-color 0.2s !important;
+}
+
+.add-btn:hover {
+  background-color: #509352 !important;
+}
+
+/* 输入框基础样式 */
+.rounded-input {
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: transparent;
+  color: white;
+  padding: 6px 12px;
+}
+
+/* 按钮组样式 */
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* 导入状态提示 */
+.import-status {
+  margin-top: 15px;
+  color: white;
 }
 </style>
