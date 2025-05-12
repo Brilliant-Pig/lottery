@@ -4,7 +4,7 @@ const moduleUrl = 'api/auth';
 const auth = {
     // 用户登录
     login(data) {
-        return request.post(`${moduleUrl}/login`, data);
+        return authentication.login(data);
     },
     // 用户注册
     register(data) {

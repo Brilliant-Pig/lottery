@@ -105,31 +105,13 @@ exports.getUserAvatar = async (userName) => {
 };
 
 exports.uploadAvatar = async (userName, avatarUrl) => {
-    try {
-        const sql = `
-            UPDATE users
-            SET user_portrait = ?
-            WHERE username = ?
-        `;
-        const sqlParams = [avatarUrl, userName];
-
-        console.log('执行SQL:', sql, '参数:', sqlParams);
-        const result = await db.query(sql, sqlParams);
-        console.log('SQL执行结果:', result);
-
-        if (result.affectedRows === 0) {
-            throw new Error('没有更新任何记录，可能用户不存在');
-        }
-
-        return result;
-    } catch (error) {
-        console.error('数据库操作错误:', {
-            message: error.message,
-            sql: sql,
-            params: sqlParams
-        });
-        throw error; // 继续向上抛出错误
-    }
+    const sql = `
+        UPDATE users
+        SET user_portrait = ?
+        WHERE username = ?
+    `;
+    const sqlParams = [avatarUrl, userName];
+    return await db.query(sql, sqlParams);
 };
 
 //用活动id来获取活动剩余人数

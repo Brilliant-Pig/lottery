@@ -45,8 +45,7 @@ export default {
     };
     },
     methods: {
-        ...mapActions(['login']), // 映射 Vuex action 
-        //已知：此处使用该方法有严重bug，无法储存jwt，暂作标记
+        ...mapActions(['login']), // 映射 Vuex action
     
         async handleLogin() {
             if (!this.username || !this.password) {
