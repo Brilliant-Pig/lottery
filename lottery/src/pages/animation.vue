@@ -168,11 +168,8 @@ export default {
             this.audio.pause();
             this.isPlaying = false;
           }
-          // 自动9秒后返回（可选）
-          setTimeout(() => {
-            this.goToResultCus();
-          }, 9000);
-        }, 4500);
+
+        }, 4700);
       }, 1000);
     },
 
