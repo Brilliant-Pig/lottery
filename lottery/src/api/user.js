@@ -53,6 +53,11 @@ const user = {
         return request.get(`${moduleUrl}/getActivityStartTimeByUrl`,data);
 
     },
+    //通过向后端发送id返还活动抽奖结果
+    getUserLotteryHistory(data){
+        return request.get(`${moduleUrl}/getUserLotteryHistory`,data);
+
+    },
 };
 
 export default user;

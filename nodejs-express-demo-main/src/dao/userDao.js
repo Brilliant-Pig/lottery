@@ -353,3 +353,20 @@ exports.insertParticipation = async (userName, activityUrl) => {
         throw err;
     }
 };
+// 获取用户历史抽奖记录
+exports.getUserLotteryHistory = async (userName) => {
+    const sql = `
+        SELECT 
+            activity_name,
+            username,
+            activity_result,
+            win_time
+        FROM 
+            activity_results
+        WHERE 
+            username = ?
+        ORDER BY 
+            win_time DESC
+    `;
+    return await db.query(sql, [userName]);
+};
