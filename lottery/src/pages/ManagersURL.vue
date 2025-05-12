@@ -118,20 +118,26 @@
 
 <script>
 import axios from 'axios';
+import { useUserStore } from '../store/user'; // 导入Pinia store
 
 export default {
   data() {
-      return {
-          lotteryInfo: { name: '', description: '' },
-          prizes: [
-              { level: '一等奖', name: '', quantity: 1, weight: 50 }
-          ],          manualParticipants: [{ nickname: '', otherField: '' }],
-          participantVisibility: 'public',
-          resultVisibility: 'public',
-          timeSettings: { startTime: '', endTime: '' },
-          uploadStatus: null,
-          fileType: null
-      };
+    return {
+      lotteryInfo: { name: '', description: '' },
+      prizes: [
+        { level: '一等奖', name: '', quantity: 1, weight: 50 }
+      ],
+      manualParticipants: [{ nickname: '', otherField: '' }],
+      participantVisibility: 'public',
+      resultVisibility: 'public',
+      timeSettings: { startTime: '', endTime: '' },
+      uploadStatus: null,
+      fileType: null
+    };
+  },
+    setup() {
+    const userStore = useUserStore();
+    return { userStore };
   },
   methods: {
       ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
@@ -277,44 +283,67 @@ export default {
 
         this.showContinueButton = true;
     },
-      launchLottery() {
-          // 验证数据
-          if (!this.lotteryInfo.name) {
-              alert('请填写抽奖名称');
-              return;
-          }
-          
-          for (const prize of this.prizes) {
-              if (!prize.name || !prize.quantity) {
-                  alert('请填写完整的奖品信息');
-                  return;
-              }
-          }
-          
-          // 生成唯一的抽奖码
-          const uniqueCode = 'L' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-          // 准备提交数据
-          const formData = {
-              lotteryInfo: this.lotteryInfo,
-              prizes: this.prizes,
-              participants: this.manualParticipants,
-              permissions: {
-                  participantVisibility: this.participantVisibility,
-                  resultVisibility: this.resultVisibility,
-              },
-              timeSettings: this.timeSettings,
-              lotteryCode: uniqueCode, // 添加抽奖码
-          };
-
-          console.log('提交数据:', formData);
-
-          // 显示成功提示并显示抽奖码
-          alert(`抽奖活动创建成功！\n抽奖码: ${uniqueCode}`);
-
-          // 实际应用中这里应该调用API提交数据
-          // axios.post('/api/create-lottery', formData).then(...)
+    async launchLottery() {
+          // 获取用户名
+    const username = this.$store.state.user.username;
+    
+    if (!username) {
+      alert('无法获取用户信息，请重新登录');
+      this.$router.push('/LoginMain');
+      return;
+    }
+      // 验证抽奖数据
+      if (!this.lotteryInfo.name) {
+        alert('请填写抽奖名称');
+        return;
       }
+      
+      for (const prize of this.prizes) {
+        if (!prize.name || !prize.quantity || !prize.weight) {
+          alert('请填写完整的奖品信息');
+          return;
+        }
+      }
+      
+      // 准备提交数据 - 使用Pinia store中的用户名
+      const formData = {
+        lotteryInfo: {
+          name: this.lotteryInfo.name,
+          description: this.lotteryInfo.description || ''
+        },
+        prizes: this.prizes.map(prize => ({
+          name: prize.name,
+          quantity: parseInt(prize.quantity),
+          weight: parseInt(prize.weight),
+          image: prize.image || null
+        })),
+        timeSettings: {
+          startTime: this.timeSettings.startTime,
+          endTime: this.timeSettings.endTime
+        },
+        permissions: {
+          participantVisibility: this.participantVisibility,
+          resultVisibility: this.resultVisibility
+        },
+        username: username // 添加用户名
+      };
+
+      try {
+        const response = await axios.post('http://127.0.0.1:33001/api/user/createLottery', {
+          lotteryData: formData
+        });
+        
+        if (response.data.code === 0) {
+          alert(`抽奖活动创建成功！\n抽奖码: ${response.data.data.lotteryCode}`);
+          // 可以在这里跳转到分享页面或重置表单
+        } else {
+          alert('创建抽奖活动失败: ' + response.data.message);
+        }
+      } catch (error) {
+        console.error('创建抽奖活动失败:', error);
+        alert('创建抽奖活动失败: ' + (error.response?.data?.message || error.message));
+      }
+    }
   }
 };
 </script>
@@ -552,4 +581,3 @@ export default {
 }
 
 </style>
-```vue

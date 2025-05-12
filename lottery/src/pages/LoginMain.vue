@@ -47,35 +47,31 @@ export default {
     methods: {
         ...mapActions(['login']), // 映射 Vuex action
     
-        async handleLogin() {
-            if (!this.username || !this.password) {
-            this.errorMessage = "用户名和密码不能为空！";
-            return;
-        }
+  async handleLogin() {
+    if (!this.username || !this.password) {
+      this.errorMessage = "用户名和密码不能为空！";
+      return;
+    }
 
-        try {
-        // 调用 Vuex 的 login action
-            await this.login({
-                username: this.username,
-                password: this.password
-            });
-        
-        // 登录成功后的操作
-        this.errorMessage = "";
-        this.$router.push('/LotteryMain'); 
-        window.location.reload();// 使用路由跳转替代 window.location
-        
-        } catch (error) {
-            this.errorMessage = "用户名或密码错误！";
-            console.error('登录失败:', error);
-        }
-        },
+    try {
+      await this.$store.dispatch('login', {
+        username: this.username,
+        password: this.password
+      });
+      
+      this.errorMessage = "";
+      this.$router.push('/LotteryMain');
+      
+    } catch (error) {
+      this.errorMessage = error.message || "用户名或密码错误！";
+    }
+  }
+},
     
         goToRegister() {
             this.$router.push("/Register");
         }
-    }
-};
+    };
 </script>
 
 <style scoped>
