@@ -392,3 +392,44 @@ exports.getCreatorLotteryHistory = async (userName) => {
     `;
     return await db.query(sql, [userName]);
 };
+exports.insertActivity = async (activityData) => {
+    const sql = `
+        INSERT INTO activities 
+        (activity_name, activity_url, start_time, end_time, username)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+    const params = [activityData.name, activityData.url, activityData.startTime, activityData.endTime, activityData.username];
+    try {
+        const result = await db.query(sql, params);
+        return {
+            id: result.lastInsertRowid,
+            changes: result.changes
+        };
+    } catch (err) {
+        console.error('插入活动失败:', err);
+        throw err;
+    }
+};
+
+// 插入奖品信息
+exports.insertPrizes = async (prizesData) => {
+    try {
+        return await db.withTransaction(async () => {
+            const results = [];
+            for (const prize of prizesData) {
+                const sql = `
+                    INSERT INTO prizes 
+                    (activity_name, activity_url, prize_name, prize_probability, prize_quantity)
+                    VALUES (?, ?, ?, ?, ?)
+                `;
+                const params = [prize.activityName, prize.activityUrl, prize.prizeName, prize.probability, prize.quantity];
+                const result = await db.query(sql, params);
+                results.push(result);
+            }
+            return results;
+        });
+    } catch (err) {
+        console.error('插入奖品失败:', err);
+        throw err;
+    }
+};

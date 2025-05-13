@@ -237,4 +237,27 @@ router.get('/getCreatorLotteryHistory', async (req, res, next) => {
         });
     }
 });
+// 创建抽奖活动
+router.post('/createLottery', async (req, res) => {
+    try {
+        const { lotteryData } = req.body;
+
+        // 基本验证
+        if (!lotteryData || !lotteryData.username) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少用户名或抽奖数据'
+            });
+        }
+
+        const result = await userService.createLotteryActivity(lotteryData);
+        res.json(result);
+    } catch (error) {
+        console.error('创建抽奖活动控制器错误:', error);
+        res.status(500).json({
+            code: 1,
+            message: error.message || '创建抽奖活动失败'
+        });
+    }
+});
 module.exports = router;
