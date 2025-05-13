@@ -195,46 +195,20 @@ exports.getUserLotteryHistory = async (userName) => {
         };
     }
 };
-// 创建抽奖活动
-exports.createLotteryActivity = async (lotteryData) => {
+// 获取创建者的抽奖历史记录
+exports.getCreatorLotteryHistory = async (userName) => {
     try {
-        // 生成唯一的抽奖码
-        const uniqueCode = 'L' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8).toUpperCase();
-        lotteryData.lotteryCode = uniqueCode;
-
-        // 插入活动信息
-        const activityInsertData = {
-            name: lotteryData.lotteryInfo.name,
-            url: uniqueCode,
-            startTime: lotteryData.timeSettings.startTime,
-            endTime: lotteryData.timeSettings.endTime,
-            username: lotteryData.username
-        };
-
-        await userDao.insertActivity(activityInsertData);
-
-        // 准备奖品数据
-        const prizesInsertData = lotteryData.prizes.map((prize) => ({
-            activityName: lotteryData.lotteryInfo.name,
-            activityUrl: uniqueCode,
-            prizeName: prize.name,
-            probability: prize.weight / 100,
-            quantity: prize.quantity
-        }));
-
-        // 插入奖品信息
-        await userDao.insertPrizes(prizesInsertData);
-
+        const history = await userDao.getCreatorLotteryHistory(userName);
         return {
             code: 0,
-            message: '抽奖活动创建成功',
-            data: {
-                activityUrl: uniqueCode,
-                lotteryCode: uniqueCode
-            }
+            message: '获取创建者历史记录成功',
+            data: history
         };
-    } catch (error) {
-        console.error('创建抽奖活动失败:', error);
-        throw error;
+    } catch (err) {
+        console.error('获取创建者历史记录失败:', err);
+        return {
+            code: 1,
+            message: '获取创建者历史记录失败'
+        };
     }
 };
