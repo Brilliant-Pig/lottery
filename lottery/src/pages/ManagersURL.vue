@@ -1,14 +1,13 @@
 <template>
 <div class="container">
-    <p style="font-size: 300%; text-align: center; color: white;">创建抽奖</p>
-
+    <p style="font-size: 300%;  font-weight: bold; text-align: center; color: white;">创建抽奖</p>
       <!-- 抽奖基本信息 -->
       <section class="section-bg">
           <div class="header-bg">
               <h2 style="color: white;">活动内容</h2>
           </div>
           <div class="main-bg">
-              <label for="lotteryName" color: white >抽奖名称*:</label>
+              <label for="lotteryName" color: white >抽奖名称:</label>
               <input type="text" id="lotteryName" v-model="lotteryInfo.name" required class="rounded-input" />
               <br /><br />
               <label for="lotteryDesc" color: white >抽奖描述:</label>
@@ -32,17 +31,17 @@
                             style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
                     </div>
                     <div class="prize-field">
-                        <label style="color: white; display: block; margin-bottom: 5px;">奖品名称*:</label>
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品名称:</label>
                         <input type="text" v-model="prize.name" required class="rounded-input"
                             style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
                     </div>
                     <div class="prize-field">
-                        <label style="color: white; display: block; margin-bottom: 5px;">奖品权重*:</label>
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品权重:</label>
                         <input type="number" v-model="prize.weight" required class="rounded-input"
                             style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
                     </div>
                     <div class="prize-field">
-                        <label style="color: white; display: block; margin-bottom: 5px;">奖品份数*:</label>
+                        <label style="color: white; display: block; margin-bottom: 5px;">奖品份数:</label>
                         <input type="number" v-model="prize.quantity" required class="rounded-input"
                             style="color: white; background-color: transparent; border-color: rgba(255,255,255,0.5); width: 100%; padding: 8px 12px;" />
                     </div>
@@ -132,60 +131,19 @@
               </div>
           </section>
       </div>
-
-<div>
-  <!-- 生成按钮 -->
-  <div class="button-container">
-    <button class="generate-btn rounded-box" @click="generateCode" :disabled="generated">生成抽奖码</button>
-  </div>
-
-  <!-- 抽奖码弹窗 -->
-  <div v-if="showCodePopup" class="popup-overlay">
-    <div class="popup">
-      <div class="popup-content">
-        <div class="code-display">
-          <input
-            type="text"
-            v-model="lotteryCode"
-            readonly
-            class="code-input"
-            ref="codeInput"
-          >
-          <button @click="copyCode" class="copy-btn">复制</button>
-        </div>
-        <button @click="closePopup" class="close-btn">关闭</button>
+<!-- 修改后的生成按钮 -->
+<div class="button-container">
+          <button class="generate-btn rounded-box" @click="launchLottery">生成分享链接</button>
       </div>
-    </div>
   </div>
-</div>
-
-</div>
 </template>
 
 
 <script>
 import axios from 'axios';
 import { useUserStore } from '../store/user'; // 导入Pinia store
-
 export default {
   data() {
-<<<<<<< HEAD
-      return {
-          lotteryCode: '',
-    showCodePopup: false,
-    generated: false, // 标记是否已经生成过抽奖码
-    generatedCodes: new Set(), // 存储已经生成过的抽奖码
-          lotteryInfo: { name: '', description: '' },
-          prizes: [
-              { level: '一等奖', name: '', quantity: 1, weight: 50 }
-          ],          manualParticipants: [{ nickname: '', otherField: '' }],
-          participantVisibility: 'public',
-          resultVisibility: 'public',
-          timeSettings: { startTime: '', endTime: '' },
-          uploadStatus: null,
-          fileType: null
-      };
-=======
     return {
       lotteryInfo: { name: '', description: '' },
       prizes: [
@@ -202,73 +160,32 @@ export default {
     setup() {
     const userStore = useUserStore();
     return { userStore };
->>>>>>> 1b6a0621026aa95b630a7ae359f5e7e7c40c3863
   },
   methods: {
-  // 生成随机抽奖码（8-12位字母数字混合）
-  generateCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let code = '';
-    const length = Math.floor(Math.random() * 5) + 8; // 8-12位长度
-
-    for (let i = 0; i < length; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    this.lotteryCode = code;
-    this.showCodePopup = true; // 显示弹窗
-  },
-
-  // 复制抽奖码到剪贴板
-  copyCode() {
-    const input = this.$refs.codeInput;
-    input.select();
-    document.execCommand('copy');
-
-    // 提示复制成功（可选）
-    alert('抽奖码已复制: ' + this.lotteryCode);
-
-    // 如果用ElementUI等库可以这样提示：
-    // this.$message.success('复制成功: ' + this.lotteryCode);
-  },
-
-  // 关闭弹窗
-  closePopup() {
-    this.showCodePopup = false;
-  },
       ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
       
       triggerFileInput(index) {
-    this.$refs[`prizeFileInput${index}`][0].click();
-  },
-  async handlePrizeImageUpload(event, index) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('只能上传图片文件');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) { // 限制为5MB
-      alert('图片大小不能超过5MB');
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await axios.post('/api/upload-prize-image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      this.prizes[index].image = response.data.imageUrl;
-    } catch (error) {
-      console.error('图片上传失败:', error);
-      alert('图片上传失败，请重试');
-    }
-  },
+          this.$refs.fileInput[index].click();
+      },
+      
+      async handlePrizeImageUpload(event, index) {
+          const file = event.target.files[0];
+          if (!file) return;
+          
+          try {
+              const formData = new FormData();
+              formData.append('image', file);
+              
+              const response = await axios.post('/api/upload-prize-image', formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' }
+              });
+              
+              this.prizes[index].image = response.data.imageUrl;
+          } catch (error) {
+              console.error('图片上传失败:', error);
+              alert('图片上传失败，请重试');
+          }
+      },
       
       addPrizeLevel() {
           const lastLevel = this.prizes.length;
@@ -336,14 +253,11 @@ export default {
             this.goToResultMan();
             return;
         }
-
         // 计算总权重
         const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
-
         // 根据权重随机选择奖品
         let randomWeight = Math.random() * totalWeight;
         let selectedPrize = null;
-
         for (const prize of this.prizes) {
             randomWeight -= prize.weight;
             if (randomWeight <= 0) {
@@ -351,41 +265,32 @@ export default {
                 break;
             }
         }
-
         if (!selectedPrize) {
             console.error('未能根据权重选择奖品');
             return;
         }
-
         this.currentPrize = selectedPrize;
-
         // 初始化该奖项的中奖者数组
         this.winners[selectedPrize.level] = [];
-
         // 复制参与者名单以避免修改原数组
         const availableParticipants = [...this.participantList];
-
         // 抽奖逻辑 - 确保不会重复中奖
         const drawCount = Math.min(selectedPrize.quantity, availableParticipants.length);
         for (let i = 0; i < drawCount; i++) {
             const randomIndex = Math.floor(Math.random() * availableParticipants.length);
             const winner = availableParticipants[randomIndex];
-
             this.winners[selectedPrize.level].push(winner);
             availableParticipants.splice(randomIndex, 1); // 移除已中奖者
         }
-
         // 更新当前显示的中奖者
         this.currentWinners = [...this.winners[selectedPrize.level]];
         this.showResult = true;
-
         // 更新按钮文本
         if (this.currentStage < this.prizes.length - 1) {
             this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
         } else {
             this.currentButtonText = '查看全部结果';
         }
-
         this.showContinueButton = true;
     },
     async launchLottery() {
@@ -432,7 +337,6 @@ export default {
         },
         username: username // 添加用户名
       };
-
       try {
         const response = await axios.post('http://127.0.0.1:33001/api/user/createLottery', {
           lotteryData: formData
@@ -690,7 +594,6 @@ export default {
   background-color: #3fa786;
 }
 
-<<<<<<< HEAD
 /* 样式设计 */
 .button-container {
   margin: 20px 0;
@@ -753,6 +656,4 @@ export default {
 .copy-btn:hover, .close-btn:hover {
   background-color: #0056b3;
 }
-=======
->>>>>>> 1b6a0621026aa95b630a7ae359f5e7e7c40c3863
 </style>
