@@ -2,7 +2,6 @@
 const multer = require('multer');
 const path = require('path');
 const router = require('express').Router();
-module.exports = router;
 
 const userService = require('../service/userService');
 const storage = multer.diskStorage({
@@ -218,26 +217,24 @@ router.get('/getUserLotteryHistory', async (req, res, next) => {
         });
     }
 });
-// 创建抽奖活动
-router.post('/createLottery', async (req, res) => {
+// 获取创建者的抽奖历史记录
+router.get('/getCreatorLotteryHistory', async (req, res, next) => {
     try {
-        const { lotteryData } = req.body;
-
-        // 基本验证
-        if (!lotteryData || !lotteryData.username) {
+        const { userName } = req.query;
+        if (!userName) {
             return res.status(400).json({
                 code: 1,
-                message: '缺少用户名或抽奖数据'
+                message: '缺少userName参数'
             });
         }
-
-        const result = await userService.createLotteryActivity(lotteryData);
+        const result = await userService.getCreatorLotteryHistory(userName);
         res.json(result);
-    } catch (error) {
-        console.error('创建抽奖活动控制器错误:', error);
+    } catch (err) {
+        console.error('获取创建者历史记录失败:', err);
         res.status(500).json({
             code: 1,
-            message: error.message || '创建抽奖活动失败'
+            message: '获取创建者历史记录失败'
         });
     }
 });
+module.exports = router;

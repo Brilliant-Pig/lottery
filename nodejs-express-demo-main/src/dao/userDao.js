@@ -370,44 +370,25 @@ exports.getUserLotteryHistory = async (userName) => {
     `;
     return await db.query(sql, [userName]);
 };
-exports.insertActivity = async (activityData) => {
+// 获取创建者的抽奖结果历史记录
+exports.getCreatorLotteryHistory = async (userName) => {
     const sql = `
-        INSERT INTO activities 
-        (activity_name, activity_url, start_time, end_time, username)
-        VALUES (?, ?, ?, ?, ?)
+        SELECT 
+            activities.activity_name,
+            activities.activity_url,
+            activity_results.activity_result,
+            activity_results.username AS winner_name,
+            activity_results.win_time
+        FROM 
+            activities
+        LEFT JOIN 
+            activity_results ON activities.activity_name = activity_results.activity_name
+        WHERE 
+            activities.username = ?
+            AND activity_results.activity_result IS NOT NULL
+            AND activity_results.activity_result != '未中奖'
+        ORDER BY 
+            activities.activity_name, activity_results.win_time DESC
     `;
-    const params = [activityData.name, activityData.url, activityData.startTime, activityData.endTime, activityData.username];
-    try {
-        const result = await db.query(sql, params);
-        return {
-            id: result.lastInsertRowid,
-            changes: result.changes
-        };
-    } catch (err) {
-        console.error('插入活动失败:', err);
-        throw err;
-    }
-};
-
-// 插入奖品信息
-exports.insertPrizes = async (prizesData) => {
-    try {
-        return await db.withTransaction(async () => {
-            const results = [];
-            for (const prize of prizesData) {
-                const sql = `
-                    INSERT INTO prizes 
-                    (activity_name, activity_url, prize_name, prize_probability, prize_quantity)
-                    VALUES (?, ?, ?, ?, ?)
-                `;
-                const params = [prize.activityName, prize.activityUrl, prize.prizeName, prize.probability, prize.quantity];
-                const result = await db.query(sql, params);
-                results.push(result);
-            }
-            return results;
-        });
-    } catch (err) {
-        console.error('插入奖品失败:', err);
-        throw err;
-    }
+    return await db.query(sql, [userName]);
 };
