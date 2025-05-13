@@ -58,7 +58,7 @@ npm run dev
 4. **打开魔法抽奖世界**
 ```bash
 在浏览器打开
-http://localhost:3000
+http://localhost:3000（或是电脑终端显示的端口）
 ```
 ##
 ### 📸 项目截图
