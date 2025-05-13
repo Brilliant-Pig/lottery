@@ -57,9 +57,6 @@ const user = {
         return request.get(`${moduleUrl}/getUserLotteryHistory`,data);
 
     },
-    getCreatorLotteryHistory(data) {
-        return request.get(`${moduleUrl}/getCreatorLotteryHistory`, data);
-    },
 };
 
 export default user;
