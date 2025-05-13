@@ -18,8 +18,7 @@
                     <div v-if="!currentWinners.length" class="no-winner">暂无中奖者</div>
                 </div>
                 <button v-if="showContinueButton" @click="nextPrize" class="continue-btn">
-                    {{ currentStage < prizes.length - 1 ? '继续' : '导出全部结果(xlxs)' }}
-                </button>
+                    {{ currentStage < prizes.length - 1 ? '继续' : '导出全部结果(xlxs)' }} </button>
             </div>
         </div>
     </div>
@@ -69,13 +68,17 @@ export default {
             isContinueFading: false,
             continueTimer: null,
             fadeTimer: null,
-            isAnimating: false
-        }
+            isAnimating: false,
+            backgroundMusic: null,// 添加背景音乐
+            musicVolume: 1, // 初始音量（0-1）
+            fadeInterval: null,// 用于存储淡出 interval
+            clickSound: null // 点击音效
+        };
     },
     created() {
         // 优先从 Vuex 获取数据
         const lotteryData = this.store.state.lotteryData || this.$route.params.lotteryData;
-        
+
         if (!lotteryData) {
             console.error('未找到抽奖数据');
             return this.router.back();
@@ -99,7 +102,17 @@ export default {
     mounted() {
         this.initCanvas();
         this.init();
-        
+
+        //初始化并播放背景音乐
+        this.backgroundMusic = new Audio('/抽奖背景音.mp3');
+        this.backgroundMusic.loop = true;//循环播放
+        this.backgroundMusic.play().catch(e => console.log('自动播放受阻:', e));
+        this.musicVolume = 0.5; // 设置音量
+        this.clickSound = new Audio('/抽奖音效.mp3'); // 点击音效
+        this.clickSound.volume = 0.7; // 设置音量
+
+
+
         if (process.env.NODE_ENV === 'development' && this.prizes.length === 0) {
             this.prizes = [
                 { level: '一等奖', name: 'iPhone 15', quantity: 1 },
@@ -114,6 +127,23 @@ export default {
         clearTimeout(this.redirectTimer);
         clearTimeout(this.continueTimer);
         clearTimeout(this.fadeTimer);
+
+        // 清理音乐淡出 interval
+        if (this.fadeInterval) {
+            clearInterval(this.fadeInterval);
+            this.fadeInterval = null;
+        }
+
+        // 停止背景音乐
+        if (this.backgroundMusic) {
+            this.backgroundMusic.pause();
+            this.backgroundMusic = null;
+        }
+        // 停止点击音效
+        if (this.clickSound) {
+            this.clickSound.pause();
+            this.clickSound = null;
+        }
     },
     methods: {
         initCanvas() {
@@ -154,11 +184,15 @@ export default {
         },
         handleClick() {
             if (this.showResult || this.isAnimating) return;
-
-            if(this.currentStage === -1) {
+            // 播放音效（ENTER 或 继续 按钮点击时）
+            if (this.clickSound) {
+                this.clickSound.currentTime = 0; // 重置播放位置
+                this.clickSound.play().catch(e => console.log('音效播放失败:', e));
+            }
+            if (this.currentStage === -1) {
                 this.currentStage = 0;
                 this.startLotteryAnimation();
-            } else if(this.currentStage < this.prizes.length) {
+            } else if (this.currentStage < this.prizes.length) {
                 this.startLotteryAnimation();
             }
         },
@@ -168,97 +202,120 @@ export default {
             this.expanse = true;
             this.isOpen = true;
             this.currentButtonText = '开奖中...';
-            
+
             setTimeout(() => {
                 this.expanse = false;
                 this.isOpen = false;
                 this.collapse = true;
-                
+
                 setTimeout(() => {
                     this.generateResult();
                     this.isAnimating = false;
                 }, 1000);
             }, 1000);
         },
-    generateResult() {
-    if (this.currentStage >= this.prizes.length) {
-      this.goToResultMan();
-      return;
-    }
-
-    const prize = this.prizes[this.currentStage];
-    this.currentPrize = prize;
-    
-    // 初始化该奖项的中奖者数组
-    this.winners[prize.level] = [];
-    
-    // 复制参与者名单以避免修改原数组
-    const availableParticipants = [...this.participantList];
-    
-    // 抽奖逻辑 - 确保不会重复中奖
-    const drawCount = Math.min(prize.quantity, availableParticipants.length);
-    for (let i = 0; i < drawCount; i++) {
-      const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-      const winner = availableParticipants[randomIndex];
-      
-      this.winners[prize.level].push(winner);
-      availableParticipants.splice(randomIndex, 1); // 移除已中奖者
-    }
-
-    // 更新当前显示的中奖者
-    this.currentWinners = [...this.winners[prize.level]];
-    this.showResult = true;
-    
-    // 更新按钮文本
-    if (this.currentStage < this.prizes.length - 1) {
-      this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
-    } else {
-      this.currentButtonText = '已抽完';
-    }
-    
-    this.showContinueButton = true;
-    },
-/*     exportResults() {
-        // 准备数据
-        const data = [];
-        for (const [level, winners] of Object.entries(this.winners)) {
-        // 根据奖项等级找到对应的奖品
-        const prize = this.prizes.find(p => p.level === level);
-            winners.forEach((winner, index) => {
-                data.push({
-                    奖项: level,
-                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
-                    中奖者: winner,
-                });
-            });
-        }
-
-        // 创建工作簿和工作表
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
-
-        // 导出文件
-        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-    }, */
-        nextPrize() {
-            clearTimeout(this.continueTimer);
-            clearTimeout(this.fadeTimer);
-            
-            this.showContinueButton = false;
-            this.showResult = false;
-            this.currentStage++;
-            
+        generateResult() {
             if (this.currentStage >= this.prizes.length) {
                 this.goToResultMan();
                 return;
             }
-            
+
+            const prize = this.prizes[this.currentStage];
+            this.currentPrize = prize;
+
+            // 初始化该奖项的中奖者数组
+            this.winners[prize.level] = [];
+
+            // 复制参与者名单以避免修改原数组
+            const availableParticipants = [...this.participantList];
+
+            // 抽奖逻辑 - 确保不会重复中奖
+            const drawCount = Math.min(prize.quantity, availableParticipants.length);
+            for (let i = 0; i < drawCount; i++) {
+                const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+                const winner = availableParticipants[randomIndex];
+
+                this.winners[prize.level].push(winner);
+                availableParticipants.splice(randomIndex, 1); // 移除已中奖者
+            }
+
+            // 更新当前显示的中奖者
+            this.currentWinners = [...this.winners[prize.level]];
+            this.showResult = true;
+
+            // 更新按钮文本
+            if (this.currentStage < this.prizes.length - 1) {
+                this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+            } else {
+                this.currentButtonText = '已抽完';
+            }
+
+            this.showContinueButton = true;
+        },
+        /*     exportResults() {
+                // 准备数据
+                const data = [];
+                for (const [level, winners] of Object.entries(this.winners)) {
+                // 根据奖项等级找到对应的奖品
+                const prize = this.prizes.find(p => p.level === level);
+                    winners.forEach((winner, index) => {
+                        data.push({
+                            奖项: level,
+                            奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                            中奖者: winner,
+                        });
+                    });
+                }
+        
+                // 创建工作簿和工作表
+                const worksheet = XLSX.utils.json_to_sheet(data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+        
+                // 导出文件
+                const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+                XLSX.writeFile(workbook, fileName);
+            }, */
+        nextPrize() {
+            clearTimeout(this.continueTimer);
+            clearTimeout(this.fadeTimer);
+
+            this.showContinueButton = false;
+            this.showResult = false;
+            this.currentStage++;
+
+            if (this.currentStage >= this.prizes.length) {
+                this.goToResultMan();
+                return;
+            }
+
             this.currentButtonText = 'ENTER';
             this.collapse = false;
             this.expanse = false;
             this.isOpen = false;
+        },
+        fadeOutMusic() {
+            if (!this.backgroundMusic) return;
+
+            const fadeDuration = 2000; // 淡出时间（2秒）
+            const fadeSteps = 20; // 淡出步数（越多越平滑）
+            const stepTime = fadeDuration / fadeSteps;
+            const volumeStep = this.musicVolume / fadeSteps;
+
+            this.fadeInterval = setInterval(() => {
+                if (this.musicVolume > 0.1) {
+                    this.musicVolume -= volumeStep;
+                    this.backgroundMusic.volume = this.musicVolume;
+                } else {
+                    // 音量接近 0，停止音乐并清理
+                    this.backgroundMusic.pause();
+                    this.backgroundMusic.currentTime = 0; // 重置播放位置
+                    this.backgroundMusic.volume = 1; // 恢复默认音量
+                    clearInterval(this.fadeInterval);
+                    this.fadeInterval = null;
+                    this.backgroundMusic = null;
+                }
+            }, stepTime);
         },
         goToResultMan() {
             this.store.commit('saveLotteryResult', {
@@ -266,29 +323,33 @@ export default {
                 prizes: this.prizes,
                 winners: this.winners,
             });
-        // 准备数据
-        const data = [];
-        for (const [level, winners] of Object.entries(this.winners)) {
-        // 根据奖项等级找到对应的奖品
-        const prize = this.prizes.find(p => p.level === level);
-            winners.forEach((winner, index) => {
-                data.push({
-                    奖项: level,
-                    名称: index + 1,
-                    奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
-                    中奖者: winner,
+            //停止背景音乐
+            if (this.backgroundMusic) {
+                this.fadeOutMusic();
+            }
+            // 准备数据
+            const data = [];
+            for (const [level, winners] of Object.entries(this.winners)) {
+                // 根据奖项等级找到对应的奖品
+                const prize = this.prizes.find(p => p.level === level);
+                winners.forEach((winner, index) => {
+                    data.push({
+                        奖项: level,
+                        名称: index + 1,
+                        奖品名称: prize ? prize.name : '未设置奖品', // 添加奖品名称
+                        中奖者: winner,
+                    });
                 });
-            });
-        }
+            }
 
-        // 创建工作簿和工作表
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+            // 创建工作簿和工作表
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
 
-        // 导出文件
-        const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
+            // 导出文件
+            const fileName = `${this.lotteryInfo.name || '抽奖结果'}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
         },
         handleMouseOver() {
             if (!this.expanse && !this.showResult && !this.isAnimating) this.collapse = true;
@@ -497,8 +558,15 @@ canvas {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, -40%); }
-    to { opacity: 1; transform: translate(-50%, -50%); }
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
 .result-box {
@@ -568,8 +636,16 @@ canvas {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 </style>
