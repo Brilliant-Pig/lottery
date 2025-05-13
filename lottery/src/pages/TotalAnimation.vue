@@ -87,7 +87,7 @@ export default {
 
         // 按奖项等级排序
         this.prizes.sort((a, b) => {
-            const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
+            const levelMap = { '一等奖': 6, '二等奖': 5, '三等奖': 4, '四等奖': 3, '五等奖': 2, '六等奖': 1 };
             return levelMap[a.level] - levelMap[b.level];
         });
 
