@@ -1,5 +1,96 @@
-# Vue 3 + Vite
+# ✨ 欧皇无界队 - 魔法抽奖系统 ✨
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+欢迎来到我们的「欧皇无界队」魔法抽奖系统！这是一个专为校园活动打造的**高效、公平、炫酷**的抽奖解决方案，让你的活动瞬间变得高大上！🎉
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+![星空抽奖界面](https://pic1.imgdb.cn/item/6822fc0758cb8da5c8f01180.png)
+
+## 🌟 项目亮点
+
+- **流星划过星空**：超炫星空背景，让抽奖像流星雨一样充满惊喜！
+- **3分钟极速配置**：Excel一键导入，1000个奖品30秒搞定！
+- **公平公正**：唯一性抽奖机制，杜绝"欧皇"重复中奖！
+- **酷炫动画**：球粒子环绕+音效，开奖瞬间仪式感拉满！
+- **全平台适配**：手机电脑都能用，随时随地开奖！
+
+## 🚀 功能速览
+
+### 🎨 用户界面
+- 流星背景动态效果
+- 响应式设计，适配各种设备
+- 实时抽奖结果展示
+
+### ⚙️ 后台管理
+- 活动创建/编辑/发布
+- Excel批量导入参与者
+- 奖品权重设置
+- 一键导出中奖结果
+
+### 🔒 安全机制
+- 账号绑定参与
+- 数据加密存储
+- 抽奖记录实时入库
+
+## 🛠️ 技术栈
+
+| 前端魔法 | 后端魔法 | 数据库魔法 |
+|----------|----------|------------|
+| Vue.js ✨ | Node.js 🚀 | SQLite 💾 |
+| GSAP动画 🌈 | Express 🏹 |  |
+| Vite ⚡ |  |  |
+
+## 📦 快速开始
+
+1. **克隆仓库**
+```bash
+git clone https://github.com/Brilliant-Pig/lottery.git
+```
+2. **安装依赖**
+```bash
+cd lottery
+npm install
+或
+yarn
+```
+3. **运行项目**
+```bash
+npm run dev
+```
+4. **打开魔法抽奖世界**
+```bash
+在浏览器打开
+http://localhost:3000
+```
+##
+### 📸 项目截图
+*后台管理*  
+
+![后台管理](https://pic1.imgdb.cn/item/6822fd2858cb8da5c8f017be.png)
+*抽奖界面*  
+
+![抽奖界面](https://pic1.imgdb.cn/item/6822fcf558cb8da5c8f016c7.png)
+
+## 🤝 加入我们
+
+想成为下一个"欧皇"？或者想为校园活动增添一份惊喜？欢迎：
+
+- ⭐ Star 我们的项目
+- 🐞 提交 Issue 反馈问题
+- 💡 提出 Pull Request 贡献代码
+
+## 🌈 未来计划
+
+- 更多酷炫主题皮肤
+- 社交平台分享功能
+- 团队抽奖模式
+- 智能奖品分配
+- 修复更多已知bug！！
+
+---
+
+🎯 **让每一次抽奖都成为难忘的体验！** 🎯
+
+> "在浩瀚星空中，每个人都是等待被选中的流星" ✨
+
+---
+
+*GDMU-欧皇无界队 出品 | 让幸运触手可及*
