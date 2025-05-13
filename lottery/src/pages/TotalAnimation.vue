@@ -88,7 +88,7 @@ export default {
         // 按奖项等级排序
         this.prizes.sort((a, b) => {
             const levelMap = { '一等奖': 1, '二等奖': 2, '三等奖': 3, '四等奖': 4, '五等奖': 5, '六等奖': 6 };
-            return levelMap[a.level] - levelMap[b.level];
+            return levelMap[b.level] - levelMap[a.level];
         });
 
         console.log('初始化数据:', {
@@ -156,7 +156,7 @@ export default {
             if (this.showResult || this.isAnimating) return;
 
             if(this.currentStage === -1) {
-                this.currentStage = 0;
+                this.currentStage = this.prizes.length - 1;
                 this.startLotteryAnimation();
             } else if(this.currentStage < this.prizes.length) {
                 this.startLotteryAnimation();
@@ -181,12 +181,15 @@ export default {
             }, 1000);
         },
     generateResult() {
-    if (this.currentStage >= this.prizes.length) {
+        console.log('当前阶段:', this.currentStage, '实际抽取:', this.prizes.length - 1 - this.currentStage);
+        //从最后一个奖项开始抽取
+        const reverseStage = this.prizes.length - 1 - this.currentStage;
+    if (reverseStage<0) {
       this.goToResultMan();
       return;
     }
 
-    const prize = this.prizes[this.currentStage];
+    const prize = this.prizes[reverseStage];
     this.currentPrize = prize;
     
     // 初始化该奖项的中奖者数组
@@ -211,7 +214,8 @@ export default {
     
     // 更新按钮文本
     if (this.currentStage < this.prizes.length - 1) {
-      this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+        const nextPrize = this.prizes[this.prizes.length - 2 - this.currentStage];
+      this.currentButtonText = `继续抽取${nextPrize.level}`;
     } else {
       this.currentButtonText = '已抽完';
     }
@@ -254,8 +258,14 @@ export default {
                 this.goToResultMan();
                 return;
             }
-            
-            this.currentButtonText = 'ENTER';
+            // 修改按钮文本逻辑
+    const reverseStage = this.prizes.length - 1 - this.currentStage;
+    if (reverseStage >= 0) {
+        const nextPrize = this.prizes[reverseStage];
+        this.currentButtonText = `继续抽取${nextPrize.level}`;
+    } else {
+        this.currentButtonText = 'ENTER';
+            }
             this.collapse = false;
             this.expanse = false;
             this.isOpen = false;

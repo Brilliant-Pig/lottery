@@ -1,310 +1,618 @@
 <template>
-    <div class="container">
-        <div class="blackhole-bg">
-            <canvas ref="canvas"></canvas>
-        </div>
-        
-        <div class="result-content">
-            <h1 class="result-title">{{ lotteryInfo.name || '抽奖历史记录' }}</h1>
-            
-            <div class="result-list-container">
-                <div v-if="formattedResults.length === 0" class="no-record">
-                    <el-icon :size="40" color="rgba(255,255,255,0.7)"><Box /></el-icon>
-                    <p>暂无抽奖记录</p>
+    <div id="blackhole-bg">
+        <!-- 星空背景画布 -->
+        <canvas ref="canvas" class="star-canvas"></canvas>
+
+        <!-- 主要内容容器 -->
+        <div class="page-wrapper">
+            <div class="result-cus-container">
+                <!-- 加载状态 -->
+                <div v-if="loading" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
                 </div>
-                
-                <div v-else class="result-table">
-                    <div class="table-header">
-                        <div class="header-item">奖项</div>
-                        <div class="header-item">奖品</div>
-                        <div class="header-item">中奖者</div>
+
+                <!-- 历史记录部分 -->
+                <div class="history-section">
+                    <div class="section-header">
+                        <h2 class="section-title">创建的抽奖活动结果</h2>
+                        <button @click="refreshHistory" class="refresh-btn" :disabled="loading">
+                            <span class="refresh-icon" :class="{ 'refreshing': loading }">↻</span>
+                            刷新
+                        </button>
                     </div>
-                    
-                    <div v-for="(record, index) in formattedResults" :key="index" 
-                         class="table-row" :class="{ 'winning': isWin(record.award) }">
-                        <div class="table-cell">{{ record.level }}</div>
-                        <div class="table-cell">{{ record.name }}</div>
-                        <div class="table-cell winners-cell">
-                            <div v-for="(winner, i) in record.winners" :key="i" class="winner-item">
-                                {{ i + 1 }}. {{ winner }}
+
+                    <div v-if="creatorHistory.length" class="history-list">
+                        <div v-for="(records, activityName) in groupByActivity(creatorHistory)" 
+                            :key="activityName" class="activity-group">
+                            <div class="activity-header" @click="toggleActivity(activityName)">
+                                <h3 class="activity-title">{{ activityName }}</h3>
+                                <span class="toggle-icon">
+                                    {{ expandedActivities.includes(activityName) ? '▼' : '►' }}
+                                </span>
+                                <button class="export-btn" @click.stop="exportToExcel(records, activityName)">
+                                    <span class="export-icon">📊</span> 导出
+                                </button>
                             </div>
-                            <div v-if="!record.winners.length" class="no-winner">暂无中奖者</div>
+                            <div v-if="expandedActivities.includes(activityName)" class="activity-records">
+                                <div v-for="(record, index) in records" 
+                                    :key="index" class="history-item">
+                                    <div class="record-time">{{ formatTime(record.win_time) }}</div>
+                                    <div class="record-prize">{{ record.activity_result }}</div>
+                                    <div class="record-winner">获奖用户: {{ record.winner_name || '无' }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <div v-else class="empty-history">
+                        <p v-if="!loading">暂无创建的抽奖活动记录</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="button-container">
-                <button class="btn-back" @click="goBack">返回</button>
+
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    <button @click="handleBack" class="custom-btn back-btn">
+                        <span class="btn-icon">←</span> 返回
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
-<script setup>
-import { computed, onMounted, ref } from 'vue';
+<script>
+import { onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { Box } from '@element-plus/icons-vue';
+import * as XLSX from 'xlsx';
 
-const router = useRouter();
-const store = useStore();
-const canvas = ref(null);
+export default {
+    name: 'ResultMan',
+    data() {
+        return {
+            canvas: null,
+            loading: false,
+            creatorHistory: [], // 存储创建者的抽奖历史记录
+            expandedActivities: [], // 存储展开的活动名称
+        };
+    },
 
-const lotteryInfo = computed(() => store.getters.getLotteryInfo || {});
-const lotteryHistory = computed(() => store.getters.getLotteryHistory || []);
-
-const formattedResults = computed(() => {
-    try {
-        return lotteryHistory.value.flatMap(record => 
-            (record.prizes || []).map(prize => ({
-                level: prize.level || '未知奖项',
-                name: prize.name || '未知奖品',
-                winners: record.winners?.[prize.level] || [],
-                time: record.time || '',
-                award: prize.level || ''
-            }))
-        );
-    } catch (e) {
-        console.error('格式化抽奖结果出错:', e);
-        return [];
-    }
-});
-
-const isWin = (award) => {
-    return award && !award.includes('未中奖');
-};
-
-const goBack = () => {
-    router.push({ name: 'ManagersMain' });  // 修改为跳转到 ManagersMain
-};
-
-onMounted(() => {
-    initCanvas();
-    initStarsAnimation();
-});
-
-const initCanvas = () => {
-    if (!canvas.value) return;
-    
-    const element = canvas.value;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    
-    element.width = w;
-    element.height = h;
-};
-
-const initStarsAnimation = () => {
-    if (!canvas.value) return;
-    
-    const ctx = canvas.value.getContext("2d");
-    const stars = [];
-    const maxStars = 500;
-    
-    for (let i = 0; i < maxStars; i++) {
-        stars.push({
-            x: Math.random() * canvas.value.width,
-            y: Math.random() * canvas.value.height,
-            radius: Math.random() * 1.5,
-            vx: Math.floor(Math.random() * 50) - 25,
-            vy: Math.floor(Math.random() * 50) - 25
-        });
-    }
-    
-    const animate = () => {
-        ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-        ctx.fillStyle = 'rgba(25, 25, 25, 0.8)';
-        ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
+    computed: {
+        groupByActivity() {
+            return (records) => {
+                const grouped = {};
+                records.forEach(record => {
+                    const key = record.activity_name || '未命名活动';
+                    if (!grouped[key]) {
+                        grouped[key] = [];
+                    }
+                    grouped[key].push(record);
+                });
+                return grouped;
+            };
+        }
+    },
+    methods: {
+        formatTime(time) {
+            if (!time) return '无记录';
+            // 处理字符串格式的时间
+            if (typeof time === 'string') {
+                return time.split('T')[0]; // 处理ISO格式
+            }
+            // 处理Date对象
+            const date = new Date(time);
+            return date.toLocaleDateString();
+        },
         
-        stars.forEach(star => {
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        async fetchCreatorHistory() {
+            this.loading = true;
+            try {
+                const username = this.$store.state.user.username;
+                if (!username) {
+                    console.warn('用户名不存在');
+                    return;
+                }
+                
+                const response = await this.$http.get('/api/user/getCreatorLotteryHistory', {
+                    params: {
+                        userName: username
+                    }
+                });
+
+                if (response.data?.code === 0) {
+                    this.creatorHistory = response.data.data || [];
+                } else {
+                    console.error('获取数据失败:', response.data?.message);
+                    this.creatorHistory = [];
+                }
+            } catch (error) {
+                console.error('请求失败:', error);
+                this.creatorHistory = [];
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        refreshHistory() {
+            this.fetchCreatorHistory();
+        },
+        
+        handleBack() {
+            this.$router.push({ name: 'mainpages' });
+        },
+        
+        toggleActivity(activityName) {
+            const index = this.expandedActivities.indexOf(activityName);
+            if (index >= 0) {
+                this.expandedActivities.splice(index, 1);
+            } else {
+                this.expandedActivities.push(activityName);
+            }
+        },
+        
+        exportToExcel(records, activityName) {
+            try {
+                // 准备数据
+                const data = records.map(record => ({
+                    '活动名称': record.activity_name || '未命名活动',
+                    '获奖时间': this.formatTime(record.win_time),
+                    '奖项': record.activity_result,
+                    '获奖用户': record.winner_name || '无'
+                }));
+                
+                // 创建工作表
+                const worksheet = XLSX.utils.json_to_sheet(data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
+                
+                // 生成文件名
+                const fileName = `${activityName || '抽奖活动'}_结果_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                
+                // 导出文件
+                XLSX.writeFile(workbook, fileName);
+            } catch (error) {
+                console.error('导出Excel失败:', error);
+                alert('导出失败，请重试');
+            }
+        },
+
+        initStarBackground() {
+            const canvas = this.canvas;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = '#191919';
+            ctx.fillRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.fill();
-            
-            star.x += star.vx / 100;
-            star.y += star.vy / 100;
-            
-            if (star.x < 0 || star.x > canvas.value.width) star.vx = -star.vx;
-            if (star.y < 0 || star.y > canvas.value.height) star.vy = -star.vy;
-        });
-        
-        requestAnimationFrame(animate);
-    };
-    
-    animate();
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        },
+    },
+    mounted() {
+        this.canvas = this.$refs.canvas;
+        this.initStarBackground();
+        window.addEventListener('resize', this.initStarBackground);
+        this.fetchCreatorHistory();
+    }
 };
 </script>
 
-<style scoped>
-.container {
-    position: relative;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    background-color: rgba(25, 25, 25, 1);
-}
 
-.blackhole-bg {
+<style scoped>
+#blackhole-bg {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
-}
-
-.blackhole-bg canvas {
-    width: 100%;
-    height: 100%;
-}
-
-.result-content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    padding: 20px;
-    color: white;
-}
-
-.result-title {
-    text-align: center;
-    margin: 20px 0;
-    font-size: 2rem;
-    color: #4dc3d7;
-    text-shadow: 0 0 10px rgba(77, 195, 215, 0.7);
-    flex-shrink: 0;
-}
-
-.result-list-container {
-    flex: 1;
     overflow-y: auto;
-    margin: 0 auto;
-    width: 90%;
-    max-width: 900px;
-    min-height: 0;
-    padding: 10px 0;
-}
-
-.result-table {
+    color: white;
     display: flex;
     flex-direction: column;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    overflow: hidden;
 }
 
-.table-header {
-    display: flex;
-    background: rgba(77, 195, 215, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    font-weight: bold;
+.star-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
 }
 
-.header-item {
+.page-wrapper {
     flex: 1;
-    padding: 15px;
-    text-align: center;
-    font-size: 1.1rem;
-}
-
-.table-row {
     display: flex;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 0;
+    min-height: 120vh;
+    box-sizing: border-box;
 }
 
-.table-row:last-child {
-    border-bottom: none;
+.result-cus-container {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transform: translateY(0);
+    animation: floatUp 0.5s ease-out forwards;
 }
 
-.table-row:hover {
+@keyframes floatUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 16px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #646cff;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.current-result-card,
+.history-section {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 20px;
+    margin: 0;
+    color: #ffffff;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #646cff, #61dafb);
+}
+
+.refresh-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.table-cell {
-    flex: 1;
-    padding: 15px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
+.refresh-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.winners-cell {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+.refresh-icon {
+    margin-right: 5px;
+    transition: transform 0.3s ease;
 }
 
-.winner-item {
-    margin: 5px 0;
-    padding: 5px;
-    font-size: 0.9rem;
+.refresh-icon.refreshing {
+    animation: spin 1s linear infinite;
 }
 
-.winning .table-cell:first-child {
-    color: #4dc3d7;
+.prize-display {
+    padding: 15px 0;
+}
+
+.prize-text {
+    font-size: 28px;
     font-weight: bold;
+    margin-bottom: 15px;
+    color: #61dafb;
+    text-shadow: 0 0 10px rgba(97, 218, 251, 0.3);
 }
 
-.no-winner {
-    color: rgba(255, 255, 255, 0.5);
-    font-style: italic;
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
 }
 
-.no-record {
+.detail-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 40px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1.2rem;
+}
+
+.detail-label {
+    opacity: 0.8;
+    margin-right: 8px;
+}
+
+.detail-value {
+    font-weight: 500;
+}
+
+.history-list {
+    display: grid;
     gap: 15px;
 }
 
-.button-container {
-    flex-shrink: 0;
-    padding: 20px 0;
+.history-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.highlight-item {
+    border-left: 4px solid #646cff;
+    background-color: rgba(100, 108, 255, 0.1);
+}
+
+.record-time {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.record-prize {
+    font-size: 18px;
+    margin: 8px 0;
+    color: #70c5ef;
+}
+
+.record-activity {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.empty-history {
     text-align: center;
+    padding: 40px 0;
+    opacity: 0.6;
 }
 
-.btn-back {
-    margin: 0 auto;
-    padding: 12px 40px;
-    background: transparent;
-    color: white;
-    border: 2px solid white;
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.custom-btn {
+    padding: 12px 30px;
     border-radius: 25px;
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s;
-    width: fit-content;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    border: none;
+    outline: none;
 }
 
-.btn-back:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+.back-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.result-list-container::-webkit-scrollbar {
-    width: 8px;
+.back-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
-.result-list-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 4px;
+.share-btn {
+    background-color: rgba(100, 108, 255, 0.2);
+    color: #646cff;
+    border: 2px solid rgba(100, 108, 255, 0.5);
 }
 
-.result-list-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+.share-btn:hover {
+    background-color: rgba(100, 108, 255, 0.3);
+}
+
+.btn-icon {
+    margin-right: 8px;
+}
+
+.activity-group {
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+}
+
+.activity-title {
+    color: #61dafb;
+    margin-bottom: 15px;
+    font-size: 18px;
+    padding-left: 10px;
+    border-left: 3px solid #646cff;
+}
+
+.record-winner {
+    font-size: 16px;
+    color: #ffffffcb;
+    margin-top: 5px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .page-wrapper {
+        padding: 20px 0;
+    }
+
+    .result-cus-container {
+        padding: 25px;
+        width: 95%;
+    }
+
+    .current-result-card,
+    .history-section {
+        padding: 20px;
+    }
+
+    .prize-text {
+        font-size: 24px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .custom-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .refresh-btn {
+        align-self: flex-end;
+    }
+}
+.activity-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.activity-header:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.activity-title {
+    color: #61dafb;
+    margin: 0;
+    font-size: 18px;
+    padding-left: 10px;
+    border-left: 3px solid #646cff;
+    flex-grow: 1;
+}
+
+.toggle-icon {
+    margin: 0 15px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.export-btn {
+    background: rgba(100, 108, 255, 0.2);
+    border: 1px solid rgba(100, 108, 255, 0.5);
+    color: #646cff;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.export-btn:hover {
+    background: rgba(100, 108, 255, 0.3);
+}
+
+.export-icon {
+    margin-right: 5px;
+}
+
+.activity-records {
+    margin-top: 15px;
+    padding-left: 20px;
+    border-left: 2px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* 响应式设计调整 */
+@media (max-width: 768px) {
+    .activity-header {
+        flex-wrap: wrap;
+    }
+    
+    .export-btn {
+        margin-top: 8px;
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>

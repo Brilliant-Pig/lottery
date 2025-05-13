@@ -129,3 +129,7 @@ Content-Type: application/json
         }
     }
 }
+### 获取创建者的抽奖历史记录
+GET http://127.0.0.1:33001/api/user/getCreatorLotteryHistory
+    ?userName=oops
+Content-Type: application/json
