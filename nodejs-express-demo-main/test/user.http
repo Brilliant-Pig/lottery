@@ -81,6 +81,16 @@ Content-Type: application/json
 ###
 GET http://127.0.0.1:33001/api/auth/login
     ?userName=admin
+
+
+###
+POST http://127.0.0.1:33001/api/auth/checkUsername
+Content-Type: application/json
+
+{
+    "userName": "admin"
+    }
+
 ### 记录用户参与活动
 POST http://127.0.0.1:33001/api/user/recordParticipation
 Content-Type: application/json
@@ -88,4 +98,34 @@ Content-Type: application/json
 {
     "activityUrl": "2",
     "userName": "zhuzhu"
+}
+
+### 创建抽奖活动
+POST http://127.0.0.1:33001/api/user/createLottery
+Content-Type: application/json
+
+{
+    "lotteryData": {
+        "username": "admin",
+        "lotteryInfo": {
+            "name": "better-sqlite3测试",
+            "description": "测试better-sqlite3配置"
+        },
+        "prizes": [
+            {
+                "name": "测试奖品1",
+                "quantity": 1,
+                "weight": 10
+            },
+            {
+                "name": "测试奖品2",
+                "quantity": 2,
+                "weight": 20
+            }
+        ],
+        "timeSettings": {
+            "startTime": "2023-12-01T00:00:00",
+            "endTime": "2023-12-31T23:59:59"
+        }
+    }
 }

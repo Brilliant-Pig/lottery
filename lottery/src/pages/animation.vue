@@ -1,12 +1,7 @@
 <template>
   <div id="blackhole" ref="blackhole">
-    <div 
-      class="centerHover" 
-      :class="{ open: isOpen || showResult }"
-      @click="handleClick"
-      @mouseover="handleMouseOver"
-      @mouseout="handleMouseOut"
-    >
+    <div class="centerHover" :class="{ open: isOpen || showResult }" @click="handleClick" @mouseover="handleMouseOver"
+      @mouseout="handleMouseOut">
       <span>ENTER</span>
     </div>
     <canvas ref="canvas"></canvas>
@@ -24,7 +19,7 @@
 <script>
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { useUserStore } from '@/store/user';
+import { useUserStore } from '../store/user';
 
 export default {
   name: 'BlackHole',
@@ -54,23 +49,30 @@ export default {
       result: '正在加载结果...', // 默认显示加载中
       userName: '',
       activityName: '',
-      showResult: false
-    }
+      showResult: false,
+      audio: null,
+      isPlaying: false,
+    };
   },
   mounted() {
     this.initCanvas();
     this.init();
+    this.initAudio();
   },
   beforeUnmount() {
     cancelAnimationFrame(this.animationFrameId);
     if (this.redirectTimer) {
       clearTimeout(this.redirectTimer);
     }
+    if (this.audio) {
+      this.audio.pause();
+      this.audio = null;
+    }
   },
-// 修改 created 钩子
-async created() {
+  // 修改 created 钩子
+  async created() {
     const userStore = useUserStore();
-    
+
     // 直接从Pinia获取抽奖结果
     if (!userStore.lotteryResult) {
       this.result = '无效的抽奖结果';
@@ -87,7 +89,7 @@ async created() {
         activityUrl: userStore.lotteryResult.activityUrl,
         userName: userStore.lotteryResult.userName
       });
-      
+
       if (!verification.valid) {
         this.result = '抽奖结果验证失败';
       }
@@ -96,6 +98,13 @@ async created() {
     }
   },
   methods: {
+    // 初始化音效
+    initAudio() {
+      this.audio = new Audio('/个人抽奖音效.mp3'); 
+      this.audio.volume = 0.5; // 音量（0~1）
+    },
+
+    // 初始化 canvas
     initCanvas() {
       const element = this.$refs.blackhole;
       this.h = element.offsetHeight;
@@ -133,28 +142,36 @@ async created() {
       return [nx, ny]
     },
 
-// 修改 handleClick 方法
-handleClick() {
-    if (this.showResult) return;
-    
-    // 触发黑洞收缩动画
-    this.collapse = true;
-    
-    // 延迟展开动画
-    setTimeout(() => {
+    // 修改 handleClick 方法
+    handleClick() {
+      if (this.showResult) return;
+
+      // 播放音效
+      if (this.audio && !this.isPlaying) {
+        this.audio.play();
+        this.isPlaying = true;
+      }
+
+      // 触发黑洞收缩动画
+      this.collapse = true;
+
+      // 延迟展开动画
+      setTimeout(() => {
         this.expanse = true;
         this.isOpen = true;
-        
+
         // 4秒后显示结果（比动画时间短）
         setTimeout(() => {
-            this.showResult = true;
-            // 自动9秒后返回（可选）
-            setTimeout(() => {
-                this.goToResultCus();
-            }, 9000);
-        }, 5000);
-    }, 1000);
-},
+          this.showResult = true;
+          // 显示结果后停止音效
+          if (this.audio) {
+            this.audio.pause();
+            this.isPlaying = false;
+          }
+
+        }, 4700);
+      }, 1000);
+    },
 
     generateResult() {
       const randomNum = Math.floor(Math.random() * this.prizeOptions.length);
@@ -168,7 +185,12 @@ handleClick() {
       });
     },
 
+    // 返回时停止音效
     goToResultCus() {
+      if (this.audio) {
+        this.audio.pause();
+        this.isPlaying = false;
+      }
       this.router.push({ name: 'ResultCus' });
     },
 
@@ -180,18 +202,18 @@ handleClick() {
     },
     createStar() {
       const rands = []
-      rands.push(Math.random() * (this.maxorbit/2) + 1)
-      rands.push(Math.random() * (this.maxorbit/2) + this.maxorbit)
+      rands.push(Math.random() * (this.maxorbit / 2) + 1)
+      rands.push(Math.random() * (this.maxorbit / 2) + this.maxorbit)
       const orbital = (rands.reduce((p, c) => p + c, 0) / rands.length
-    )
-    const star = {
+      )
+      const star = {
         orbital,
         x: this.centerx,
         y: this.centery + orbital,
         yOrigin: this.centery + orbital,
-        speed: (Math.floor(Math.random() * 2.5) + 1.5)*Math.PI/180,
+        speed: (Math.floor(Math.random() * 2.5) + 1.5) * Math.PI / 180,
         rotation: 0,
-        startRotation: (Math.floor(Math.random() * 360) + 1)*Math.PI/180,
+        startRotation: (Math.floor(Math.random() * 360) + 1) * Math.PI / 180,
         id: this.stars.length,
         collapseBonus: orbital - (this.maxorbit * 0.7),
         prevR: 0,
@@ -199,12 +221,12 @@ handleClick() {
         prevY: 0
       }
 
-      if(star.collapseBonus < 0) {
+      if (star.collapseBonus < 0) {
         star.collapseBonus = 0
       }
       star.color = `rgba(255,255,255,${1 - (orbital / 255)})`
-      star.hoverPos = this.centery + (this.maxorbit/2) + star.collapseBonus
-      star.expansePos = this.centery + (star.id%100)*-10 + (Math.floor(Math.random() * 20) + 1)
+      star.hoverPos = this.centery + (this.maxorbit / 2) + star.collapseBonus
+      star.expansePos = this.centery + (star.id % 100) * -10 + (Math.floor(Math.random() * 20) + 1)
       star.prevR = star.startRotation
       star.prevX = star.x
       star.prevY = star.y
@@ -212,27 +234,27 @@ handleClick() {
     },
 
     drawStar(star) {
-      if(!this.expanse) {
+      if (!this.expanse) {
         star.rotation = star.startRotation + (this.currentTime * star.speed)
-        if(!this.collapse) {
-          if(star.y > star.yOrigin) {
+        if (!this.collapse) {
+          if (star.y > star.yOrigin) {
             star.y -= 2.5
           }
-          if(star.y < star.yOrigin-4) {
+          if (star.y < star.yOrigin - 4) {
             star.y += (star.yOrigin - star.y) / 10
           }
         } else {
           star.trail = 1
-          if(star.y > star.hoverPos) {
+          if (star.y > star.hoverPos) {
             star.y -= (star.hoverPos - star.y) / -5
           }
-          if(star.y < star.hoverPos-4) {
+          if (star.y < star.hoverPos - 4) {
             star.y += 2.5
           }
         }
       } else {
         star.rotation = star.startRotation + (this.currentTime * (star.speed / 2))
-        if(star.y > star.expansePos) {
+        if (star.y > star.expansePos) {
           star.y -= Math.floor(star.expansePos - star.y) / -140
         }
       }
@@ -258,7 +280,7 @@ handleClick() {
       this.currentTime = (now - this.startTime) / 50
       this.context.fillStyle = 'rgba(25,25,25,0.2)'
       this.context.fillRect(0, 0, this.cw, this.ch)
-      for(let i = 0; i < this.stars.length; i++) {
+      for (let i = 0; i < this.stars.length; i++) {
         this.drawStar(this.stars[i])
       }
       this.animationFrameId = requestAnimationFrame(this.loop)
@@ -280,30 +302,36 @@ handleClick() {
 </script>
 
 <style scoped>
-body, html { 
-  height: 100%; 
+body,
+html {
+  height: 100%;
   margin: 0;
   padding: 0;
 }
 
 #blackhole {
-  height: 100%;
-  width: 100%;
-  position: relative;
+  position: absolute;
+  /* 改为 absolute 定位 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(25, 25, 25, 1);
   display: flex;
-  background-color: rgba(25,25,25,1);
+  justify-content: center;
+  /* 水平居中 */
+  align-items: center;
+  /* 垂直居中 */
+  overflow: hidden;
+  /* 防止内容溢出 */
 }
 
 .centerHover {
-  width: 255px;
-  height: 255px;
-  background-color: transparent;
-  border-radius: 50%;
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-top: -128px;
-  margin-left: -128px;
+  transform: translate(-50%, -50%);
+  /* 精确居中 */
   z-index: 2;
   cursor: pointer;
   line-height: 255px;
@@ -356,18 +384,20 @@ body, html {
 }
 
 canvas {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  margin: auto;
+  z-index: 1;
 }
 
 /* 修改后的结果展示样式 - 直接显示白色文字和按钮 */
 .result-container {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
   display: flex;
@@ -383,6 +413,13 @@ canvas {
   margin-bottom: 30px;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   text-align: center;
+}
+
+.result-info {
+  color: white;
+  /* 新增样式，确保文字为白色 */
+  margin: 8px 0;
+  font-size: 18px;
 }
 
 .result-btn {

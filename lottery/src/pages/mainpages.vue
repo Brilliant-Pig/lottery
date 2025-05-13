@@ -151,9 +151,6 @@
                 <h4>{{ item.prizeName }}</h4>
                 <p>中奖时间：{{ item.winTime }}</p>
             </div>
-            <div class="action">
-                <button class="receive-btn">领取奖品</button>
-            </div>
             </div>
         </div>
         </div>
@@ -165,6 +162,11 @@
         <span>联系客服</span>
         </div>
     </footer>
+    <router-view v-slot="{ Component }">
+        <keep-alive>
+            <component :is="Component" />
+        </keep-alive>
+        </router-view>
     </div>
 </template>
 
@@ -174,6 +176,9 @@ import axios from 'axios';
 const DEFAULT_AVATAR = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
 
 export default {
+    activated() {
+        this.loadUserData(); // 每次进入页面时刷新数据
+    },
     created(){
         const username = localStorage.getItem('username');
         if (username) {
@@ -250,6 +255,7 @@ export default {
         return statusMap[status] || status || '未知状态';},
     viewDetail(id) {
         console.log('查看详情:', id)
+        this.$router.push('/ResultMan')
     }, 
     switchMainTab(tab) {
         // 处理底部导航切换逻辑

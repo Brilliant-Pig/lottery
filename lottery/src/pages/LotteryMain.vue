@@ -22,35 +22,22 @@
         <div class="auth-section">
             <h3>1. 新用户注册</h3>
             <ul>
-            <li>点击「📧 邮箱/手机注册」</li>
-            <li>输入邮箱/手机号并设置密码（8-16位字符）</li>
-            <li>完成验证：
+            <li>点击「📧 注册」</li>
+            <li>输入用户名并设置密码（3-16位字符）</li>
+            <li>完成命名唯一性验证
                 <ul>
-                <li>邮箱用户：查收激活邮件并点击验证链接</li>
-                <li>手机用户：输入短信验证码</li>
                 </ul>
             </li>
             </ul>
-            <button 
-            class="black-border-button"
-            @click="handleAuthActionone('register')">
-            🚀 立即注册
-            </button>
         </div>
 
         <!-- 已有账号登录部分添加按钮 -->
         <div class="auth-section">
             <h3>2. 已有账号登录</h3>
             <ul>
-            <li><strong>密码登录</strong>：输入注册邮箱/手机 + 密码</li>
-            <li><strong>第三方登录</strong>：点击「🌐 微信/Google」图标快速授权</li>
+            <li><strong>密码登录</strong>：输入注册用户名 + 密码</li>
             <li><strong>忘记密码</strong>：通过注册邮箱重置密码</li>
             </ul>
-            <button 
-            class="black-border-button"
-            @click="handleAuthActiontwo('login')">
-            🔑 立即登录
-            </button>
         </div>
         </section>
 
@@ -322,8 +309,6 @@
             :key="index"
             :is="section.component"
             v-bind="section.props"/>
-    
-            <!-- 其他模块... -->
         </div>
         </div>
     </template>
@@ -403,7 +388,7 @@
             warnings: [
         '文件模式最多支持5000人参与',
         '时间修改需在活动开始前1小时完成',
-        '每个手机号/邮箱仅可参与1次',
+        '每个账号仅可参与1次',
         '推荐使用Chrome/Edge最新版浏览器'
         ],
             architectureImg: '../assets/architecture.png',  
@@ -416,7 +401,7 @@
             ],
             deployArch: [
             {component: 'Web服务器', spec: '4核8G/100G SSD', solution: 'Nginx集群+Keepalived'},
-            {component: '数据库', spec: '8核16G/500G SSD', solution: 'MySQL主从复制'},
+            {component: '数据库', spec: '8核16G/500G SSD', solution: 'SQLite主从复制'},
             {component: '缓存服务', spec: '4核8G/50G SSD', solution: 'Redis哨兵模式'},
             {component: '消息队列', spec: '4核8G/100G HDD', solution: 'RabbitMQ镜像队列'}
             ],

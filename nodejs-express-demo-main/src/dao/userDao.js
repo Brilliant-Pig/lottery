@@ -294,6 +294,19 @@ exports.updatePrizeQuantityForUser = async (userName, activityUrl, prizeName) =>
     `;
     return await db.query(sql, [activityUrl, prizeName, userName, activityUrl]);
 };
+exports.checkParticipationExists = async (userName, activityUrl) => {
+    const sql = `
+        SELECT 
+            COUNT(*) AS count
+        FROM 
+            participations
+        WHERE 
+            username = ? 
+            AND activity_url = ?
+    `;
+    const result = await db.query(sql, [userName, activityUrl]);
+    return result[0].count > 0; // 返回布尔值，表示是否已存在
+};
 exports.insertParticipation = async (userName, activityUrl) => {
     // 首先获取活动信息以确保活动存在
     const activity = await db.query(
@@ -337,6 +350,64 @@ exports.insertParticipation = async (userName, activityUrl) => {
             sql: sql,
             params: params
         });
+        throw err;
+    }
+};
+// 获取用户历史抽奖记录
+exports.getUserLotteryHistory = async (userName) => {
+    const sql = `
+        SELECT 
+            activity_name,
+            username,
+            activity_result,
+            win_time
+        FROM 
+            activity_results
+        WHERE 
+            username = ?
+        ORDER BY 
+            win_time DESC
+    `;
+    return await db.query(sql, [userName]);
+};
+exports.insertActivity = async (activityData) => {
+    const sql = `
+        INSERT INTO activities 
+        (activity_name, activity_url, start_time, end_time, username)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+    const params = [activityData.name, activityData.url, activityData.startTime, activityData.endTime, activityData.username];
+    try {
+        const result = await db.query(sql, params);
+        return {
+            id: result.lastInsertRowid,
+            changes: result.changes
+        };
+    } catch (err) {
+        console.error('插入活动失败:', err);
+        throw err;
+    }
+};
+
+// 插入奖品信息
+exports.insertPrizes = async (prizesData) => {
+    try {
+        return await db.withTransaction(async () => {
+            const results = [];
+            for (const prize of prizesData) {
+                const sql = `
+                    INSERT INTO prizes 
+                    (activity_name, activity_url, prize_name, prize_probability, prize_quantity)
+                    VALUES (?, ?, ?, ?, ?)
+                `;
+                const params = [prize.activityName, prize.activityUrl, prize.prizeName, prize.probability, prize.quantity];
+                const result = await db.query(sql, params);
+                results.push(result);
+            }
+            return results;
+        });
+    } catch (err) {
+        console.error('插入奖品失败:', err);
         throw err;
     }
 };

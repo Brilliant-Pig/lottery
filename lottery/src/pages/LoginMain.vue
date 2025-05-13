@@ -4,7 +4,7 @@
     <h1>用户登录</h1>
     <form @submit.prevent="handleLogin">
     <div class="input-group">
-        <label for="username">用户名：</label>
+        <label for="username" style="color: #ccc;">用户名：</label>
         <input
         type="text"
         id="username"
@@ -14,7 +14,7 @@
     />
     </div>
     <div class="input-group">
-        <label for="password">密码：</label>
+        <label for="password" style="color: #ccc;">密码：</label>
         <input
         type="password"
         id="password"
@@ -47,34 +47,31 @@ export default {
     methods: {
         ...mapActions(['login']), // 映射 Vuex action
     
-        async handleLogin() {
-            if (!this.username || !this.password) {
-            this.errorMessage = "用户名和密码不能为空！";
-            return;
-        }
+  async handleLogin() {
+    if (!this.username || !this.password) {
+      this.errorMessage = "用户名和密码不能为空！";
+      return;
+    }
 
-        try {
-        // 调用 Vuex 的 login action
-            await this.login({
-                username: this.username,
-                password: this.password
-            });
-        
-        // 登录成功后的操作
-        this.errorMessage = "";
-        this.$router.push('/LotteryMain'); // 使用路由跳转替代 window.location
-        
-        } catch (error) {
-            this.errorMessage = "用户名或密码错误！";
-            console.error('登录失败:', error);
-        }
-        },
+    try {
+      await this.$store.dispatch('login', {
+        username: this.username,
+        password: this.password
+      });
+      
+      this.errorMessage = "";
+      this.$router.push('/LotteryMain');
+      
+    } catch (error) {
+      this.errorMessage = error.message || "用户名或密码错误！";
+    }
+  }
+},
     
         goToRegister() {
             this.$router.push("/Register");
         }
-    }
-};
+    };
 </script>
 
 <style scoped>
@@ -90,6 +87,7 @@ border: none;
 h1 {
 text-align: center;
 margin-bottom: 60px;
+color:#007bff;
 }
 
 .input-group {
@@ -133,7 +131,7 @@ text-align: center;
 }
 
 .register-link a {
-color: #007bff;
+color: #28a745;
 text-decoration: none;
 font-weight: bold;
 }

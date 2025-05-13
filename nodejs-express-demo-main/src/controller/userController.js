@@ -198,3 +198,46 @@ router.post('/recordParticipation', async (req, res, next) => {
         });
     }
 });
+// 获取用户历史抽奖记录
+router.get('/getUserLotteryHistory', async (req, res, next) => {
+    try {
+        const { userName } = req.query;
+        if (!userName) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少userName参数'
+            });
+        }
+        const result = await userService.getUserLotteryHistory(userName);
+        res.json(result);
+    } catch (err) {
+        console.error('获取历史记录失败:', err);
+        res.status(500).json({
+            code: 1,
+            message: '获取历史记录失败'
+        });
+    }
+});
+// 创建抽奖活动
+router.post('/createLottery', async (req, res) => {
+    try {
+        const { lotteryData } = req.body;
+
+        // 基本验证
+        if (!lotteryData || !lotteryData.username) {
+            return res.status(400).json({
+                code: 1,
+                message: '缺少用户名或抽奖数据'
+            });
+        }
+
+        const result = await userService.createLotteryActivity(lotteryData);
+        res.json(result);
+    } catch (error) {
+        console.error('创建抽奖活动控制器错误:', error);
+        res.status(500).json({
+            code: 1,
+            message: error.message || '创建抽奖活动失败'
+        });
+    }
+});

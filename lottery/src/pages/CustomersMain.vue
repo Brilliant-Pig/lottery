@@ -2,7 +2,7 @@
 <template>
     <div id="whole">
         <div id="null">
-            <tiny-input v-model="input" placeholder="请输入活动专属Url  跳转至相应活动抽奖" clearable>
+            <tiny-input v-model="input" placeholder="请输入活动码  跳转至相应活动抽奖" clearable>
             </tiny-input>
         </div>
         <h1>{{ activityName }}</h1>
@@ -120,7 +120,7 @@ const goToRC = async () => {
         await router.push('/animation');
     } catch (error) {
         console.error('抽奖过程出错:', error);
-        ElMessage.error(`抽奖失败: ${error.message}`);
+        ElMessage.error(`抽奖失败: 你已经参与抽奖${error.message}`);
     } finally {
         isLoading.value = false;
     }
@@ -196,7 +196,11 @@ h1 {
     margin-top: 5px;
     margin-bottom: 80px;
     text-align: center;
-    color: rgb(107, 252, 216);
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 #timer {
@@ -216,13 +220,21 @@ h1 {
 p1 {
     margin-left: 5%;
     font-size: 30px;
-    color: white;
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 p2 {
     margin-left: 40%;
     font-size: 30px;
-    color: white;
+    color: transparent;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .tiny-button {
@@ -256,4 +268,135 @@ p2 {
     position: absolute;
     right: 10px;
 }
+/* 移动端响应式布局 (max-width: 768px) */
+/* ==================== */
+@media (max-width: 768px) {
+  /* 全局布局调整 */
+  #whole {
+    padding: 15px;
+    box-sizing: border-box;
+  }
+
+  /* 活动码输入框 */
+  #null {
+    width: 100% !important;
+    margin: 10px 0 20px 0 !important;
+  }
+
+  /* 活动标题 */
+  h1 {
+    margin-bottom: 30px !important;
+    font-size: 1.5rem;
+  }
+
+  /* 时间信息区域 */
+  p1, p2 {
+    margin-left: 0 !important;
+    width: 100%;
+    text-align: center;
+    font-size: 1.2rem !important;
+  }
+
+  /* 计时器和人数统计 */
+  #timer, #men {
+    position: static !important;
+    width: 100% !important;
+    margin: 15px 0 !important;
+    text-align: center;
+  }
+
+  /* 计时器数字样式 */
+  .time {
+    font-size: 3rem !important;
+  }
+
+  /* 人数统计数字样式 */
+  .Re {
+    font-size: 3rem !important;
+  }
+
+  /* 单位文字调整 */
+  .chara {
+    font-size: 1.2rem !important;
+  }
+
+  /* 按钮区域 */
+  #GTlottery, #GTExcel {
+    width: 80% !important;
+    margin: 10px auto !important;
+    display: block;
+  }
+
+  /* 隐藏"我有名单"按钮 */
+  #GTExcel {
+    display: none !important;
+  }
+
+  /* 加载动画位置调整 */
+  .loading-spinner {
+    right: 15px !important;
+  }
+
+  /* 按钮文字大小 */
+  #BT1, #BT2 {
+    font-size: 1rem !important;
+  }
+  #timer, #men {
+    position: relative;
+    width: 100%;
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  /* 计时器区域 */
+  #timer {
+    order: 1; /* 确保在上方 */
+    margin-bottom: 30px;
+  }
+
+  /* 人数统计区域 */
+  #men {
+    order: 2; /* 确保在下方 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  /* 移动"参与人数"标签 */
+  p2 {
+    position: static !important;
+    margin: 0 !important;
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+
+  /* 数字样式统一 */
+  .time, .Re {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  /* 单位文字调整 */
+  .chara {
+    font-size: 1.2rem;
+    vertical-align: middle;
+  }
+
+  /* 按钮区域 */
+  #GTlottery {
+    order: 3;
+    margin-top: 30px !important;
+  }
+  .expired .end {
+    font-size: 1.8rem !important;  /* 调整为更合适的尺寸 */
+    line-height: 1.3;
+    display: block;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    padding: 0 15px;  /* 添加内边距避免贴边 */
+  }
+}
+
 </style>

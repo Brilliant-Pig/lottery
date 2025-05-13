@@ -3,6 +3,7 @@ import { createStore } from "vuex";
 export default createStore({
   state: {
     user: {
+      userInfo: JSON.parse(localStorage.getItem('userInfo')) || null ,// 新增：完整用户信息
       username: localStorage.getItem('username') || 'admin' // 从 localStorage 初始化
     },
     lotteryResult: null,
@@ -35,15 +36,33 @@ export default createStore({
       localStorage.removeItem('jwt_token');
       localStorage.removeItem('username');
     },
+        clearToken(state) {
+      state.token = null;
+      state.user = {
+        username: null,
+        userInfo: null
+      };
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('userInfo');
+    },
     setUser(state, username) {
       state.user.username = username;
       localStorage.setItem('username', username);
-    }
+    },
+    setUser(state, userData) {
+      state.user.username = userData.username;
+      state.user.userInfo = userData; // 存储完整用户信息
+      localStorage.setItem('username', userData.username);
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+    },
   },
   getters: {
     getLotteryHistory: (state) => state.lotteryHistory,
     // 新增认证状态 getter
-    isAuthenticated: (state) => !!state.token
+    isAuthenticated: (state) => !!state.token,
+    currentUser: (state) => state.user.userInfo || { username: state.user.username },
+
   },
   actions: {
     // 新增登录 Action（使用 fetch）
@@ -52,17 +71,37 @@ export default createStore({
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            userName: username, 
+            passWord: password 
+          })
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || '登录失败');
 
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `登录失败，状态码：${response.status}`);
+        }
+
+        const { code, message, data } = await response.json();
+
+        if (code !== 0) {
+          throw new Error(message || '登录凭证错误');
+        }
+
+        // 修改：存储完整的用户信息
         commit('setToken', data.token);
-        commit('setUser', username);
+        commit('setUser', {
+          username: username,
+          token: data.token,
+          // 其他从后端返回的用户信息
+          ...data.user
+        });
         return true;
+
       } catch (error) {
-        console.error('登录错误:', error);
-        throw error;
+        console.error('登录过程出错:', error);
+        commit('clearToken');
+        throw new Error(error.message || '登录过程发生未知错误');
       }
     },
 

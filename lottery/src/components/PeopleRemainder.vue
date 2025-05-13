@@ -41,6 +41,9 @@ export default {
                 const response = await user.getActivityRemainsByUrl({
                     activityUrl: this.activityUrl//动态时内部应该改成this.activityUrl
                 })
+                if (!response || response.code !== 0 || !response.data || response.data.length === 0){
+                    this.Re = 0;
+                }
                 this.Re = response[0].activityRemainPeople//用数组中自己需要的数据
 
             } catch (error){//错误判断

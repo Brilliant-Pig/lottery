@@ -3,9 +3,15 @@
         <!-- 星空背景画布 -->
         <canvas ref="canvas" class="star-canvas"></canvas>
 
-        <!-- 主要内容容器 - 添加了外层flex容器实现垂直居中 -->
+        <!-- 主要内容容器 -->
         <div class="page-wrapper">
             <div class="result-cus-container">
+                <!-- 加载状态 -->
+                <div v-if="loading" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+
                 <!-- 当前抽奖结果卡片 -->
                 <div v-if="currentResult" class="current-result-card">
                     <h2 class="section-title">本次抽奖结果</h2>
@@ -22,29 +28,58 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">时间:</span>
-                                <span class="detail-value">{{ currentResult.time }}</span>
+                                <span class="detail-value">{{ formatTime(currentResult.time) }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 历史记录部分 -->
-                <div class="history-section">
-                    <h2 class="section-title">抽奖历史记录</h2>
+                <!-- <div class="history-section">
+                    <div class="section-header">
+                        <h2 class="section-title">抽奖历史记录</h2>
+                        <button @click="refreshHistory" class="refresh-btn" :disabled="loading">
+                            <span class="refresh-icon" :class="{ 'refreshing': loading }">↻</span>
+                            刷新
+                        </button>
+                    </div>
 
-                    <div v-if="filteredHistory.length > 0" class="history-list">
+                    <div v-if="filteredHistory.length" class="history-list">
                         <div v-for="(record, index) in filteredHistory" :key="index" class="history-item"
                             :class="{ 'highlight-item': isCurrentResult(record) }">
-                            <div class="record-time">{{ record.time }}</div>
-                            <div class="record-prize">{{ record.prize }}</div>
-                            <div class="record-activity">活动: {{ record.activityName || '未知活动' }}</div>
+                            <div class="record-time">{{ formatTime(record.win_time) }}</div>
+                            <div class="record-prize">{{ record.activity_result }}</div>
+                            <div class="record-activity">活动: {{ record.activity_name || '未知活动' }}</div>
                         </div>
                     </div>
 
                     <div v-else class="empty-history">
                         <p>暂无历史抽奖记录</p>
                     </div>
+                </div> -->
+                <!-- 历史记录部分 -->
+                <div class="history-section">
+                <div class="section-header">
+                    <h2 class="section-title">抽奖历史记录</h2>
+                    <button @click="refreshHistory" class="refresh-btn" :disabled="loading">
+                    <span class="refresh-icon" :class="{ 'refreshing': loading }">↻</span>
+                    刷新
+                    </button>
                 </div>
+
+                <div v-if="filteredHistory.length" class="history-list">
+                    <div v-for="(record, index) in filteredHistory" :key="index" class="history-item">
+                    <div class="record-time">{{ formatTime(record.win_time) }}</div>
+                    <div class="record-prize">{{ record.activity_result }}</div>
+                    <div class="record-activity">活动: {{ record.activity_name || '未知活动' }}</div>
+                    </div>
+                </div>
+
+                <div v-else class="empty-history">
+                    <p>暂无历史抽奖记录</p>
+                </div>
+                </div>
+
 
                 <!-- 操作按钮 -->
                 <div class="action-buttons">
@@ -60,10 +95,13 @@
     </div>
 </template>
 
-<script>
+<!-- <script>
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import user from '@/api/user'
+
+//const filteredHistory = ref([]);
 
 export default {
     name: 'ResultCus',
@@ -71,6 +109,8 @@ export default {
         const store = useStore();
         const router = useRouter();
         const canvas = ref(null);
+        const loading = ref(false);
+        const filteredHistory= ref([]);
 
         // 初始化星空背景
         const initStarBackground = () => {
@@ -97,38 +137,140 @@ export default {
             }
         };
 
-        // 计算属性
-        const currentResult = computed(() => store.state.lotteryResult);
-        const allHistory = computed(() => store.state.lotteryHistory || []);
+// 格式化时间显示 - 只显示日期部分
+const formatTime = (time) => {
+    if (!time) return '无记录';
+    
+    // 直接处理数据库返回的 "YYYY-MM-DD HH:mm:ss" 格式
+    if (typeof time === 'string' && time.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+        return time.split(' ')[0]; // 只取日期部分
+    }
+    
+    // 其他格式的兼容处理
+    const date = new Date(time);
+    if (isNaN(date.getTime())) return time; // 如果解析失败，返回原始值
+    
+    // 格式化为 YYYY-MM-DD
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+        // 获取用户历史抽奖记录
+        const fetchLotteryHistory = async () => {
+    try {
+        loading.value = true;
+        const username = store.state.user.username;
+        if (!username) {
+            console.warn('用户名不存在');
+            return;
+        }
 
-        // 过滤掉当前结果的历史记录
-        const filteredHistory = computed(() => {
-            if (!currentResult.value) return allHistory.value;
-            return allHistory.value.filter(item =>
-                item.time !== currentResult.value.time ||
-                item.prize !== currentResult.value.prize
-            );
-        });
+        const response = await user.getUserLotteryHistory({ userName: username });
+        console.log('完整API响应:', response);
+        filteredHistory.value = response;
+        console.log('抽奖历史记录:', filteredHistory.value);
+        
+    //     if (response && response.data) {
+    //     if (Array.isArray(response.data)) {
+    //         store.commit('setLotteryHistory', response.data);
+    //     } else if (response.data.code === 0 && Array.isArray(response.data.data)) {
+    //         store.commit('setLotteryHistory', response.data.data);
+    //     } else {
+    //         console.error('API返回结构异常:', response.data);
+    //     }
+    // }
+    // loading.value = false;
+        // // 更健壮的响应检查
+        // if (response && response.data) {
+        //     if (Array.isArray(response.data)) {
+        //         // 情况1：直接返回数组
+        //         store.commit('setLotteryHistory', response.data);
+        //     } else if (response.data.code === 0 && Array.isArray(response.data.data)) {
+        //         // 情况2：标准响应格式 {code, message, data}
+        //         store.commit('setLotteryHistory', response.data.data);
+        //     } else {
+        //         console.error('API返回数据结构异常:', response.data);
+        //     }
+        // } else {
+        //     console.error('API响应无效:', response);
+        // }
+    } catch (error) {
+        console.error('获取历史记录失败:', error);
+        // 可以在这里添加用户提示
+    } finally {
+        loading.value = false;
+    }
+};
 
-        // 检查是否是当前结果
-        const isCurrentResult = (record) => {
-            if (!currentResult.value) return false;
-            return (
-                record.time === currentResult.value.time &&
-                record.prize === currentResult.value.prize
-            );
+        // 刷新历史记录
+        const refreshHistory = async () => {
+            await fetchLotteryHistory();
         };
+
+//         // 计算属性
+//         const currentResult = computed(() => {
+//             const result = store.state.user.lotteryResult;
+//             if (result && !result.time) {
+//                 return {
+//                     ...result,
+//                     time: new Date().toLocaleString()
+//                 };
+//             }
+//             return result;
+//         });
+
+//         const allHistory = computed(() => store.state.user.lotteryHistory || []);
+
+//         // 过滤掉当前结果的历史记录
+//     const filteredHistory = computed(() => {
+//     if (!Array.isArray(allHistory.value) || allHistory.value.length === 0) {
+//         return [];
+//     }
+    
+//     return allHistory.value.map(item => ({
+//         // 保持与后端字段一致
+//         activityName: item.activity_name || item.activityName || '未知活动',
+//         prize: item.activity_result || item.prize || '无结果',
+//         time: item.win_time || item.time || '无记录',
+//         // 保留原始数据
+//         ...item
+//     })).filter(item => 
+//         !currentResult.value || 
+//         item.win_time !== currentResult.value.time ||
+//         item.activity_result !== currentResult.value.prize
+//     );
+// });
+
+//         // 检查是否是当前结果
+//         const isCurrentResult = (record) => {
+//             if (!currentResult.value) return false;
+//             return (
+//                 record.time === currentResult.value.time &&
+//                 record.prize === currentResult.value.prize
+//             );
+//         };
 
         // 操作方法
         const handleBack = () => {
             store.commit('clearLotteryResult');
-            router.push({ name: 'CustomersMain' }); // 明确跳转到CustomersMain页面
+            router.push({ name: 'CustomersMain' });
         };
 
         const handleShare = () => {
             if (!currentResult.value) return;
             const shareText = `我在抽奖活动中获得了: ${currentResult.value.prize}`;
             navigator.clipboard.writeText(shareText).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 兼容不支持clipboard API的浏览器
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
                 alert('结果已复制到剪贴板');
             });
         };
@@ -137,22 +279,128 @@ export default {
         onMounted(() => {
             initStarBackground();
             window.addEventListener('resize', initStarBackground);
+            fetchLotteryHistory();
+            console.log(filteredHistory);
+            
         });
 
         return {
             canvas,
-            currentResult,
+            
             filteredHistory,
-            isCurrentResult,
+            
+            loading,
+            formatTime,
             handleBack,
-            handleShare
+            handleShare,
+            refreshHistory
         };
     }
 };
+
+</script> -->
+
+<script>
+import { onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import user from '@/api/user';
+
+export default {
+  name: 'ResultCus',
+  data() {
+    return {
+      canvas: null,
+      loading: false,
+      filteredHistory: [],
+    };
+  },
+  computed: {
+    currentResult() {
+      return this.$store.state.user.lotteryResult;
+    }
+  },
+  methods: {
+    formatTime(time) {
+      if (!time) return '无记录';
+      if (typeof time === 'string' && time.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+        return time.split(' ')[0];
+      }
+      const date = new Date(time);
+      if (isNaN(date.getTime())) return time;
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+    async fetchLotteryHistory() {
+      this.loading = true;
+      try {
+        const username = this.$store.state.user.username;
+        if (!username) return;
+        const response = await user.getUserLotteryHistory({ userName: username });
+        this.filteredHistory = response;
+        console.log('抽奖历史记录:', this.filteredHistory);
+      } catch (error) {
+        console.error('获取历史记录失败:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    refreshHistory() {
+      this.fetchLotteryHistory();
+    },
+    handleBack() {
+      this.$store.commit('clearLotteryResult');
+      this.$router.push({ name: 'CustomersMain' });
+    },
+    handleShare() {
+      if (!this.currentResult) return;
+      const text = `我在抽奖活动中获得了: ${this.currentResult.prize}`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('结果已复制到剪贴板');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('结果已复制到剪贴板');
+      });
+    },
+    initStarBackground() {
+      const canvas = this.canvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.fillStyle = '#191919';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      for (let i = 0; i < 200; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const size = Math.random() * 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+  },
+  mounted() {
+    this.canvas = this.$refs.canvas;
+    this.initStarBackground();
+    window.addEventListener('resize', this.initStarBackground);
+    this.fetchLotteryHistory();
+  }
+};
 </script>
 
+
 <style scoped>
-/* 基础样式 */
 #blackhole-bg {
     position: fixed;
     top: 0;
@@ -173,20 +421,16 @@ export default {
     pointer-events: none;
 }
 
-/* 新增的页面包裹层 - 实现垂直居中 */
 .page-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* 垂直居中 */
     padding: 40px 0;
-    /* 上下留白 */
     min-height: 120vh;
     box-sizing: border-box;
 }
 
-/* 调整主容器样式 */
 .result-cus-container {
     position: relative;
     z-index: 2;
@@ -199,7 +443,6 @@ export default {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
     transform: translateY(0);
-    /* 初始位置 */
     animation: floatUp 0.5s ease-out forwards;
 }
 
@@ -208,14 +451,41 @@ export default {
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* 卡片样式 */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 16px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #646cff;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .current-result-card,
 .history-section {
     background-color: rgba(0, 0, 0, 0.5);
@@ -225,9 +495,16 @@ export default {
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 .section-title {
     font-size: 20px;
-    margin-bottom: 20px;
+    margin: 0;
     color: #ffffff;
     position: relative;
     padding-bottom: 10px;
@@ -243,7 +520,37 @@ export default {
     background: linear-gradient(90deg, #646cff, #61dafb);
 }
 
-/* 奖品显示样式 */
+.refresh-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.refresh-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.refresh-icon {
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.refresh-icon.refreshing {
+    animation: spin 1s linear infinite;
+}
+
 .prize-display {
     padding: 15px 0;
 }
@@ -276,7 +583,6 @@ export default {
     font-weight: 500;
 }
 
-/* 历史记录样式 */
 .history-list {
     display: grid;
     gap: 15px;
@@ -309,7 +615,7 @@ export default {
 .record-prize {
     font-size: 18px;
     margin: 8px 0;
-    color: #4caf50;
+    color: #70c5ef;
 }
 
 .record-activity {
@@ -323,7 +629,6 @@ export default {
     opacity: 0.6;
 }
 
-/* 按钮样式 */
 .action-buttons {
     display: flex;
     justify-content: center;
@@ -397,6 +702,16 @@ export default {
     .custom-btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .refresh-btn {
+        align-self: flex-end;
     }
 }
 </style>
