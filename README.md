@@ -62,11 +62,11 @@ http://localhost:3000（或是电脑终端显示的端口）
 ```
 ##
 ### 📸 项目截图
--后台管理  
-###
+- 后台管理  
+
 ![后台管理](https://pic1.imgdb.cn/item/6822fd2858cb8da5c8f017be.png)
--抽奖界面  
-###
+- 抽奖界面  
+
 ![抽奖界面](https://pic1.imgdb.cn/item/6822fcf558cb8da5c8f016c7.png)
 
 ## 🤝 加入我们
