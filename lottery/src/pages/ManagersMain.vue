@@ -37,8 +37,14 @@
     <div v-if="fileData" class="file-preview">
       <p>已选择文件: {{ fileData.name }}</p>
       <div class="button-group">
-        <button @click="parseFile" class="parse-btn">解析文件</button>
-        <button @click="resetFile" class="cancel-btn">重新选择</button>
+<div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; margin-bottom: 10px;">
+    <button @click="parseFile" class="parse-btn" style="background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%); color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 14px; line-height: 1.5; height: 30px; cursor: pointer; transition: background-color 0.3s; flex: 1;">
+        解析文件
+    </button>
+    <button @click="resetFile" class="cancel-btn" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 14px; line-height: 1.5; height: 30px; cursor: pointer; transition: background-color 0.3s; flex: 1;">
+        重新选择
+    </button>
+</div>
       </div>
     </div>
 
@@ -50,8 +56,14 @@
         </option>
       </select>
       <div class="button-group">
-        <button @click="confirmImport" class="confirm-btn">确认导入</button>
-        <button @click="resetFile" class="cancel-btn">撤回</button>
+<div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; margin-bottom: 20px;">
+    <button @click="confirmImport" class="parse-btn" style="background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%); color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 14px; line-height: 1.5; height: 30px; cursor: pointer; transition: background-color 0.3s;">
+    确认导入
+</button>
+    <button @click="resetFile" class="cancel-btn" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 14px; line-height: 1.5; height: 30px; cursor: pointer; transition: background-color 0.3s;">
+        撤回
+    </button>
+</div>
       </div>
     </div>
 
@@ -74,7 +86,7 @@
           </button>
         </div>
         <button @click="addManualParticipant" 
-            style="background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">
+            style=" background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%); color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">
           添加人员
         </button>
       </div>
@@ -118,26 +130,26 @@
                     </div>
                 </div>
                 
-                <!-- 右侧图片上传 -->
-                <div class="image-upload-section" style="width: 150px;">
-                    <label style="color: white; display: block; margin-bottom: 5px;">奖品图片:</label>
-                    <div class="image-upload-container">
-                        <div class="image-upload rounded-input" @click="triggerFileInput(index)"
-                            style="border-color: rgba(255,255,255,0.5); width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
-                            <span v-if="!prize.image" class="upload-icon" style="color: white; font-size: 24px;">+</span>
-                            <img v-else :src="prize.image" class="prize-image" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-                            <input 
-                                type="file" 
-                                :ref="'prizeFileInput' + index" 
-                                @change="handlePrizeImageUpload($event, index)" 
-                                accept="image/*" 
-                                class="upload-btn" 
-                                style="display: none"
-                            />
-                        </div>
-                    </div>
+ <div class="image-upload-section" style="width: 150px;">
+            <div class="image-upload-container">
+                <label style="color: white; display: block; margin-bottom: 5px;">奖品图片:</label>
+                <div class="image-upload rounded-input" @click="triggerFileInput(index)"
+                    style="border-color: rgba(255,255,255,0.5); width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+                    <span v-if="!prize.image" class="upload-icon" style="color: white; font-size: 24px;">+</span>
+                    <img v-else :src="prize.image" class="prize-image" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
                 </div>
+                <input 
+                    type="file" 
+                    :ref="'prizeFileInput' + index" 
+                    @change="handlePrizeImageUpload($event, index)" 
+                    accept="image/*" 
+                    class="upload-btn" 
+                    style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; opacity: 0; cursor: pointer;"
+                />
             </div>
+        </div>
+    </div>
+    
             
             <!-- 按钮组 -->
             <div class="btn-group" style="margin-top: 15px;">
@@ -197,7 +209,7 @@
                     <input type="datetime-local" id="startTime" v-model="timeSettings.startTime"
                         class="rounded-input" />
                     <br /><br />
-                    <label for="endTime">结束时间:</label>
+                    <label for="endTime" style="color: white;">结束时间:</label>
                     <input type="datetime-local" id="endTime" v-model="timeSettings.endTime" class="rounded-input" />
                 </div>
             </section>
@@ -205,7 +217,6 @@
         <!-- 生成和分享按钮 -->
         <div class="button-container">
             <button class="generate-btn rounded-box" @click="launchLottery">生成</button>
-            <button class="share-btn rounded-box">分享</button>
         </div>
     </div>
 </template>
@@ -216,12 +227,13 @@ import * as XLSX from 'xlsx';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router'; // 导入 useRouter
 export default {
+    el: '#app',
     data() {
         return {
             showManualInput: false,
             lotteryInfo: { name: '', description: '' },
             prizes: [
-           {
+            {
                 level: '', // 留空让用户自己填写
                 name: '',
                 weight: 1,
@@ -253,6 +265,19 @@ export default {
         return { router };
     },
     methods: {
+triggerFileInput(index) {
+        this.$refs[`prizeFileInput${index}`].click();
+    },
+    handlePrizeImageUpload(event, index) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.prizes[index].image = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        },
         toggleManualInput() {
         this.showManualInput = !this.showManualInput;
     },
@@ -466,68 +491,88 @@ export default {
     },
     
     async confirmImport() {
-  if (!this.selectedNameColumn) {
-    ElMessage.error('请选择姓名列');
-    return;
-  }
-  
-  try {
-    const data = await this.parseFile();
-    if (data && data.length > 0) {
-      this.participantList = data
-        .map(item => item[this.selectedNameColumn])
-        .filter(name => name); // 过滤掉空值
-      
-      if (this.participantList.length === 0) {
-        ElMessage.error('选择的姓名列中没有有效数据');
+    if (!this.selectedNameColumn) {
+        ElMessage.error('请选择姓名列');
         return;
-      }
-      
-      this.importStatus = `成功导入 ${this.participantList.length} 个参与者`;
-      ElMessage.success('参与者名单导入成功');
     }
-  } catch (error) {
-    console.error('导入失败:', error);
-    ElMessage.error('导入失败: ' + error.message);
-  }
+
+    try {
+        const data = await this.parseFile();
+        if (data && data.length > 0) {
+            // 从文件中导入的参与者
+            const fileParticipants = data
+                .map(item => item[this.selectedNameColumn])
+                .filter(name => name)
+                .map(name => ({ nickname: name, otherField: '' }));
+            
+            // 合并手动输入的参与者
+            const manualParticipants = this.manualParticipants.filter(p => p.nickname.trim() !== '');
+            
+            this.participantList = [...fileParticipants, ...manualParticipants];
+            
+            if (this.participantList.length === 0) {
+                ElMessage.error('没有有效的参与者数据');
+                return;
+            }
+            
+            this.importStatus = `成功导入 ${this.participantList.length} 个参与者`;
+            ElMessage.success('参与者名单导入成功');
+        }
+    } catch (error) {
+        console.error('导入失败:', error);
+        ElMessage.error('导入失败: ' + error.message);
+    }
 },
-    launchLottery() {
-    if(!this.lotteryInfo.name){
+launchLottery() {
+    if (!this.lotteryInfo.name) {
         ElMessage.error('请填写抽奖名称');
         return;
     }
-    if (!this.participantList || this.participantList.length === 0) {
-        ElMessage.error('请先导入参与者名单');
+    
+    // 检查是否有参与者（包括手动输入的和文件导入的）
+    const hasFileParticipants = this.participantList.length > 0;
+    const hasManualParticipants = this.manualParticipants.some(p => p.nickname.trim() !== '');
+    
+    if (!hasFileParticipants && !hasManualParticipants) {
+        ElMessage.error('请先添加参与者名单');
         return;
     }
     
-    for(const prize of this.prizes){
-        if(!prize.name || !prize.quantity){
-        ElMessage.error('请填写奖品名称和奖品份数');
-        return;
+    for (const prize of this.prizes) {
+        if (!prize.name || !prize.quantity) {
+            ElMessage.error('请填写奖品名称和奖品份数');
+            return;
         }
     }
+    
+    // 确保使用所有参与者
+    const allParticipants = [
+        ...this.participantList,
+        ...this.manualParticipants.filter(p => p.nickname.trim() !== '')
+    ];
+    
     const formData = {
-                lotteryInfo: this.lotteryInfo,
-                prizes: this.prizes,
-                participants: this.manualParticipants,
-                permissions: {
-                    participantVisibility: this.participantVisibility,
-                    resultVisibility: this.resultVisibility
-                },
-                timeSettings: this.timeSettings
-            };
-
+        lotteryInfo: this.lotteryInfo,
+        prizes: this.prizes,
+        participants: allParticipants,
+        permissions: {
+            participantVisibility: this.participantVisibility,
+            resultVisibility: this.resultVisibility
+        },
+        timeSettings: this.timeSettings
+    };
+    
     // 保存抽奖数据到store
     this.$store.commit('setLotteryData', {
         lotteryInfo: this.lotteryInfo,
         prizes: this.prizes,
-        participantList: this.participantList
+        participantList: allParticipants
     });
+    
     console.log('提交数据:', formData);
     alert('抽奖活动创建成功！');
     this.router.push({ name: 'TotalAnimation' });
-    }
+}
     },
 };
 </script>
@@ -542,7 +587,7 @@ export default {
 .parse-btn, .confirm-btn {
   margin-top: 10px;
   padding: 5px 10px;
-  background: #3abd92;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white;
   border: none;
   border-radius: 4px;
@@ -631,7 +676,7 @@ export default {
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 .add-btn {
-    background-color: #3abd92;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 .btn-group {
     display: flex;
@@ -645,7 +690,7 @@ export default {
     display: inline-block;
     margin: 10px auto;
     padding: 10px 20px;
-    background-color: #3abd92;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -726,19 +771,19 @@ export default {
 }
 
 .permission-options button.active {
-    background: #51c9a1;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
     color: white;
-    border-color: #51c9a1;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 .upload-status {
     margin-top: 10px;
-    color: #51c9a1;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
     font-size: 0.9em;
 }
 
 .existing-list-btn {
-    background: #51c9a1;
+    background: #51c9a1; background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
     color: white;
     padding: 8px 15px;
     border-radius: 5px;
@@ -770,7 +815,7 @@ export default {
 .generate-btn {
     display: inline-block;
     padding: 12px 30px;
-    background-color: #51c9a1;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
     color: white;
     border: none;
     cursor: pointer;
@@ -780,7 +825,7 @@ export default {
 }
 
 .generate-btn:hover {
-    background-color: #3fa786;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 .selected-list-info {
@@ -858,7 +903,7 @@ export default {
 }
 
 .add-btn {
-  background-color: #4a9b4b !important;
+   background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white !important;
   border: none !important;
   padding: 5px 10px !important;    /* 较小的内边距 */
@@ -871,7 +916,7 @@ export default {
 }
 
 .add-btn:hover {
-  background-color: #509352 !important;
+  background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 /* 输入框基础样式 */
@@ -894,5 +939,14 @@ export default {
 .import-status {
   margin-top: 15px;
   color: white;
+}
+.upload-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    cursor: pointer;
 }
 </style>
