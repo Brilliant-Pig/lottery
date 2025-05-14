@@ -239,11 +239,12 @@ p2 {
 
 .tiny-button {
     border: 2.5px solid;
+    background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 #BT1 {
     font-size: 20px;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     font-weight: bold;
 }
 
