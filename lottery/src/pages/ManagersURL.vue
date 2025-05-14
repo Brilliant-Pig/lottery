@@ -200,6 +200,7 @@ export default {
       currentButtonText: '',
       generatedCode: '',
       showPopup: false,
+      generating: false, // 添加生成状态
     };
   },
   setup() {
@@ -366,29 +367,75 @@ export default {
     },
     
 // 生成抽奖码
-launchLottery() {
-      if (!this.lotteryInfo.name) {
-        alert('请填写抽奖名称');
-        return;
-      }
+// 修改 launchLottery 方法
+async launchLottery() {
+  // 获取用户名
+  const username = this.$store.state.user.username;
+  
+  if (!username) {
+    alert('无法获取用户信息，请重新登录');
+    this.$router.push('/LoginMain');
+    return;
+  }
 
-      for (const prize of this.prizes) {
-        if (!prize.name || !prize.quantity || !prize.weight) {
-          alert('请填写完整的奖品信息');
-          return;
-        }
-      }
+  // 验证表单数据
+  if (!this.lotteryInfo.name) {
+    alert('请填写抽奖名称');
+    return;
+  }
 
-      // 生成6位随机码（字母+数字）
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let result = '';
-      for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+  for (const prize of this.prizes) {
+    if (!prize.name || !prize.quantity || !prize.weight) {
+      alert('请填写完整的奖品信息');
+      return;
+    }
+  }
 
-      this.generatedCode = result;
+  this.generating = true; // 开始生成
+
+  try {
+    // 准备提交数据
+    const formData = {
+      lotteryInfo: {
+        name: this.lotteryInfo.name,
+        description: this.lotteryInfo.description || ''
+      },
+      prizes: this.prizes.map(prize => ({
+        name: prize.name,
+        quantity: parseInt(prize.quantity),
+        weight: parseInt(prize.weight),
+        image: prize.image || null
+      })),
+      timeSettings: {
+        startTime: this.timeSettings.startTime,
+        endTime: this.timeSettings.endTime
+      },
+      permissions: {
+        participantVisibility: this.participantVisibility,
+        resultVisibility: this.resultVisibility
+      },
+      username: username
+    };
+
+    // 调用API创建抽奖
+    const response = await axios.post('http://127.0.0.1:33001/api/user/createLottery', {
+      lotteryData: formData
+    });
+
+    if (response.data.code === 0) {
+      // 显示抽奖码弹窗
+      this.generatedCode = response.data.data.lotteryCode;
       this.showPopup = true;
-    },
+    } else {
+      alert('创建抽奖活动失败: ' + response.data.message);
+    }
+  } catch (error) {
+    console.error('创建抽奖活动失败:', error);
+    alert('创建抽奖活动失败: ' + (error.response?.data?.message || error.message));
+  } finally {
+    this.generating = false; // 结束生成
+  }
+},
 
     // 复制抽奖码
     copyCode() {
