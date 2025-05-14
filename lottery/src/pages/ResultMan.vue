@@ -23,20 +23,22 @@
                     </div>
 
                     <div v-if="creatorHistory.length" class="history-list">
-                        <div v-for="(records, activityName) in groupByActivity(creatorHistory)" 
-                            :key="activityName" class="activity-group">
+                        <div v-for="(records, activityName) in groupByActivity(creatorHistory)" :key="activityName"
+                            class="activity-group">
                             <div class="activity-header" @click="toggleActivity(activityName)">
                                 <h3 class="activity-title">{{ activityName }}</h3>
                                 <span class="toggle-icon">
                                     {{ expandedActivities.includes(activityName) ? '▼' : '►' }}
                                 </span>
+                                <button class="stop-btn" @click.stop="stopActivity(activityName)">
+                                    <span class="stop-icon">⏹</span> 停止
+                                </button>
                                 <button class="export-btn" @click.stop="exportToExcel(records, activityName)">
                                     <span class="export-icon">📊</span> 导出
                                 </button>
                             </div>
                             <div v-if="expandedActivities.includes(activityName)" class="activity-records">
-                                <div v-for="(record, index) in records" 
-                                    :key="index" class="history-item">
+                                <div v-for="(record, index) in records" :key="index" class="history-item">
                                     <div class="record-time">{{ formatTime(record.win_time) }}</div>
                                     <div class="record-prize">{{ record.activity_result }}</div>
                                     <div class="record-winner">获奖用户: {{ record.winner_name || '无' }}</div>
@@ -104,7 +106,7 @@ export default {
             const date = new Date(time);
             return date.toLocaleDateString();
         },
-        
+
         async fetchCreatorHistory() {
             this.loading = true;
             try {
@@ -113,7 +115,7 @@ export default {
                     console.warn('用户名不存在');
                     return;
                 }
-                
+
                 const response = await this.$http.get('/api/user/getCreatorLotteryHistory', {
                     params: {
                         userName: username
@@ -133,15 +135,15 @@ export default {
                 this.loading = false;
             }
         },
-        
+
         refreshHistory() {
             this.fetchCreatorHistory();
         },
-        
+
         handleBack() {
             this.$router.push({ name: 'mainpages' });
         },
-        
+
         toggleActivity(activityName) {
             const index = this.expandedActivities.indexOf(activityName);
             if (index >= 0) {
@@ -150,7 +152,7 @@ export default {
                 this.expandedActivities.push(activityName);
             }
         },
-        
+
         exportToExcel(records, activityName) {
             try {
                 // 准备数据
@@ -160,15 +162,15 @@ export default {
                     '奖项': record.activity_result,
                     '获奖用户': record.winner_name || '无'
                 }));
-                
+
                 // 创建工作表
                 const worksheet = XLSX.utils.json_to_sheet(data);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, '抽奖结果');
-                
+
                 // 生成文件名
                 const fileName = `${activityName || '抽奖活动'}_结果_${new Date().toISOString().slice(0, 10)}.xlsx`;
-                
+
                 // 导出文件
                 XLSX.writeFile(workbook, fileName);
             } catch (error) {
@@ -176,7 +178,13 @@ export default {
                 alert('导出失败，请重试');
             }
         },
-
+        stopActivity(activityName) {
+        // 这里添加停止活动的逻辑
+        console.log('停止活动:', activityName);
+        if(confirm(`确定要停止活动 "${activityName}" 吗？`)) {
+            alert(`活动 "${activityName}" 已停止`);
+            }
+        },
         initStarBackground() {
             const canvas = this.canvas;
             if (!canvas) return;
@@ -242,16 +250,25 @@ export default {
 .result-cus-container {
     position: relative;
     z-index: 2;
-    max-width: 700px;
-    width: 90%;
+    max-width: 800px;
+    width: 100%;
+    height: 80vh;
+    /* 新增固定高度 */
     margin: 0 auto;
-    padding: 50px;
+    padding: 30px;
+    /* 调整内边距 */
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
     transform: translateY(0);
     animation: floatUp 0.5s ease-out forwards;
+    overflow: hidden;
+    /* 防止整体滚动 */
+    display: flex;
+    /* 新增flex布局 */
+    flex-direction: column;
+    /* 垂直排列 */
 }
 
 @keyframes floatUp {
@@ -299,11 +316,18 @@ export default {
 
 .current-result-card,
 .history-section {
+    flex: 1;
+    /* 占据剩余空间 */
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 30px;
+    padding: 15px;
+    /* 调整内边距 */
+    margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow-y: auto;
+    /* 允许垂直滚动 */
+    max-height: calc(100% - 60px);
+    /* 预留操作按钮空间 */
 }
 
 .section-header {
@@ -426,7 +450,15 @@ export default {
 .record-prize {
     font-size: 18px;
     margin: 8px 0;
-    color: #70c5ef;
+    background: linear-gradient(90deg, #00FFFF, #66a6ff);
+    /* 青色到蓝色的渐变 */
+    -webkit-background-clip: text;
+    /* 文本剪裁 */
+    background-clip: text;
+    color: transparent;
+    /* 使文本颜色透明，显示背景渐变 */
+    display: inline-block;
+    /* 确保渐变效果正确应用 */
 }
 
 .record-activity {
@@ -444,7 +476,9 @@ export default {
     display: flex;
     justify-content: center;
     gap: 20px;
-    margin-top: 40px;
+    margin-top: auto;
+    /* 固定在底部 */
+    padding-top: 15px;
 }
 
 .custom-btn {
@@ -491,17 +525,9 @@ export default {
     padding-bottom: 15px;
 }
 
-.activity-title {
-    color: #61dafb;
-    margin-bottom: 15px;
-    font-size: 18px;
-    padding-left: 10px;
-    border-left: 3px solid #646cff;
-}
-
 .record-winner {
     font-size: 16px;
-    color: #ffffffcb;
+    color: #fcfbfccb;
     margin-top: 5px;
 }
 
@@ -545,6 +571,7 @@ export default {
         align-self: flex-end;
     }
 }
+
 .activity-header {
     display: flex;
     align-items: center;
@@ -560,12 +587,15 @@ export default {
 }
 
 .activity-title {
-    color: #61dafb;
     margin: 0;
     font-size: 18px;
     padding-left: 10px;
     border-left: 3px solid #646cff;
-    flex-grow: 1;
+    background: linear-gradient(90deg, #00FFFF, #66a6ff) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    display: inline-block;
 }
 
 .toggle-icon {
@@ -602,12 +632,33 @@ export default {
     border-left: 2px dashed rgba(255, 255, 255, 0.1);
 }
 
+.stop-btn {
+    background: rgba(250, 125, 118, 0.2);
+    border: 1px solid rgba(223, 94, 87, 0.5);
+    color: #ee7771;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.stop-btn:hover {
+    background: rgba(255, 59, 48, 0.3);
+}
+
+.stop-icon {
+    margin-right: 5px;
+}
 /* 响应式设计调整 */
 @media (max-width: 768px) {
     .activity-header {
         flex-wrap: wrap;
     }
-    
+    .stop-btn,
     .export-btn {
         margin-top: 8px;
         margin-left: 0;

@@ -436,14 +436,18 @@ export default {
     z-index: 2;
     max-width: 700px;
     width: 90%;
+    height: 80vh; /* 固定高度 */
     margin: 0 auto;
-    padding: 50px;
+    padding: 30px; /* 调整内边距 */
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
     transform: translateY(0);
     animation: floatUp 0.5s ease-out forwards;
+    overflow: hidden; /* 防止整体滚动 */
+    display: flex; /* 新增flex布局 */
+    flex-direction: column; /* 垂直排列 */
 }
 
 @keyframes floatUp {
@@ -486,13 +490,22 @@ export default {
     to { transform: rotate(360deg); }
 }
 
-.current-result-card,
-.history-section {
+.current-result-card {
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 30px;
+    padding: 15px; /* 调整内边距 */
+    margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.history-section {
+    flex: 1; /* 占据剩余空间 */
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 15px; /* 调整内边距 */
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow-y: auto; /* 允许垂直滚动 */
+    max-height: calc(100% - 60px); /* 预留操作按钮空间 */
 }
 
 .section-header {
@@ -695,9 +708,12 @@ export default {
     }
 
     .action-buttons {
-        flex-direction: column;
-        gap: 15px;
-    }
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: auto; /* 固定在底部 */
+    padding-top: 15px;
+}
 
     .custom-btn {
         width: 100%;

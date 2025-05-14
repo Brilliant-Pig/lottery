@@ -49,23 +49,23 @@
                 
 <div class="image-upload-section" style="width: 150px;">
   <label style="color: white; display: block; margin-bottom: 5px;">奖品图片:</label>
-  <div class="image-upload-container">
-    <div class="image-upload rounded-input" @click="triggerFileInput(index)"
-         style="border-color: rgba(255,255,255,0.5); width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
-      <span v-if="!prize.image" class="upload-icon" style="color: white; font-size: 24px;">+</span>
-      <img v-else :src="prize.image" class="prize-image" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-      <input 
-          type="file" 
-          :ref="'prizeFileInput' + index" 
-          @change="handlePrizeImageUpload($event, index)" 
-          accept="image/*" 
-          class="upload-btn" 
-          style="display: none"
-      />
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="image-upload-container">
+  <div class="image-upload rounded-input" @click="triggerFileInput(index)"
+            style="border-color: rgba(255,255,255,0.5); width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+    <span v-if="!prize.image" class="upload-icon" style="color: white; font-size: 24px;">+</span>
+    <img v-else :src="prize.image" class="prize-image" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+  <input 
+      type="file" 
+      :ref="'prizeFileInput' + index" 
+      @change="handlePrizeImageUpload($event, index)" 
+      accept="image/*" 
+      class="upload-btn" 
+      style="display: none"
+    />
+  </div>
+</div>
+</div>
+</div>
             
             <!-- 按钮组 -->
             <div class="btn-group" style="margin-top: 15px;">
@@ -117,242 +117,303 @@
         </div>
     </section>
 
-          <!-- 时间设置 -->
-          <section class="section-bg">
-              <div class="header-bg">
-                  <h2>时间设置</h2>
-              </div>
-              <div class="main-bg">
-                  <label for="startTime">开始时间:</label>
-                  <input type="datetime-local" id="startTime" v-model="timeSettings.startTime" class="rounded-input" />
-                  <br /><br />
-                  <label for="endTime">结束时间:</label>
-                  <input type="datetime-local" id="endTime" v-model="timeSettings.endTime" class="rounded-input" />
-              </div>
-          </section>
-      </div>
+      <!-- 时间设置 -->
+      <section class="section-bg" style="flex: 1;">
+        <div class="header-bg">
+          <h2 style="color: white;">时间设置</h2>
+        </div>
+        <div class="main-bg">
+          <label for="startTime" style="color: white;">开始时间:</label>
+          <input type="datetime-local" id="startTime" v-model="timeSettings.startTime" class="rounded-input" />
+          <br /><br />
+          <label for="endTime" style="color: white;">结束时间:</label>
+          <input type="datetime-local" id="endTime" v-model="timeSettings.endTime" class="rounded-input" />
+        </div>
+      </section>
+
+<section class="section-bg">
+  <div class="header-bg">
+    <h2 style="color: white;">活动状态</h2>
+  </div>
+  <div class="main-bg">
+    <p v-if="activityStatus === 'unstarted'" style="color: orange;">活动还未开始</p>
+    <p v-else-if="activityStatus === 'ongoing'" style="color: green;">活动进行中</p>
+    <p v-else-if="activityStatus === 'ended'" style="color: red;">活动已结束</p>
+    <p v-else style="color: grey;">活动状态未知</p>
+    </div>
+</section>
+
+    </div>
 <!-- 修改后的生成按钮 -->
 <div class="button-container">
-          <button class="generate-btn rounded-box" @click="launchLottery">生成分享链接</button>
+  <button class="generate-btn rounded-box" @click="launchLottery">生成抽奖码</button>
       </div>
   </div>
+
+  <!-- 抽奖码弹窗 -->
+<div v-if="showPopup" class="popup-overlay">
+  <div class="popup">
+    <div class="popup-content">
+      <h3>抽奖码已生成</h3>
+      <input 
+        type="text" 
+        v-model="generatedCode" 
+        readonly 
+        class="code-input"
+        ref="codeInput"
+      >
+      <button @click="copyCode" class="copy-btn">复制</button>
+      <button @click="showPopup = false" class="close-btn">关闭</button>
+    </div>
+  </div>
+</div>
 </template>
 
 
 <script>
 import axios from 'axios';
 import { useUserStore } from '../store/user'; // 导入Pinia store
+
 export default {
   data() {
     return {
       lotteryInfo: { name: '', description: '' },
       prizes: [
-        { level: '一等奖', name: '', quantity: 1, weight: 50 }
+        { level: '一等奖', name: '', quantity: 1, weight: 50, image: null }
       ],
       manualParticipants: [{ nickname: '', otherField: '' }],
       participantVisibility: 'public',
       resultVisibility: 'public',
-      timeSettings: { startTime: '', endTime: '' },
+      timeSettings: {
+        startTime: new Date().toISOString().slice(0, 16), // 当前时间的 ISO 格式（去掉毫秒部分）
+        endTime: new Date(new Date().getTime() + 3600000).toISOString().slice(0, 16) // 当前时间加1小时
+      },
       uploadStatus: null,
-      fileType: null
+      fileType: null,
+      activityStatus: '', // 添加活动状态变量
+      currentStage: 0,
+      currentPrize: null,
+      winners: {},
+      currentWinners: [],
+      showResult: false,
+      showContinueButton: false,
+      currentButtonText: '',
+      generatedCode: '',
+      showPopup: false,
     };
   },
-    setup() {
+  setup() {
     const userStore = useUserStore();
     return { userStore };
   },
   methods: {
-      ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
-      
-      triggerFileInput(index) {
-          this.$refs.fileInput[index].click();
-      },
-      
-      async handlePrizeImageUpload(event, index) {
-          const file = event.target.files[0];
-          if (!file) return;
-          
-          try {
-              const formData = new FormData();
-              formData.append('image', file);
-              
-              const response = await axios.post('/api/upload-prize-image', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data' }
-              });
-              
-              this.prizes[index].image = response.data.imageUrl;
-          } catch (error) {
-              console.error('图片上传失败:', error);
-              alert('图片上传失败，请重试');
-          }
-      },
-      
-      addPrizeLevel() {
-          const lastLevel = this.prizes.length;
-          this.prizes.push({ 
-              level: `${this.ordinal(lastLevel)}等奖`, 
-              name: '', 
-              quantity: 1,
-              image: null 
-          });
-      },
-      
-      removePrizeLevel(index) {
-          this.prizes.splice(index, 1);
-      },
-      
-      addManualParticipant() {
-          this.manualParticipants.push({ nickname: '', otherField: '' });
-      },
-      
-      removeManualParticipant(index) {
-          this.manualParticipants.splice(index, 1);
-      },
-      
-      uploadExcel() {
-          this.fileType = 'excel';
-          this.$refs.fileUpload.click();
-      },
-      
-      uploadCSV() {
-          this.fileType = 'csv';
-          this.$refs.fileUpload.click();
-      },
-      
-      async handleFileUpload(event) {
-          const file = event.target.files[0];
-          if (!file) return;
-          
-          this.uploadStatus = '上传中...';
-          
-          try {
-              const formData = new FormData();
-              formData.append('file', file);
-              formData.append('type', this.fileType);
-              
-              const response = await axios.post('/api/upload-participants', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data' }
-              });
-              
-              this.uploadStatus = `上传成功，共导入 ${response.data.count} 条记录`;
-          } catch (error) {
-              console.error('文件上传失败:', error);
-              this.uploadStatus = '上传失败: ' + (error.response?.data?.message || error.message);
-          }
-      },
-      
-      setParticipantVisibility(visibility) {
-          this.participantVisibility = visibility;
-      },
-      
-      setResultVisibility(visibility) {
-          this.resultVisibility = visibility;
-      },
-      generateResult() {
-        if (this.currentStage >= this.prizes.length) {
-            this.goToResultMan();
-            return;
-        }
-        // 计算总权重
-        const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
-        // 根据权重随机选择奖品
-        let randomWeight = Math.random() * totalWeight;
-        let selectedPrize = null;
-        for (const prize of this.prizes) {
-            randomWeight -= prize.weight;
-            if (randomWeight <= 0) {
-                selectedPrize = prize;
-                break;
-            }
-        }
-        if (!selectedPrize) {
-            console.error('未能根据权重选择奖品');
-            return;
-        }
-        this.currentPrize = selectedPrize;
-        // 初始化该奖项的中奖者数组
-        this.winners[selectedPrize.level] = [];
-        // 复制参与者名单以避免修改原数组
-        const availableParticipants = [...this.participantList];
-        // 抽奖逻辑 - 确保不会重复中奖
-        const drawCount = Math.min(selectedPrize.quantity, availableParticipants.length);
-        for (let i = 0; i < drawCount; i++) {
-            const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-            const winner = availableParticipants[randomIndex];
-            this.winners[selectedPrize.level].push(winner);
-            availableParticipants.splice(randomIndex, 1); // 移除已中奖者
-        }
-        // 更新当前显示的中奖者
-        this.currentWinners = [...this.winners[selectedPrize.level]];
-        this.showResult = true;
-        // 更新按钮文本
-        if (this.currentStage < this.prizes.length - 1) {
-            this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
-        } else {
-            this.currentButtonText = '查看全部结果';
-        }
-        this.showContinueButton = true;
+    // 触发文件输入框的点击事件
+    triggerFileInput(index) {
+      const fileInput = this.$refs[`prizeFileInput${index}`];
+      if (fileInput) {
+        fileInput[0].click(); // 触发点击事件
+      } else {
+        console.error(`File input for index ${index} not found`);
+      }
     },
-    async launchLottery() {
-          // 获取用户名
-    const username = this.$store.state.user.username;
+
+    // 处理图片上传
+    handlePrizeImageUpload(event, index) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // 使用 URL.createObjectURL 直接生成图片的 URL
+      const imageUrl = URL.createObjectURL(file);
+      this.prizes[index].image = imageUrl;
+    },
     
-    if (!username) {
-      alert('无法获取用户信息，请重新登录');
-      this.$router.push('/LoginMain');
-      return;
-    }
-      // 验证抽奖数据
+    // 计算活动状态
+    calculateActivityStatus() {
+      const now = new Date(); // 当前时间
+      console.log('当前时间:', now);
+
+      let startTime = new Date(this.timeSettings.startTime);
+      let endTime = new Date(this.timeSettings.endTime);
+
+      // 确保时间格式正确
+      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+        console.error('时间格式不正确:', this.timeSettings.startTime, this.timeSettings.endTime);
+        this.activityStatus = '';
+        return;
+      }
+
+      console.log('活动开始时间:', startTime);
+      console.log('活动结束时间:', endTime);
+
+      if (now < startTime) {
+        this.activityStatus = 'unstarted'; // 活动还未开始
+      } else if (now >= startTime && now < endTime) {
+        this.activityStatus = 'ongoing'; // 活动进行中
+      } else if (now >= endTime) {
+        this.activityStatus = 'ended'; // 活动已结束
+      }
+    },
+    
+    ordinal(n) { return ["一", "二", "三", "四", "五", "六"][n]; },
+    
+    addPrizeLevel() {
+      const lastLevel = this.prizes.length;
+      this.prizes.push({ 
+        level: `${this.ordinal(lastLevel)}等奖`, 
+        name: '', 
+        quantity: 1,
+        weight: 50,
+        image: null 
+      });
+    },
+    
+    removePrizeLevel(index) {
+      this.prizes.splice(index, 1);
+    },
+    
+    addManualParticipant() {
+      this.manualParticipants.push({ nickname: '', otherField: '' });
+    },
+    
+    removeManualParticipant(index) {
+      this.manualParticipants.splice(index, 1);
+    },
+    
+    uploadExcel() {
+      this.fileType = 'excel';
+      this.$refs.fileUpload.click();
+    },
+    
+    uploadCSV() {
+      this.fileType = 'csv';
+      this.$refs.fileUpload.click();
+    },
+    
+    async handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      this.uploadStatus = '上传中...';
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', this.fileType);
+        
+        const response = await axios.post('/api/upload-participants', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        this.uploadStatus = `上传成功，共导入 ${response.data.count} 条记录`;
+      } catch (error) {
+        console.error('文件上传失败:', error);
+        this.uploadStatus = '上传失败: ' + (error.response?.data?.message || error.message);
+      }
+    },
+    
+    setParticipantVisibility(visibility) {
+      this.participantVisibility = visibility;
+    },
+    
+    setResultVisibility(visibility) {
+      this.resultVisibility = visibility;
+    },
+    
+    generateResult() {
+      if (this.currentStage >= this.prizes.length) {
+        this.goToResultMan();
+        return;
+      }
+      // 计算总权重
+      const totalWeight = this.prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      // 根据权重随机选择奖品
+      let randomWeight = Math.random() * totalWeight;
+      let selectedPrize = null;
+      for (const prize of this.prizes) {
+        randomWeight -= prize.weight;
+        if (randomWeight <= 0) {
+          selectedPrize = prize;
+          break;
+        }
+      }
+      if (!selectedPrize) {
+        console.error('未能根据权重选择奖品');
+        return;
+      }
+      this.currentPrize = selectedPrize;
+      // 初始化该奖项的中奖者数组
+      this.winners[selectedPrize.level] = [];
+      // 复制参与者名单以避免修改原数组
+      const availableParticipants = [...this.participantList];
+      // 抽奖逻辑 - 确保不会重复中奖
+      const drawCount = Math.min(selectedPrize.quantity, availableParticipants.length);
+      for (let i = 0; i < drawCount; i++) {
+        const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+        const winner = availableParticipants[randomIndex];
+        this.winners[selectedPrize.level].push(winner);
+        availableParticipants.splice(randomIndex, 1); // 移除已中奖者
+      }
+      // 更新当前显示的中奖者
+      this.currentWinners = [...this.winners[selectedPrize.level]];
+      this.showResult = true;
+      // 更新按钮文本
+      if (this.currentStage < this.prizes.length - 1) {
+        this.currentButtonText = `继续抽取${this.prizes[this.currentStage + 1].level}`;
+      } else {
+        this.currentButtonText = '查看全部结果';
+      }
+      this.showContinueButton = true;
+    },
+    
+// 生成抽奖码
+launchLottery() {
       if (!this.lotteryInfo.name) {
         alert('请填写抽奖名称');
         return;
       }
-      
+
       for (const prize of this.prizes) {
         if (!prize.name || !prize.quantity || !prize.weight) {
           alert('请填写完整的奖品信息');
           return;
         }
       }
-      
-      // 准备提交数据 - 使用Pinia store中的用户名
-      const formData = {
-        lotteryInfo: {
-          name: this.lotteryInfo.name,
-          description: this.lotteryInfo.description || ''
-        },
-        prizes: this.prizes.map(prize => ({
-          name: prize.name,
-          quantity: parseInt(prize.quantity),
-          weight: parseInt(prize.weight),
-          image: prize.image || null
-        })),
-        timeSettings: {
-          startTime: this.timeSettings.startTime,
-          endTime: this.timeSettings.endTime
-        },
-        permissions: {
-          participantVisibility: this.participantVisibility,
-          resultVisibility: this.resultVisibility
-        },
-        username: username // 添加用户名
-      };
-      try {
-        const response = await axios.post('http://127.0.0.1:33001/api/user/createLottery', {
-          lotteryData: formData
-        });
-        
-        if (response.data.code === 0) {
-          alert(`抽奖活动创建成功！\n抽奖码: ${response.data.data.lotteryCode}`);
-          // 可以在这里跳转到分享页面或重置表单
-        } else {
-          alert('创建抽奖活动失败: ' + response.data.message);
-        }
-      } catch (error) {
-        console.error('创建抽奖活动失败:', error);
-        alert('创建抽奖活动失败: ' + (error.response?.data?.message || error.message));
+
+      // 生成6位随机码（字母+数字）
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
+
+      this.generatedCode = result;
+      this.showPopup = true;
+    },
+
+    // 复制抽奖码
+    copyCode() {
+      navigator.clipboard.writeText(this.generatedCode)
+        .then(() => alert('抽奖码已复制!'))
+        .catch(() => {
+          // 兼容旧浏览器
+          this.$refs.codeInput.select();
+          document.execCommand('copy');
+          alert('抽奖码已复制!');
+        });
+        }
+  },
+  watch: {
+    // 监听时间设置的变化，重新计算状态
+    'timeSettings.startTime': function() {
+      this.calculateActivityStatus();
+    },
+    'timeSettings.endTime': function() {
+      this.calculateActivityStatus();
     }
+  },
+  mounted() {
+    this.calculateActivityStatus(); // 初始化活动状态
+    setInterval(this.calculateActivityStatus, 1000); // 每隔1秒更新活动状态
   }
 };
 </script>
@@ -438,7 +499,7 @@ export default {
 }
 
 .add-btn {
-  background-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 .btn-group {
@@ -455,7 +516,7 @@ export default {
   display: inline-block;
   margin: 10px auto;
   padding: 10px 20px;
-  background-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: rgb(255, 255, 255);
   border: none;
   cursor: pointer;
@@ -536,19 +597,19 @@ export default {
 }
 
 .permission-options button.active {
-  background: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white;
-  border-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 .upload-status {
   margin-top: 10px;
-  color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   font-size: 0.9em;
 }
 
 .upload-btn {
-  background: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white;
   padding: 8px 15px;
   border-radius: 5px;
@@ -581,7 +642,7 @@ export default {
 .generate-btn {
   display: inline-block;
   padding: 12px 30px;
-  background-color: #51c9a1;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white;
   border: none;
   cursor: pointer;
@@ -591,7 +652,7 @@ export default {
 }
 
 .generate-btn:hover {
-  background-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 
 /* 样式设计 */
@@ -601,7 +662,7 @@ export default {
 
 .generate-btn {
   padding: 10px 20px;
-  background-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: white;
   border: none;
   cursor: pointer;
@@ -609,7 +670,7 @@ export default {
 }
 
 .generate-btn:hover {
-  background-color: #3fa786;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
 }
 .popup-overlay {
   position: fixed;
@@ -648,12 +709,40 @@ export default {
   margin: 5px;
   border: none;
   border-radius: 25px;
-  background-color: #007bff;
+background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
   color: #ffffff;
   cursor: pointer;
 }
 
 .copy-btn:hover, .close-btn:hover {
-  background-color: #0056b3;
+ background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+}
+.image-upload-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-icon {
+  font-size: 24px;
+  color: white;
+}
+
+.prize-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.upload-btn {
+  display: none;
 }
 </style>

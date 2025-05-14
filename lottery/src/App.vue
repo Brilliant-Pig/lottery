@@ -166,7 +166,7 @@
                                 path: '/ManagersMain'
                             },
                             {
-                                text: '模式二: 生成分享URL',
+                                text: '模式二: 生成抽奖码',
                                 type: 'success',
                                 icon: 'Link',
                                 path: '/ManagersURL'
